@@ -1,0 +1,9 @@
+Flask==3.0.3
+Flask-Migrate==4.1.0
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.36
+alembic==1.16.1
+psycopg2-binary==2.9.10
+supabase==2.15.3
+Werkzeug==3.0.6
+Pillow==11.2.1

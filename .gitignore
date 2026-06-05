@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Local secrets and data
+.env
+*.db
+*.sqlite
+*.sqlite3
+instance/
+logs/
+flask.out
+flask.err
+service_invoice_images.json
+.backfill_user_locations_once
+
+# Local uploads; production uploads go to Supabase Storage
+public/static/uploads/
+static/uploads/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block content %}
+{% set default_request_status = {'label': 'Непознат', 'chip': 'chip-neutral'} %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Заявки</span>
+    <h1>Заявки и статуси</h1>
+  </div>
+  {% include '_dashboard_back_button.html' %}
+</div>
+
+<div class="summary-strip requests-summary-strip">
+  <a class="summary-pill requests-pill-total" href="{{ url_for('requests_list') }}"><span>Всички</span><strong>{{ request_summary.total }}</strong></a>
+  <a class="summary-pill requests-pill-pending" href="{{ url_for('requests_list', status='pending') }}"><span>Чакащи</span><strong>{{ request_summary.pending }}</strong></a>
+  <a class="summary-pill requests-pill-approved" href="{{ url_for('requests_list', status='approved') }}"><span>Одобрени</span><strong>{{ request_summary.approved }}</strong></a>
+  <a class="summary-pill requests-pill-rejected" href="{{ url_for('requests_list', status='rejected') }}"><span>Отказани</span><strong>{{ request_summary.rejected }}</strong></a>
+</div>
+
+<div class="summary-strip requests-search-row">
+  <div class="summary-pill users-search-pill">
+    <span>Търсене</span>
+    <input type="search" id="requests-search" class="users-search" placeholder="ID, машина, посока, статус, заявил..." autocomplete="off">
+  </div>
+</div>
+
+<div class="table-wrap panel no-pad table-card requests-table-wrap">
+<table class="requests-table" id="requests-table">
+  <tr>
+    <th><button type="button" class="table-sort" data-sort-key="id">ID <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    <th><button type="button" class="table-sort" data-sort-key="asset">Машина <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    <th class="table-col-normal">Посока</th>
+    <th>Вид</th>
+    <th><button type="button" class="table-sort" data-sort-key="status">Статус <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    <th><button type="button" class="table-sort" data-sort-key="requested_by">Заявил <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    <th><button type="button" class="table-sort" data-sort-key="created_at">Дата <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    {% if can_process_requests %}<th>Действие</th>{% endif %}
+  </tr>
+  {% for item in items %}
+  {% set request_status = request_status_meta.get(item.status, default_request_status) %}
+  {% set request_kind = 'direct' if item.status == 'approved' and item.approved_by_id == item.requested_by_id else 'pending' if item.status == 'pending' else 'processed' %}
+  {% set request_kind_label = 'Директна' if request_kind == 'direct' else 'Чака одобрение' if request_kind == 'pending' else 'Обработена' %}
+  <tr data-id="{{ item.id }}" data-asset="{{ item.asset.inventory_number|lower }} {{ item.asset.name|lower }}" data-location="{{ item.from_location.name|lower }} {{ item.to_location.name|lower }}" data-status="{{ request_status.label|lower }}" data-request-kind="{{ request_kind_label|lower }}" data-requested-by="{{ item.requested_by.full_name|lower }}" data-created-at="{{ item.created_at.isoformat() }}">
+    <td>#{{ item.id }}</td>
+    <td><a href="{{ url_for('asset_detail', asset_id=item.asset.id) }}"><strong>{{ item.asset.inventory_number }}</strong><br><small>{{ item.asset.name }}</small></a></td>
+    <td>{{ item.from_location.name }} → {{ item.to_location.name }}</td>
+    <td>
+      {% if request_kind == 'direct' %}
+      <span class="chip chip-approved">Директна</span>
+      {% elif request_kind == 'pending' %}
+      <span class="chip chip-pending">Чака одобрение</span>
+      {% else %}
+      <span class="chip chip-neutral">Обработена</span>
+      {% endif %}
+    </td>
+    <td><span class="chip {{ request_status.chip }}">{{ request_status.label }}</span></td>
+    <td><a class="user-link" href="{{ url_for('user_profile', user_id=item.requested_by.id) }}">{{ item.requested_by.full_name }}</a></td>
+    <td>{{ item.created_at|dt }}</td>
+    {% if can_process_requests %}
+    <td class="actions-cell">
+      {% set permissions = request_permissions.get(item.id, {}) %}
+      {% if permissions.get('approve') or permissions.get('reject') %}
+      <div class="form-actions">
+        {% if permissions.get('approve') %}
+        <form method="post" action="{{ url_for('request_action', req_id=item.id, action='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-small" type="submit">Одобри</button></form>
+        {% endif %}
+        {% if permissions.get('reject') %}
+        <form method="post" action="{{ url_for('request_action', req_id=item.id, action='reject') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-small danger" type="submit">Откажи</button></form>
+        {% endif %}
+      </div>
+      {% else %}-{% endif %}
+    </td>
+    {% endif %}
+  </tr>
+  {% else %}
+  <tr><td colspan="{{ 8 if can_process_requests else 7 }}" class="empty">Няма заявки.</td></tr>
+  {% endfor %}
+</table>
+</div>
+
+{% if pagination is defined and pagination.total %}
+<div class="pagination-row">
+  <span class="muted">Показани {{ items|length }} от {{ pagination.total }} заявки</span>
+  {% if pagination.pages > 1 %}
+  <nav class="pagination">
+    {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+      {% if page %}
+      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('requests_list', page=page) }}">{{ page }}</a>
+      {% else %}
+      <span>...</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+{% endif %}
+<script>
+(() => {
+  const table = document.getElementById('requests-table');
+  const search = document.getElementById('requests-search');
+  if (!table) return;
+
+  const tbody = table.tBodies[0];
+  const headers = table.querySelectorAll('.table-sort');
+  const state = { key: 'created_at', dir: 'desc' };
+
+  const normalize = (value) => (value || '').toString().trim().toLowerCase();
+  const compareText = (a, b) => normalize(a).localeCompare(normalize(b), 'bg');
+
+  const compareValues = (rowA, rowB, key) => {
+    if (key === 'id') return Number(rowA.dataset.id) - Number(rowB.dataset.id);
+    if (key === 'created_at') return new Date(rowA.dataset.createdAt) - new Date(rowB.dataset.createdAt);
+    return compareText(rowA.dataset[key], rowB.dataset[key]);
+  };
+
+  const updateArrows = () => {
+    headers.forEach((header) => {
+      const arrow = header.querySelector('.sort-arrow');
+      if (!arrow) return;
+      arrow.textContent = header.dataset.sortKey === state.key ? (state.dir === 'asc' ? '▲' : '▼') : '';
+    });
+  };
+
+  const applySearchFilter = () => {
+    const query = normalize(search?.value);
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.dataset.id);
+    rows.forEach((row) => {
+      const haystack = [
+        row.dataset.id,
+        row.dataset.asset,
+        row.dataset.location,
+        row.dataset.status,
+        row.dataset.requestKind,
+        row.dataset.requestedBy,
+        row.dataset.createdAt,
+      ].map(normalize).join(' ');
+      row.style.display = !query || haystack.includes(query) ? '' : 'none';
+    });
+  };
+
+  const sortRows = (key) => {
+    if (state.key === key) {
+      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.key = key;
+      state.dir = key === 'created_at' ? 'desc' : 'asc';
+    }
+
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.dataset.id);
+    rows.sort((rowA, rowB) => {
+      const result = compareValues(rowA, rowB, key);
+      return state.dir === 'asc' ? result : -result;
+    });
+    rows.forEach((row) => tbody.appendChild(row));
+    updateArrows();
+    applySearchFilter();
+  };
+
+  headers.forEach((header) => {
+    header.addEventListener('click', () => sortRows(header.dataset.sortKey));
+  });
+
+  if (search) {
+    search.addEventListener('input', applySearchFilter);
+  }
+
+  applySearchFilter();
+  updateArrows();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Машини и инструменти</span>
+    <h1>Добавяне на актив</h1>
+  </div>
+  <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="form-card wide panel form-sheet asset-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="asset-form-grid">
+    <label><span class="label-inline">Инвентарен № <span class="required-mark">*</span></span><input name="inventory_number" required></label>
+    <label><span class="label-inline">Тип <span class="required-mark">*</span></span><input name="name" required></label>
+    <label>Още познат като<input name="alias_name"></label>
+    <label>Марка<input name="brand"></label>
+    <label>Модел<input name="model"></label>
+    <label>Сериен №<input name="serial_number"></label>
+
+    <label>Дата на закупуване<input type="date" name="purchase_date"></label>
+    <label>Фактура №<input name="invoice_number"></label>
+    <label>Доставчик / фирма<input name="supplier_company"></label>
+    <label>Гаранция<input name="warranty"></label>
+    <label class="full">Снимки
+    <input type="file" name="images" accept="image/*" multiple data-asset-images>
+    <div class="asset-image-preview" data-image-preview></div>
+    <small class="form-hint">Максимум 3 снимки.</small>
+    </label>
+
+    <label class="full">Текуща локация
+    <select name="current_location_id">
+      <option value="" selected>Без избрана локация</option>
+      {% for location in locations %}
+      <option value="{{ location.id }}">{{ location_meta[location.type].icon }} {{ location.name }}</option>
+      {% endfor %}
+    </select>
+    </label>
+
+    <label class="full">Забележки<textarea name="notes"></textarea></label>
+  </div>
+
+  <div class="form-actions full">
+    <button type="submit">Запиши</button>
+    <a class="btn-secondary" href="{{ url_for('assets') }}">Отказ</a>
+  </div>
+</form>
+<script>
+(() => {
+  const input = document.querySelector('[data-asset-images]');
+  const preview = document.querySelector('[data-image-preview]');
+  if (!input || !preview) return;
+  input.addEventListener('change', () => {
+    preview.innerHTML = '';
+    [...input.files].slice(0, 3).forEach((file) => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.alt = file.name;
+      preview.appendChild(img);
+    });
+  });
+})();
+</script>
+{% endblock %}

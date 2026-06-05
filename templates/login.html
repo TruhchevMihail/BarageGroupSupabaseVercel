@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<button type="button" class="theme-toggle login-theme-toggle" data-theme-toggle aria-label="Превключи тема">☾</button>
+<div class="login-shell clean-login">
+  <section class="login-hero">
+    <span class="eyebrow">Barage Group</span>
+    <h1>Управление на машини, обекти и заявки.</h1>
+    <p>Достъп имат само профили, създадени от администратор. Системата е за работа с наличности, ремонт, премествания и одобрения.</p>
+  </section>
+  <section class="auth-card">
+    <div class="auth-head">
+      <span class="eyebrow">Достъп</span>
+      <h2>Вход</h2>
+      <p class="muted">Въведи служебния си имейл и парола.</p>
+    </div>
+    <form method="post" class="form-card compact">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Имейл<input type="email" name="email" required placeholder="name@baragegroup.com"></label>
+      <label>Парола<input type="password" name="password" required placeholder="••••••••"></label>
+      <div class="form-actions full">
+        <button type="submit">Вход</button>
+      </div>
+    </form>
+  </section>
+</div>
+{% endblock %}

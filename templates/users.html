@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="users-page">
+{% set default_role_meta = {'label': 'Непозната', 'chip': 'chip-neutral'} %}
+{% set default_location_meta = {'icon': '📍', 'label': 'Неизвестен', 'chip': 'chip-neutral'} %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Потребители</span>
+    <h1>Потребители и роли</h1>
+  </div>
+  <div class="detail-actions">
+    {% if can_create_user %}
+    <a href="{{ url_for('users_new') }}" class="btn-primary">Създай потребител</a>
+    {% endif %}
+    {% include '_dashboard_back_button.html' %}
+  </div>
+</div>
+
+<div class="summary-strip">
+  <div class="summary-pill users-search-pill">
+    <span>Търсене</span>
+    <input type="search" id="users-search" class="users-search" placeholder="Име, имейл, телефон, роля, обект..." autocomplete="off">
+  </div>
+</div>
+
+    <div class="table-wrap panel no-pad table-card users-table-wrap">
+      <table class="users-table" id="users-table">
+        <tr>
+          <th><button type="button" class="table-sort" data-sort-key="name">Потребител <span class="sort-arrow" aria-hidden="true"></span></button></th>
+          <th class="table-col-normal">Имейл</th>
+          <th class="table-col-normal">Телефон</th>
+          <th><button type="button" class="table-sort" data-sort-key="role">Роля <span class="sort-arrow" aria-hidden="true"></span></button></th>
+          <th><button type="button" class="table-sort" data-sort-key="location">Обект <span class="sort-arrow" aria-hidden="true"></span></button></th>
+          <th><button type="button" class="table-sort" data-sort-key="status">Статус <span class="sort-arrow" aria-hidden="true"></span></button></th>
+          <th></th>
+        </tr>
+        {% for user in users %}
+        <tr data-name="{{ user.full_name|lower }}" data-email="{{ user.email|lower }}" data-phone="{{ user.phone_number or '' }}" data-role="{{ role_meta.get(user.role, default_role_meta).label|lower }}" data-location="{% set user_locations_list = user_locations(user) %}{% if user_locations_list %}{{ user_locations_list[0].name|lower }}{% endif %}" data-status="{{ 'active' if user.is_active else 'inactive' }}">
+          <td>
+            <a class="user-name user-name-plain" href="{{ url_for('user_profile', user_id=user.id) }}">{{ user.full_name }}</a>
+          </td>
+          <td><a class="user-email" href="mailto:{{ user.email }}">{{ user.email }}</a></td>
+          <td>{{ user.phone_number or '-' }}</td>
+          {% set role_info = role_meta.get(user.role, default_role_meta) %}
+          <td><span class="chip {{ role_info.chip }}">{{ role_info.label }}</span></td>
+          <td>
+            {% set user_locations_list = user_locations(user) %}
+            {% if user_locations_list %}
+            <div class="chip-stack">
+              {% for location in user_locations_list %}
+              {% set location_info = location_meta.get(location.type, default_location_meta) %}
+              <a class="mini-chip chip-link" href="{{ url_for('location_detail', location_id=location.id) }}">{{ location_info.icon }} {{ location.name }}</a>
+              {% endfor %}
+            </div>
+            {% else %}
+            -
+            {% endif %}
+          </td>
+          <td><span class="status-dot {{ 'ok' if user.is_active else 'off' }}"></span>{{ 'Активен' if user.is_active else 'Изключен' }}</td>
+           <td class="actions-cell">
+            {% set permissions = user_permissions.get(user.id, {}) %}
+            {% if permissions.get('view') %}
+            <a class="btn-small btn-secondary icon-button" href="{{ url_for('user_profile', user_id=user.id) }}" title="Детайли">⋯</a>
+            {% else %}
+            <span class="chip chip-neutral">-</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty">Няма създадени потребители.</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% if pagination is defined and pagination.total %}
+    <div class="pagination-row">
+      <span class="muted">Показани {{ users|length }} от {{ pagination.total }} профила</span>
+      {% if pagination.pages > 1 %}
+      <nav class="pagination">
+        {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+          {% if page %}
+          <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('users_manage', role=filters.role, status=filters.status, sort=filters.sort, page=page) }}">{{ page }}</a>
+          {% else %}
+          <span>...</span>
+          {% endif %}
+        {% endfor %}
+      </nav>
+      {% endif %}
+    </div>
+    {% endif %}
+</div>
+<script>
+(() => {
+  const table = document.getElementById('users-table');
+  const search = document.getElementById('users-search');
+  if (!table) return;
+  const tbody = table.tBodies[0];
+  const headers = table.querySelectorAll('.table-sort');
+  const state = { key: 'name', dir: 'asc' };
+
+  const normalize = (value) => (value || '').toString().trim().toLowerCase();
+  const compare = (a, b) => {
+    const av = normalize(a);
+    const bv = normalize(b);
+    return av.localeCompare(bv, 'bg');
+  };
+
+  const updateArrows = () => {
+    headers.forEach((header) => {
+      const arrow = header.querySelector('.sort-arrow');
+      arrow.textContent = header.dataset.sortKey === state.key ? (state.dir === 'asc' ? '▲' : '▼') : '';
+    });
+  };
+
+  const sortableKeys = new Set(['name', 'role', 'location', 'status']);
+
+  const matchesSearch = (row, query) => {
+    if (!query) return true;
+    const haystack = [
+      row.dataset.name,
+      row.dataset.email,
+      row.dataset.phone,
+      row.dataset.role,
+      row.dataset.location,
+      row.dataset.status,
+    ].map(normalize).join(' ');
+    return haystack.includes(query);
+  };
+
+  const applySearchFilter = () => {
+    const query = normalize(search?.value);
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.dataset.name);
+    rows.forEach((row) => {
+      row.style.display = matchesSearch(row, query) ? '' : 'none';
+    });
+  };
+
+  const sortRows = (key) => {
+    if (!sortableKeys.has(key)) return;
+    if (state.key === key) {
+      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.key = key;
+      state.dir = 'asc';
+    }
+
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.dataset.name);
+    rows.sort((rowA, rowB) => {
+      const result = compare(rowA.dataset[key], rowB.dataset[key]);
+      return state.dir === 'asc' ? result : -result;
+    });
+    rows.forEach((row) => tbody.appendChild(row));
+    updateArrows();
+  };
+
+  headers.forEach((header) => {
+    header.addEventListener('click', () => sortRows(header.dataset.sortKey));
+  });
+
+  if (search) {
+    search.addEventListener('input', applySearchFilter);
+  }
+
+  applySearchFilter();
+  updateArrows();
+
+  // Three-dots buttons now navigate directly to user profile
+})();
+</script>
+{% endblock %}

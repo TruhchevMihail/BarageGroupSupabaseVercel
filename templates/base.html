@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{{ title or 'Barage Machinery' }}</title>
+  <script>
+    (function () {
+      const stored = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = stored || (prefersDark ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="layout">
+    {% if g.user %}
+    <aside class="sidebar">
+      <a class="brand-block" href="{{ url_for('dashboard') }}">
+        <div class="brand-mark">
+          <img src="{{ url_for('static', filename='barage_logo.jpg') }}" alt="Barage Group" class="brand-logo-img">
+        </div>
+        <div>
+          <div class="brand-title">Barage Group</div>
+          <div class="brand-tagline">Обекти, машини и движение</div>
+        </div>
+      </a>
+
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span>Табло</span></a>
+        <a href="{{ url_for('assets') }}" class="{% if request.endpoint in ['assets', 'asset_detail', 'asset_edit', 'asset_new'] %}active{% endif %}"><span>Машини</span></a>
+        <a href="{{ url_for('requests_list') }}" class="{% if request.endpoint == 'requests_list' %}active{% endif %}"><span>Заявки</span></a>
+        <a href="{{ url_for('locations_list') }}" class="{% if request.endpoint in ['locations_list', 'location_detail', 'location_new', 'location_edit'] %}active{% endif %}"><span>Обекти</span></a>
+        {% if can_view_users %}
+        <a href="{{ url_for('admin_panel') }}" class="{% if request.endpoint in ['users_manage', 'admin_panel'] %}active{% endif %}"><span>Потребители</span></a>
+        {% endif %}
+      </nav>
+
+      <div class="userbox">
+        <div class="user-meta">
+          <strong><a class="user-link" href="{{ url_for('profile') }}">{{ g.user.full_name }}</a></strong>
+          <span class="chip {{ role_meta[g.user.role].chip }}">{{ g.user.role|role_label }}</span>
+          <small>
+            {% if g.user.managed_locations %}
+            Обекти: {{ g.user.managed_locations|length }}
+            {% elif g.user.assigned_location %}
+            Обект: 1
+            {% else %}
+            Без назначен обект
+            {% endif %}
+          </small>
+        </div>
+        <div class="userbox-footer">
+          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Превключи тема">☾</button>
+          <div class="user-actions">
+            <a href="{{ url_for('profile') }}">Профил</a>
+            <form method="post" action="{{ url_for('logout') }}" class="logout-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="user-action-button">Изход</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </aside>
+    {% endif %}
+
+    <main class="content {% if not g.user %}content-full{% endif %}">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Сервизен запис</span>
+    <h1>{{ asset.inventory_number }} · {{ asset.name }}</h1>
+  </div>
+  <div class="detail-actions asset-header-actions">
+    <a class="btn-secondary" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Назад към актива</a>
+    {% if can_edit_service_record %}
+    <a class="btn-link" href="{{ url_for('asset_service_edit', asset_id=asset.id, record_id=record.id) }}">Редакция</a>
+    {% endif %}
+    {% if can_delete_service_record %}
+    <form method="post" action="{{ url_for('asset_service_delete', asset_id=asset.id, record_id=record.id) }}" onsubmit="return confirm('Да изтрия ли този сервизен запис?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-small danger">Изтрий</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<section class="panel asset-detail-panel asset-summary asset-main-card asset-detail-section asset-service-detail">
+  <div class="section-head"><h2>Основни данни</h2></div>
+  <div class="asset-main-fields-grid">
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Дата</div>
+      <div class="asset-detail-value">{{ record.service_date.strftime('%d.%m.%Y') if record.service_date else '-' }}</div>
+    </div>
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Действие</div>
+      <div class="asset-detail-value">{{ record.action_taken or '-' }}</div>
+    </div>
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Сервиз / изпълнител</div>
+      <div class="asset-detail-value">{{ record.service_provider or '-' }}</div>
+    </div>
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Цена</div>
+      <div class="asset-detail-value">{{ record.price | eur }}</div>
+    </div>
+
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Проблем</div>
+      <div class="asset-detail-value">{{ record.problem or '-' }}</div>
+    </div>
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Кой</div>
+      <div class="asset-detail-value">{% if record.created_by %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}-{% endif %}</div>
+    </div>
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Фактура</div>
+      <div class="asset-detail-value">
+        {% set invoice_path = service_invoice_path(record) %}
+        {% if invoice_path %}
+        <a href="{{ invoice_path }}" target="_blank" rel="noopener" class="service-invoice-thumb">
+          <img src="{{ invoice_path }}" alt="invoice image">
+        </a>
+        {% else %}
+        -
+        {% endif %}
+      </div>
+    </div>
+    <div class="asset-detail-field">
+      <div class="asset-detail-label">Забележки</div>
+      <div class="asset-detail-value">{{ strip_service_invoice_marker(record.notes) or '-' }}</div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Детайли за обект</span>
+    <h1>{{ location.name }}</h1>
+    {% set meta = location_meta.get(location.type, {'label': location.type, 'icon': '📍', 'chip': 'chip-neutral'}) %}
+  </div>
+  <div class="detail-actions">
+    {% if can_edit_location %}
+    <a class="btn-secondary" href="{{ url_for('location_edit', location_id=location.id) }}">Редактирай</a>
+    {% endif %}
+    {% if can_archive_location %}
+    <form method="post" action="{{ url_for('location_archive', location_id=location.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-secondary">Архивирай</button>
+    </form>
+    {% endif %}
+    {% if can_unarchive_location %}
+    <form method="post" action="{{ url_for('location_unarchive', location_id=location.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-secondary">Върни от архив</button>
+    </form>
+    {% endif %}
+    {% if can_delete_location %}
+    <form method="post" action="{{ url_for('location_delete', location_id=location.id) }}" onsubmit="return confirm('Да изтрия ли този обект? Това действие е необратимо.');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-secondary danger">Изтрий</button>
+    </form>
+    {% endif %}
+    <a class="btn-link" href="{{ url_for('locations_list') }}">Назад към обектите</a>
+  </div>
+</div>
+
+<div class="grid-2">
+  <section class="panel">
+    <div class="section-head">
+      <h2>Основна информация</h2>
+    </div>
+    <dl class="details-list">
+      <div><dt>Име</dt><dd>{{ location.name }}</dd></div>
+      <div><dt>Тип</dt><dd>{{ meta.label }}</dd></div>
+      {% if location.type not in location_minimal_types %}
+      <div><dt>Град</dt><dd>{{ location.city or '-' }}</dd></div>
+      <div><dt>Адрес</dt><dd>{{ location.address or '-' }}</dd></div>
+      <div><dt>GPS</dt><dd>{% if location.gps_location %}<a class="location-gps-link" href="{{ location.gps_location if location.gps_location.startswith('http') else 'https://www.google.com/maps?q=' ~ location.gps_location }}" target="_blank" rel="noopener">{{ location.gps_location }}</a>{% else %}-{% endif %}</dd></div>
+      <div><dt>Куриер</dt><dd>{{ location.courier_locations or '-' }}</dd></div>
+      {% if location.type not in location_no_lead_types %}
+      <div><dt>Ръководител</dt><dd>{% if location.technical_lead %}<a class="user-link" href="{{ url_for('user_profile', user_id=location.technical_lead.id) }}">{{ location.technical_lead.full_name }}</a>{% else %}Без ръководител{% endif %}</dd></div>
+      {% endif %}
+      {% endif %}
+      <div><dt>Статус</dt><dd>{{ 'Активен' if location.is_active else 'Неактивен' }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <h2>Екип</h2>
+      <span class="chip chip-neutral">{{ team_count }} човека</span>
+    </div>
+    {% if location.type in location_minimal_types %}
+    <p class="muted">Този тип обект не използва оперативен екип.</p>
+    {% elif team_users %}
+    <div class="chip-stack">
+      {% for tech in team_users %}
+      <a class="mini-chip chip-link" href="{{ url_for('user_profile', user_id=tech.id) }}">{{ tech.full_name }} · {{ tech.role|role_label }}</a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">Няма добавен екип.</p>
+    {% endif %}
+
+    <div class="section-head spacer">
+      <h2>Машини на обекта</h2>
+      <span class="chip chip-neutral">{{ pagination.total }} машини</span>
+    </div>
+    {% if assets %}
+    <div class="stack-list">
+      {% for asset in assets %}
+      {% set display_status = asset_display_status(asset) %}
+      {% set display_status_meta = status_meta.get(display_status, {'chip': 'chip-neutral'}) %}
+      {% set asset_status_class = 'asset-status-warehouse' if display_status == 'В склад' else 'asset-status-site' if display_status == 'На обект' else 'asset-status-service' if display_status == 'В сервиз' else 'asset-status-scrap' if display_status == 'Брак' else 'asset-status-neutral' %}
+      <a class="list-card asset-status-card {{ asset_status_class }}" href="{{ url_for('asset_detail', asset_id=asset.id) }}">
+        <div>
+          <strong>{{ asset.name }}</strong><br>
+          <span>{{ asset.inventory_number }} · {{ asset.brand }} / {{ asset.model }}</span>
+        </div>
+        <span class="chip {{ display_status_meta.chip }}">{{ display_status }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="pagination-row">
+      <span class="muted">Показани {{ assets|length }} от {{ pagination.total }} машини</span>
+      <nav class="pagination">
+        {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+          {% if page %}
+          <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('location_detail', location_id=location.id, page=page) }}">{{ page }}</a>
+          {% else %}
+          <span>...</span>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="muted">Няма машини, свързани с този обект.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

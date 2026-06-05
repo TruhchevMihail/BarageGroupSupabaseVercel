@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Профил</span>
+    <h1>Редакция на профил</h1>
+  </div>
+  <a href="{{ url_for('profile') }}" class="btn-secondary">Назад</a>
+</div>
+
+<form method="post" class="panel form-sheet user-edit-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="rule-box" style="margin-top:0; margin-bottom:22px;">
+    <strong>Редакция на профил</strong>
+  </div>
+
+  <div class="uef-grid">
+    <div class="uef-left">
+      <div class="form-card">
+        <label>Име и фамилия
+          <input name="full_name" required minlength="3" maxlength="120" value="{{ user.full_name }}" placeholder="Име и фамилия">
+        </label>
+
+        <label>Имейл
+          <input type="email" name="email" required maxlength="120" value="{{ user.email }}" placeholder="name@baragegroup.com">
+        </label>
+
+        <label>Телефон
+          <input name="phone_number" maxlength="20" pattern="[\d+\-\s()]{6,20}" inputmode="tel" value="{{ user.phone_number or '' }}" placeholder="0888...">
+        </label>
+      </div>
+    </div>
+
+    <div class="uef-right">
+      {% if can_change_user_assignments %}
+      <div class="uef-section" id="assigned-locations-section">
+        <div class="uef-section-head">
+          <strong>Назначени обекти</strong>
+        </div>
+
+        {% set assigned_locations = user_locations(user) if user else [] %}
+        {% set assigned_location_ids = assigned_locations | map(attribute='id') | list %}
+
+        <div class="multi-select-shell" data-multi-select="assigned-locations">
+          <div class="multi-select-row">
+            <select id="assigned-location-select">
+              <option value="">Избери обект</option>
+              {% for location in locations %}
+              {% if location.id not in assigned_location_ids %}
+              <option value="{{ location.id }}">{{ location_meta[location.type].icon }} {{ location.name }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+            <button type="button" class="btn-secondary" id="assigned-location-add">Добави</button>
+          </div>
+
+          <div class="chip-list user-location-chips" id="assigned-location-chips">
+            {% for location in assigned_locations %}
+            <span class="chip user-location-chip" data-location-id="{{ location.id }}">
+              <a class="chip-link" href="{{ url_for('location_detail', location_id=location.id) }}">{{ location.name }}</a>
+              <button type="button" class="chip-remove" aria-label="Премахни обект" data-remove-location="{{ location.id }}">×</button>
+            </span>
+            {% endfor %}
+          </div>
+
+          {% for location in assigned_locations %}
+          <input type="hidden" name="team_location_ids" value="{{ location.id }}" data-hidden-location-id="{{ location.id }}">
+          {% endfor %}
+
+          <input type="hidden" name="assigned_location_id" id="primary-assigned-location-id" value="{{ assigned_location_ids[0] if assigned_location_ids else '' }}">
+        </div>
+      </div>
+      {% else %}
+      <div class="uef-section">
+        <div class="uef-section-head">
+          <strong>Назначения</strong>
+        </div>
+        <p class="form-hint">Обекти и екипи се управляват от администраторските екрани.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="form-actions" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line-soft);">
+    <button type="submit">Запази</button>
+    <a href="{{ url_for('profile') }}" class="btn-secondary">Отказ</a>
+  </div>
+</form>
+
+{% if can_change_user_assignments %}
+<script>
+(function () {
+  const section = document.getElementById('assigned-locations-section');
+  if (!section) return;
+
+  const select = document.getElementById('assigned-location-select');
+  const addButton = document.getElementById('assigned-location-add');
+  const chips = document.getElementById('assigned-location-chips');
+
+  function selectedIds() {
+    return Array.from(section.querySelectorAll('input[name="team_location_ids"]')).map((input) => String(input.value));
+  }
+
+  function refreshOptions() {
+    const ids = new Set(selectedIds());
+    Array.from(select.options).forEach((opt) => {
+      if (!opt.value) return;
+      opt.hidden = ids.has(String(opt.value));
+    });
+    if (ids.has(String(select.value))) select.value = '';
+  }
+
+  function addLocation(id, text) {
+    if (!id) return;
+    if (selectedIds().includes(String(id))) return;
+
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'team_location_ids';
+    hidden.value = id;
+    hidden.dataset.hiddenLocationId = id;
+    section.querySelector('.multi-select-shell').appendChild(hidden);
+    document.getElementById('primary-assigned-location-id').value = selectedIds()[0] || id;
+
+    const chip = document.createElement('span');
+    chip.className = 'chip user-location-chip';
+    chip.dataset.locationId = id;
+    chip.innerHTML = `
+      <a class="chip-link" href="/locations/${id}">${text}</a>
+      <button type="button" class="chip-remove" aria-label="Премахни обект" data-remove-location="${id}">×</button>
+    `;
+    chips.appendChild(chip);
+    refreshOptions();
+  }
+
+  addButton.addEventListener('click', () => {
+    const opt = select.options[select.selectedIndex];
+    if (!select.value) return;
+    addLocation(select.value, opt ? opt.text : select.value);
+    select.value = '';
+  });
+
+  chips.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-remove-location]');
+    if (!btn) return;
+    const id = String(btn.dataset.removeLocation);
+    const chip = chips.querySelector(`[data-location-id="${CSS.escape(id)}"]`);
+    const hidden = section.querySelector(`input[data-hidden-location-id="${CSS.escape(id)}"]`);
+    if (chip) chip.remove();
+    if (hidden) hidden.remove();
+    document.getElementById('primary-assigned-location-id').value = selectedIds()[0] || '';
+    refreshOptions();
+  });
+
+  refreshOptions();
+})();
+</script>
+{% endif %}
+
+{% endblock %}

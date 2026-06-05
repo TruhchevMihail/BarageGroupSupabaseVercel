@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Обекти</span>
+    <h1>Работни обекти и локации</h1>
+  </div>
+  <div class="detail-actions">
+    {% include '_dashboard_back_button.html' %}
+    {% if can_create_location %}
+    <a href="{{ url_for('location_new') }}" class="btn-primary">Добави обект</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="summary-strip">
+  <a class="summary-pill summary-pill-total" href="{{ url_for('locations_list') }}"><span>Всички</span><strong>{{ location_summary.total }}</strong></a>
+  <a class="summary-pill summary-pill-site" href="{{ url_for('locations_list', type='site') }}"><span>Обекти</span><strong>{{ location_summary.site }}</strong></a>
+  <a class="summary-pill summary-pill-warehouse" href="{{ url_for('locations_list', type='warehouse') }}"><span>Складове</span><strong>{{ location_summary.warehouse }}</strong></a>
+  <a class="summary-pill summary-pill-service" href="{{ url_for('locations_list', type='service') }}"><span>Сервизи</span><strong>{{ location_summary.service }}</strong></a>
+  <a class="summary-pill summary-pill-scrap" href="{{ url_for('locations_list', type='scrap') }}"><span>Брак</span><strong>{{ location_summary.scrap }}</strong></a>
+</div>
+
+<div class="summary-strip">
+  <div class="summary-pill users-search-pill locations-search-pill">
+    <span>Търсене</span>
+    <form method="get" class="locations-search-form" data-list-search-form>
+      <input type="search" name="q" id="locations-search" class="users-search" placeholder="Търсене по всички критерии" value="{{ filters.q }}" autocomplete="off" data-list-search>
+      <input type="hidden" name="type" value="{{ filters.type }}">
+      <input type="hidden" name="sort" value="{{ filters.sort }}">
+      {% if filters.q %}
+      <a class="btn-link secondary" href="{{ url_for('locations_list') }}">Изчисти</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<div class="locations-list locations-list-wide" data-list-search-scope>
+    {% for loc in locations %}
+    {% set meta = location_meta.get(loc.type, {'label': loc.type, 'icon': '📍', 'chip': 'chip-neutral'}) %}
+    <div class="list-card location-row-card location-type-{{ loc.type }} {% if loc.type == 'service' %}service-list-card{% endif %}" data-list-search-item data-search-text="{{ loc.name }} {{ loc.type }} {{ loc.city or '' }} {{ loc.address or '' }} {{ loc.gps_location or '' }} {{ loc.courier_locations or '' }} {{ loc.technical_lead.full_name if loc.technical_lead else '' }} {% for tech in loc.technicians %}{{ tech.full_name }} {% endfor %}">
+      <div class="location-card-main">
+        <div class="location-row-title">
+          <strong>{{ loc.name }}</strong>
+          <span class="chip {{ meta.chip }}">{{ meta.icon }}</span>
+          {% if not loc.is_active %}
+          <span class="chip chip-neutral">Архивиран</span>
+          {% endif %}
+        </div>
+        {% if loc.type in location_minimal_types %}
+        <div class="location-card-main-copy">
+          <span>Статус: {{ 'Активен' if loc.is_active else 'Архивиран' }}</span>
+          <span>Машини: {{ asset_counts.get(loc.id, 0) }}</span>
+        </div>
+        {% else %}
+        <div class="location-card-main-copy">
+          <span>Адрес: {{ loc.city or 'Без град' }}{% if loc.address %} · {{ loc.address }}{% endif %}</span>
+          {% if loc.gps_location %}
+          <a class="location-gps-link" href="{{ loc.gps_location if loc.gps_location.startswith('http') else 'https://www.google.com/maps?q=' ~ loc.gps_location }}" target="_blank" rel="noopener">GPS: {{ loc.gps_location }}</a>
+          {% endif %}
+          {% if loc.courier_locations and loc.courier_locations != '-' %}
+          <div class="location-courier-info">Куриерска информация: {{ loc.courier_locations }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% if loc.type not in location_minimal_types %}
+      <div class="location-card-meta">
+        {% if loc.type not in location_no_lead_types %}
+        <div class="location-manager">
+          <span>Технически ръководител:</span>
+          <strong>{{ loc.technical_lead.full_name if loc.technical_lead else '-' }}</strong>
+        </div>
+        {% endif %}
+        <div class="location-meta-row">
+          <span>Статус: {{ 'Активен' if loc.is_active else 'Архивиран' }}</span>
+          <span>Екип: {{ location_team_counts.get(loc.id, 0) }} души</span>
+          <span>Машини: {{ asset_counts.get(loc.id, 0) }}</span>
+        </div>
+      </div>
+      {% endif %}
+      <div class="location-card-actions">
+        <a class="btn-small btn-secondary" href="{{ url_for('location_detail', location_id=loc.id) }}">Детайли</a>
+        {% if can_edit_location %}
+        <a class="btn-small btn-secondary" href="{{ url_for('location_edit', location_id=loc.id) }}">Редакция</a>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+  <div class="empty-state panel">
+    <h2>Няма създадени обекти</h2>
+    {% if can_create_location %}<a href="{{ url_for('location_new') }}" class="btn-primary">Добави обект</a>{% endif %}
+  </div>
+  {% endfor %}
+  </div>
+
+{% if pagination.total %}
+<div class="pagination-row">
+  <span class="muted">Показани {{ locations|length }} от {{ pagination.total }} обекта</span>
+  {% if pagination.pages > 1 %}
+  <nav class="pagination">
+    {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+      {% if page %}
+      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('locations_list', q=filters.q, type=filters.type, sort=filters.sort, page=page) }}">{{ page }}</a>
+      {% else %}
+      <span>...</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

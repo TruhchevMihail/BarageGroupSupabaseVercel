@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="assets-page">
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Машини</span>
+    <h1>Машини и инструменти</h1>
+  </div>
+  <div class="detail-actions">
+    {% include '_dashboard_back_button.html' %}
+    {% if can_create_asset %}
+    <a href="{{ url_for('asset_new') }}" class="btn-primary">Добави актив</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="summary-strip">
+  <a class="summary-pill summary-pill-total" href="{{ url_for('assets') }}"><span>Всички</span><strong>{{ asset_summary.total }}</strong></a>
+  <a class="summary-pill summary-pill-warehouse" href="{{ url_for('assets', status='В склад') }}"><span>В склад</span><strong>{{ asset_summary.warehouse }}</strong></a>
+  <a class="summary-pill summary-pill-site" href="{{ url_for('assets', status='На обект') }}"><span>На обект</span><strong>{{ asset_summary.site }}</strong></a>
+  <a class="summary-pill summary-pill-service" href="{{ url_for('assets', status='В сервиз') }}"><span>В сервиз</span><strong>{{ asset_summary.service }}</strong></a>
+  <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}"><span>Брак</span><strong>{{ asset_summary.scrap }}</strong></a>
+</div>
+
+{% set has_active_filters = (
+  filters.q
+  or filters.location_id
+  or filters.status
+  or filters.condition
+  or filters.responsible_user_id
+  or filters.sort != 'inventory'
+  or request.args.get('category', '').strip()
+  or request.args.get('asset_type', '').strip()
+  or request.args.get('page', '').strip()
+) %}
+<form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form>
+  <input type="text" name="q" class="assets-search-input" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search>
+  <select name="location">
+    <option value="">Всички локации</option>
+    {% for location in locations %}
+    <option value="{{ location.id }}" {% if filters.location_id == location.id %}selected{% endif %}>{{ location_meta[location.type].icon }} {{ location.name }}</option>
+    {% endfor %}
+  </select>
+  {% if filters.status %}
+  <input type="hidden" name="status" value="{{ filters.status }}">
+  {% endif %}
+  <div class="filter-actions">
+    {% if has_active_filters %}
+    <a href="{{ url_for('assets') }}" class="btn-secondary clear-filters-button assets-clear-filter">Изчисти</a>
+    {% endif %}
+  </div>
+</form>
+
+<div class="table-wrap panel no-pad table-card assets-table-card assets-page-table-card">
+  <div class="assets-table-scroll">
+    <table class="assets-table" id="assets-table" data-list-search-scope>
+    <colgroup>
+      <col class="asset-col-inventory">
+      <col class="asset-col-type">
+      <col class="asset-col-alias">
+      <col class="asset-col-brand">
+      <col class="asset-col-model">
+      <col class="asset-col-serial">
+      <col class="asset-col-location">
+      <col class="asset-col-actions">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="asset-inventory-cell"><button type="button" class="table-sort" data-sort-key="inventory">Инвентарен № <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-type-cell"><button type="button" class="table-sort" data-sort-key="type">Тип<span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-alias-cell"><button type="button" class="table-sort" data-sort-key="alias">Още познат като <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-brand-cell"><button type="button" class="table-sort" data-sort-key="brand">Марка <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-model-cell"><button type="button" class="table-sort" data-sort-key="model">Модел <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-serial-cell"><button type="button" class="table-sort" data-sort-key="serial">Сериен № <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-location-cell"><button type="button" class="table-sort" data-sort-key="location">Обект <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        <th class="asset-actions-cell"></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for asset in items %}
+    {% set loc_meta = location_meta.get(asset.current_location.type, {'chip': 'chip-neutral', 'icon': '📍', 'label': asset.current_location.type}) if asset.current_location else None %}
+    <tr data-list-search-item
+        data-name="{{ asset.name|lower }}"
+        data-inventory="{{ asset.inventory_number|lower }}"
+        data-type="{{ asset.name|lower }}"
+        data-brand="{{ asset.brand|lower }}"
+        data-model="{{ asset.model|lower }}"
+        data-serial="{{ (asset.serial_number or '')|lower }}"
+        data-alias="{{ (asset.alias_name or '')|lower }}"
+        data-location-id="{{ asset.current_location.id if asset.current_location else '' }}"
+        data-location="{{ (asset.current_location.name if asset.current_location else '')|lower }}"
+        data-status="{{ 'В склад' if asset.current_location and asset.current_location.type == 'warehouse' else 'На обект' if asset.current_location and asset.current_location.type == 'site' else 'В сервиз' if asset.current_location and asset.current_location.type == 'service' else 'Брак' if asset.current_location and asset.current_location.type == 'scrap' else '' }}"
+        data-responsible-user-id="{{ asset.responsible_user.id if asset.responsible_user else '' }}"
+        data-search-text="{{ asset.inventory_number }} {{ asset.name }} {{ asset.alias_name or '' }} {{ asset.brand }} {{ asset.model }} {{ asset.serial_number or '' }} {{ asset.invoice_number or '' }} {{ asset.supplier_company or asset.company_name or '' }} {{ asset.notes or '' }}">
+      <td class="asset-inventory-cell"><a class="asset-row-link nowrap" href="{{ url_for('asset_detail', asset_id=asset.id) }}"><strong>{{ asset.inventory_number }}</strong></a></td>
+      <td class="asset-type-cell" title="{{ asset.name }}"><span class="asset-type-text">{{ asset.name }}</span></td>
+      <td class="asset-alias-cell" title="{{ asset.alias_name or '' }}"><span class="asset-cell-text">{{ asset.alias_name or '-' }}</span></td>
+      <td class="asset-brand-cell" title="{{ asset.brand }}"><span class="asset-cell-text">{{ asset.brand }}</span></td>
+      <td class="asset-model-cell" title="{{ asset.model }}"><span class="asset-cell-text">{{ asset.model }}</span></td>
+      <td class="asset-serial-cell nowrap">{{ asset.serial_number or '-' }}</td>
+      <td class="asset-location-cell">
+        {% if asset.current_location %}
+        <a class="chip chip-link asset-location-chip {{ location_meta[asset.current_location.type].chip }}" title="{{ asset.current_location.name }}" href="{{ url_for('location_detail', location_id=asset.current_location.id) }}">
+          <span class="asset-location-chip-text">{{ location_meta[asset.current_location.type].icon }} {{ asset.current_location.name }}</span>
+        </a>
+        {% else %}
+        -
+        {% endif %}
+      </td>
+      <td class="asset-actions-cell actions-cell">
+        <div class="inline-actions">
+          <a class="btn-secondary btn-small icon-button asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}" aria-label="Детайли" title="Детайли">⋯</a>
+        </div>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" class="empty">Няма намерени активи.</td></tr>
+    {% endfor %}
+    </tbody>
+    </table>
+  </div>
+</div>
+
+{% if pagination.total %}
+<div class="pagination-row">
+  <span class="muted">Показани {{ items|length }} от {{ pagination.total }} актива</span>
+  {% if pagination.pages > 1 %}
+  <nav class="pagination">
+    {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+      {% if page %}
+      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ page_url(page) }}">{{ page }}</a>
+      {% else %}
+      <span>...</span>
+      {% endif %}
+    {% endfor %}
+  </nav>
+  {% endif %}
+</div>
+{% endif %}
+
+<script>
+(() => {
+  const table = document.getElementById('assets-table');
+  if (!table) return;
+  const form = document.querySelector('[data-assets-filter-form]');
+  const tbody = table.tBodies[0];
+  const headers = table.querySelectorAll('.table-sort');
+  const searchInput = form ? form.querySelector('[data-list-search]') : null;
+  const locationSelect = form ? form.querySelector('select[name="location"]') : null;
+  const state = { key: 'inventory', dir: 'asc' };
+  let submitTimer = null;
+
+  const normalize = (value) => (value || '').toString().trim().toLowerCase();
+  const compare = (a, b) => normalize(a).localeCompare(normalize(b), 'bg');
+
+  const updateArrows = () => {
+    headers.forEach((header) => {
+      const arrow = header.querySelector('.sort-arrow');
+      arrow.textContent = header.dataset.sortKey === state.key ? (state.dir === 'asc' ? '▲' : '▼') : '';
+    });
+  };
+
+  const scheduleSubmit = () => {
+    if (!form) return;
+    window.clearTimeout(submitTimer);
+    submitTimer = window.setTimeout(() => form.submit(), 250);
+  };
+
+  const sortRows = (key) => {
+    if (state.key === key) {
+      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.key = key;
+      state.dir = 'asc';
+    }
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.dataset.name && !row.hidden);
+    rows.sort((rowA, rowB) => {
+      const result = compare(rowA.dataset[key], rowB.dataset[key]);
+      return state.dir === 'asc' ? result : -result;
+    });
+    rows.forEach((row) => tbody.appendChild(row));
+    updateArrows();
+  };
+
+  headers.forEach((header) => header.addEventListener('click', () => sortRows(header.dataset.sortKey)));
+
+  if (searchInput) searchInput.addEventListener('input', scheduleSubmit);
+  if (locationSelect) locationSelect.addEventListener('change', () => form.submit());
+
+  updateArrows();
+})();
+</script>
+</div>
+{% endblock %}

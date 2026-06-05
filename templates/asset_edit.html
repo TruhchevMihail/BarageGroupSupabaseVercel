@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Машини и инструменти</span>
+    <h1>{{ asset.inventory_number }}</h1>
+    <p class="muted">
+      {% if notes_images_only %}
+      Ограничена редакция: снимки и забележки за машини в назначените ви обекти.
+      {% elif limited %}
+      Ограничена редакция за Проектов ръководител.
+      {% else %}
+      Пълна редакция за Администратор.
+      {% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="form-card wide panel form-sheet asset-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="asset-form-grid">
+    {% if not notes_images_only %}
+    <label><span class="label-inline">Инвентарен № <span class="required-mark">*</span></span><input name="inventory_number" value="{{ asset.inventory_number }}" required></label>
+    <label><span class="label-inline">Тип / Име <span class="required-mark">*</span></span><input name="name" value="{{ asset.name }}" required></label>
+    <label>Още познат като<input name="alias_name" value="{{ asset.alias_name or '' }}"></label>
+    <label>Марка<input name="brand" value="{{ asset.brand }}"></label>
+    <label>Модел<input name="model" value="{{ asset.model }}"></label>
+    <label>Сериен №<input name="serial_number" value="{{ asset.serial_number or '' }}"></label>
+
+    <label>Дата на закупуване<input type="date" name="purchase_date" value="{{ asset.purchase_date.isoformat() if asset.purchase_date else '' }}"></label>
+    <label>Фактура №<input name="invoice_number" value="{{ asset.invoice_number or '' }}"></label>
+    <label>Доставчик / фирма<input name="supplier_company" value="{{ asset.supplier_company or asset.company_name or '' }}"></label>
+    <label>Гаранция<input name="warranty" value="{{ asset.warranty or '' }}"></label>
+    {% else %}
+    <div class="asset-edit-summary full">
+      <div class="asset-detail-field">
+        <div class="asset-detail-label">Инвентарен №</div>
+        <div class="asset-detail-value">{{ asset.inventory_number }}</div>
+      </div>
+      <div class="asset-detail-field">
+        <div class="asset-detail-label">Тип / Име</div>
+        <div class="asset-detail-value">{{ asset.name }}</div>
+      </div>
+      <div class="asset-detail-field">
+        <div class="asset-detail-label">Обект</div>
+        <div class="asset-detail-value">
+          {% if asset.current_location %}
+          <span class="chip {{ location_meta[asset.current_location.type].chip }}">{{ location_meta[asset.current_location.type].icon }} {{ asset.current_location.name }}</span>
+          {% else %}
+          <span class="chip chip-neutral">Без локация</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if can_upload_asset_image %}
+    <label class="full">Снимки
+      <input type="file" name="images" accept="image/*" multiple data-asset-images {% if asset.images|length >= 3 %}disabled{% endif %}>
+      <div class="asset-image-preview" data-image-preview>
+        {% for image in asset.images %}
+        <figure class="asset-image-thumb">
+          <img src="{{ image.file_path }}" alt="asset image">
+          <label class="asset-image-remove"><input type="checkbox" name="remove_image_ids" value="{{ image.id }}"> Премахни</label>
+        </figure>
+        {% endfor %}
+      </div>
+      <small class="form-hint">Максимум 3 снимки.</small>
+    </label>
+    {% endif %}
+
+    {% if can_change_asset_location %}
+    <label class="full">Текуща локация
+      <select name="current_location_id">
+        <option value="" {% if not asset.current_location_id %}selected{% endif %}>Без избрана локация</option>
+        {% for location in locations %}
+        <option value="{{ location.id }}" {% if asset.current_location_id == location.id %}selected{% endif %}>{{ location_meta[location.type].icon }} {{ location.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    {% endif %}
+
+    <label class="full">Забележки<textarea name="notes">{{ asset.notes or '' }}</textarea></label>
+  </div>
+
+  <div class="form-actions full">
+    <button type="submit">Запази</button>
+    <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Отказ</a>
+  </div>
+</form>
+{% endblock %}

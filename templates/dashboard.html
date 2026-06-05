@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Табло</span>
+    <h1>Общ преглед</h1>
+  </div>
+  <div class="detail-actions">
+    {% if g.user.role == 'superuser' %}
+    <a
+      class="btn-primary pending-requests-button{% if stats.pending_requests %} pending-requests-button--active{% endif %}"
+      href="{{ url_for('requests_list', status='pending') }}"
+      title="{% if stats.pending_requests %}Има чакащи заявки за преглед{% else %}Няма чакащи заявки{% endif %}"
+      aria-label="{% if stats.pending_requests %}Чакащи заявки, има нови за преглед{% else %}Чакащи заявки, няма нови за преглед{% endif %}"
+    >
+      <span>Чакащи заявки</span>
+      {% if stats.pending_requests %}
+      <span class="pending-requests-badge">{{ stats.pending_requests }}</span>
+      {% endif %}
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<section class="panel dashboard-section dashboard-search-panel">
+  <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get">
+    <input type="search" name="q" placeholder="Бързо търсене по инвентарен №, име, марка, модел или сериен №" required>
+    <button type="submit" disabled>Търси</button>
+  </form>
+</section>
+
+<script>
+(() => {
+  const form = document.querySelector('.dashboard-search');
+  if (!form) return;
+  const input = form.querySelector('input[name="q"]');
+  const button = form.querySelector('button[type="submit"]');
+  const sync = () => {
+    button.disabled = !input.value.trim();
+  };
+  input.addEventListener('input', sync);
+  sync();
+})();
+</script>
+
+<section class="panel dashboard-section">
+  <div class="section-head">
+    <h2>Статус на машините</h2>
+  </div>
+  <div class="summary-strip dashboard-summary-strip">
+    <a class="summary-pill summary-pill-total" href="{{ url_for('assets') }}"><span>Общо</span><strong>{{ stats.assets_total }}</strong></a>
+    <a class="summary-pill summary-pill-warehouse" href="{{ url_for('assets', status='В склад') }}"><span>В склад</span><strong>{{ stats.warehouse_total }}</strong></a>
+    <a class="summary-pill summary-pill-site" href="{{ url_for('assets', status='На обект') }}"><span>На обект</span><strong>{{ stats.site_total }}</strong></a>
+    <a class="summary-pill summary-pill-service" href="{{ url_for('assets', status='В сервиз') }}"><span>В сервиз</span><strong>{{ stats.service_total }}</strong></a>
+    <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}"><span>Брак</span><strong>{{ stats.get('scrap_total', 0) }}</strong></a>
+  </div>
+</section>
+
+{% if g.user.role == 'superuser' %}
+{% endif %}
+
+{% if not location_counts and stats.assets_total == 0 %}
+<div class="empty-state panel">
+  <h2>Системата е празна</h2>
+</div>
+{% endif %}
+
+<section class="panel dashboard-section">
+  <div class="section-head">
+    <h2>В сервиз</h2>
+    <a class="section-action-chip" href="{{ url_for('assets', status='В сервиз') }}">Покажи всички</a>
+  </div>
+  {% if service_assets %}
+  {% set sorted_service_assets = service_assets|sort(attribute='created_at') %}
+  <div class="service-assets-grid">
+    {% for asset in sorted_service_assets %}
+    {% if loop.index <= 12 %}
+    <a class="mini-asset service-asset-card" href="{{ url_for('asset_detail', asset_id=asset.id) }}">
+      <strong>{{ asset.inventory_number }}</strong>
+      <span>{{ asset.name }}</span>
+      <small>{{ asset.brand }} {{ asset.model }}</small>
+    </a>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">Няма активни машини в сервиз.</p>
+  {% endif %}
+</section>
+
+<section class="panel dashboard-section">
+  <div class="section-head">
+    <h2>Последно добавени машини</h2>
+    <a class="section-action-chip" href="{{ url_for('assets', sort='newest') }}">Покажи всички</a>
+  </div>
+  <div class="compact-grid">
+    {% for asset in recent_assets %}
+    <a class="mini-asset" href="{{ url_for('asset_detail', asset_id=asset.id) }}">
+      <strong>{{ asset.inventory_number }}</strong>
+      <span>{{ asset.name }}</span>
+      <small>{% if asset.current_location %}{{ asset.current_location.name }}{% else %}Без локация{% endif %}</small>
+    </a>
+    {% else %}
+    <p class="muted">Все още няма добавени машини.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<div class="dashboard-two-column dashboard-section">
+  <section class="panel dashboard-card">
+    <div class="section-head">
+      <h2>Последни заявки</h2>
+      <a class="section-action-chip" href="{{ url_for('requests_list') }}">Покажи всички</a>
+    </div>
+    <div class="stack-list">
+      {% for req in pending_requests[:3] %}
+      <a class="list-card" href="{{ url_for('requests_list') }}">
+        <div><strong>{{ req.asset.name }}</strong><span>{{ req.from_location.name }} → {{ req.to_location.name }}</span></div>
+        <span class="chip {{ request_status_meta[req.status].chip }}">{{ request_status_meta[req.status].label }}</span>
+      </a>
+      {% else %}
+      <p class="muted">Няма чакащи заявки.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel dashboard-card">
+    <div class="section-head">
+      <h2>Последни действия</h2>
+    </div>
+    <div class="stack-list">
+      {% for row in recent_history[:3] %}
+      <a class="list-card" href="{{ url_for('asset_detail', asset_id=row.asset.id) }}">
+        <div><strong>{{ row.asset.inventory_number }}</strong><span>{{ row.details }}</span></div>
+        <small>{{ row.created_at|dt }}</small>
+      </a>
+      {% else %}
+      <p class="muted">Няма последни действия.</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

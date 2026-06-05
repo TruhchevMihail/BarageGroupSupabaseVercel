@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="panel">
+  <div class="page-head">
+    <span class="eyebrow">Грешка {{ error_code }}</span>
+    <h1>{{ title }}</h1>
+    <p class="muted">{{ message }}</p>
+  </div>
+  <div class="detail-actions">
+    {% if g.user %}
+    <a class="btn-secondary" href="{{ url_for('dashboard') }}">Към таблото</a>
+    {% else %}
+    <a class="btn-secondary" href="{{ url_for('login') }}">Към вход</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

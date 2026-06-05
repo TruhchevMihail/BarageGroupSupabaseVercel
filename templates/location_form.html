@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">{{ 'Редакция' if location else 'Нов обект' }}</span>
+    <h1>{{ 'Редакция на обект' if location else 'Добавяне на обект' }}</h1>
+  </div>
+  <a href="{{ url_for('locations_list') }}" class="btn-secondary">Назад</a>
+</div>
+
+<form method="post" class="form-card wide panel form-sheet" data-location-form>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% set is_minimal_location = location and location.type in location_minimal_types or not location and false %}
+  <label>Име на обекта / локацията
+    <input name="name" required placeholder="напр. Обект Център" value="{{ location.name if location else '' }}">
+  </label>
+  <label>Тип
+    <select name="type" required data-location-type>
+      <option value="site" {% if location and location.type == 'site' %}selected{% endif %}>Обект</option>
+      <option value="warehouse" {% if location and location.type == 'warehouse' %}selected{% endif %}>Склад</option>
+      <option value="service" {% if location and location.type == 'service' %}selected{% endif %}>Сервиз</option>
+      <option value="scrap" {% if location and location.type == 'scrap' %}selected{% endif %}>Брак</option>
+    </select>
+  </label>
+  <label data-location-field="city">Град
+    <input name="city" placeholder="Град" value="{{ location.city if location and location.city else '' }}">
+  </label>
+  <label data-location-field="address">Адрес
+    <input name="address" placeholder="Адрес" value="{{ location.address if location and location.address else '' }}">
+  </label>
+  <label data-location-field="gps_location">GPS локация
+    <input name="gps_location" placeholder="42.6977, 23.3219" value="{{ location.gps_location if location and location.gps_location else '' }}">
+  </label>
+  <label data-location-field="courier_locations">Куриерска информация
+    <input name="courier_locations" placeholder="офис, инструкции, лице за контакт" value="{{ location.courier_locations if location and location.courier_locations else '' }}">
+  </label>
+  <label data-location-field="technical_lead_id">Отговорник / ръководител
+    <select name="technical_lead_id" autocomplete="off">
+      <option value="" {% if not location or not location.technical_lead_id %}selected{% endif %}>Без ръководител</option>
+      {% for user in lead_users %}
+      <option value="{{ user.id }}" {% if location and location.technical_lead_id == user.id %}selected{% endif %}>{{ user.full_name }} — {{ user.role|role_label }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <div class="full" data-location-team-section>
+    <div class="section-label">
+      <span>Оперативен екип към обекта</span>
+    </div>
+    <div class="team-search">
+      <select id="team-member-select" data-team-member-select>
+        <option value="">Избери човек</option>
+        {% for user in field_users %}
+        {% if not location or user.id not in selected_technician_ids %}
+        <option value="{{ user.id }}">{{ user.full_name }} — {{ user.role|role_label }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+      <button type="button" class="btn-secondary" data-add-team-member>Добави</button>
+    </div>
+    <div class="chip-stack" data-team-member-list>
+      {% for user in field_users %}
+      {% if location and user.id in selected_technician_ids %}
+      <span class="mini-chip chip-link" data-team-member-chip data-user-id="{{ user.id }}">
+        {{ user.full_name }} — {{ user.role|role_label }}
+        <button type="button" class="chip-remove" aria-label="Премахни" data-remove-team-member="{{ user.id }}">×</button>
+      </span>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <div data-team-member-inputs>
+      {% for user in field_users %}
+      {% if location and user.id in selected_technician_ids %}
+      <input type="hidden" name="technicians" value="{{ user.id }}" data-team-member-input="{{ user.id }}">
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div data-location-hidden-fields hidden>
+    <input type="hidden" name="city" value="">
+    <input type="hidden" name="address" value="">
+    <input type="hidden" name="gps_location" value="">
+    <input type="hidden" name="courier_locations" value="">
+  </div>
+
+  {% if not field_users %}
+  <div class="info-box full">Все още няма активни потребители.</div>
+  {% endif %}
+  <div class="form-actions full">
+    <button type="submit">Запиши</button>
+    <a href="{{ url_for('locations_list') }}" class="btn-secondary">Отказ</a>
+  </div>
+</form>
+<script>
+(function(){
+  var form = document.querySelector('[data-location-form]');
+  var select = document.querySelector('[data-location-type]');
+  var teamSection = document.querySelector('[data-location-team-section]');
+  var hiddenFields = document.querySelector('[data-location-hidden-fields]');
+  if (!form || !select || !teamSection || !hiddenFields) return;
+
+  function updateVisibility() {
+    var minimal = select.value === 'service' || select.value === 'scrap';
+    var noLead = select.value === 'warehouse';
+    var cityField = form.querySelector('[data-location-field="city"]');
+    teamSection.hidden = minimal;
+    hiddenFields.hidden = !minimal;
+    if (cityField) cityField.hidden = minimal;
+    var leadField = form.querySelector('[data-location-field="technical_lead_id"]');
+    if (leadField) leadField.hidden = noLead || minimal;
+    if (noLead) {
+      var leadSelect = leadField ? leadField.querySelector('select[name="technical_lead_id"]') : null;
+      if (leadSelect) leadSelect.value = '';
+    }
+    Array.from(form.querySelectorAll('[data-team-member-select], [data-add-team-member], [data-team-member-list], [data-team-member-inputs]')).forEach(function(node) {
+      if (node) node.hidden = minimal;
+    });
+  }
+
+  select.addEventListener('change', updateVisibility);
+  updateVisibility();
+})();
+
+(function(){
+  var select = document.querySelector('[data-team-member-select]');
+  var list = document.querySelector('[data-team-member-list]');
+  var inputs = document.querySelector('[data-team-member-inputs]');
+  var addButton = document.querySelector('[data-add-team-member]');
+  if (!select || !list || !inputs || !addButton) return;
+
+  var selected = new Set(Array.from(list.querySelectorAll('[data-team-member-chip]')).map(function(node){ return node.dataset.userId; }));
+
+  function syncOptions() {
+    Array.from(select.options).forEach(function(option) {
+      if (!option.value) return;
+      option.hidden = selected.has(option.value);
+    });
+    if (select.value && selected.has(select.value)) {
+      select.value = '';
+    }
+  }
+
+  function addTeamMember(userId, labelText) {
+    if (!userId || selected.has(userId)) return;
+    selected.add(userId);
+
+    var chip = document.createElement('span');
+    chip.className = 'mini-chip chip-link';
+    chip.dataset.teamMemberChip = '';
+    chip.dataset.userId = userId;
+    chip.textContent = labelText + ' ';
+
+    var remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'chip-remove';
+    remove.setAttribute('aria-label', 'Премахни');
+    remove.dataset.removeTeamMember = userId;
+    remove.textContent = '×';
+    chip.appendChild(remove);
+    list.appendChild(chip);
+
+    var hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'technicians';
+    hidden.value = userId;
+    hidden.dataset.teamMemberInput = userId;
+    inputs.appendChild(hidden);
+
+    syncOptions();
+  }
+
+  function removeTeamMember(userId) {
+    selected.delete(userId);
+    var chip = list.querySelector('[data-user-id="' + userId + '"]');
+    if (chip) chip.remove();
+    var hidden = inputs.querySelector('[data-team-member-input="' + userId + '"]');
+    if (hidden) hidden.remove();
+    syncOptions();
+  }
+
+  addButton.addEventListener('click', function() {
+    var option = select.options[select.selectedIndex];
+    if (!option || !option.value) return;
+    addTeamMember(option.value, option.textContent.trim());
+    select.value = '';
+  });
+
+  list.addEventListener('click', function(event) {
+    var button = event.target.closest('[data-remove-team-member]');
+    if (!button) return;
+    removeTeamMember(button.dataset.removeTeamMember);
+  });
+
+  syncOptions();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block content %}
+{% set is_new = is_new if is_new is defined else false %}
+{% set form_action = url_for('users_new') if is_new else url_for('user_edit', user_id=user.id) %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Потребители</span>
+    <h1>{{ 'Създаване на потребител' if is_new else 'Редакция на потребител' }}</h1>
+  </div>
+  <a href="{{ url_for('users_manage') }}" class="btn-secondary">Назад</a>
+</div>
+
+<form method="post" class="panel form-sheet user-edit-form" action="{{ form_action }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <p class="form-hint" style="margin-top:-8px; margin-bottom:18px;">Полетата с * са задължителни.</p>
+
+  <div class="uef-grid">
+    <!-- Лява колона: лични данни + роля -->
+    <div class="uef-left uef-equal">
+      <div class="form-card">
+        <label>
+          <span class="field-label-row"><span class="field-label-text">Име и фамилия</span><span class="required-mark">*</span></span>
+          <input name="full_name" {% if is_new %}required{% endif %} minlength="3" maxlength="120" value="{{ user.full_name if user else '' }}" placeholder="Име и фамилия">
+        </label>
+
+        <label>
+          <span class="field-label-row"><span class="field-label-text">Имейл</span><span class="required-mark">*</span></span>
+          <input type="email" name="email" {% if is_new %}required{% endif %} maxlength="120" value="{{ user.email if user else '' }}" placeholder="name@baragegroup.com">
+        </label>
+
+        <label>
+          <span class="field-label-row"><span class="field-label-text">Телефон</span><span class="required-mark">*</span></span>
+          <input name="phone_number" {% if is_new %}required{% endif %} maxlength="20" pattern="[\d+\-\s()]{6,20}" inputmode="tel" value="{{ user.phone_number if user else '' }}" placeholder="0888...">
+        </label>
+
+        {% if is_new %}
+        <label>
+          <span class="field-label-row"><span class="field-label-text">Парола</span><span class="required-mark">*</span></span>
+          <input type="password" name="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Минимум 8 символа">
+        </label>
+        {% endif %}
+
+        {% if editable_roles %}
+        <label>
+          <span class="field-label-row"><span class="field-label-text">Роля</span><span class="required-mark">*</span></span>
+          <select name="role" {% if is_new %}required{% endif %} id="role-select">
+            {% for role_key in editable_roles %}
+            <option value="{{ role_key }}" {% if user and user.role == role_key %}selected{% endif %}>{{ role_meta[role_key].label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        {% endif %}
+
+        {% if not is_new and editable_roles %}
+        <label class="checkbox-row" style="margin-top:4px;">
+          <input type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %}>
+          <span>Активен</span>
+        </label>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Дясна колона: обекти -->
+    <div class="uef-right uef-equal">
+
+      {% if can_change_user_assignments %}
+      <div class="uef-section" id="assigned-locations-section">
+        <div class="uef-section-head">
+          <strong>Назначени обекти</strong>
+        </div>
+
+        {% set assigned_locations = user_locations(user) if user else [] %}
+        {% set assigned_location_ids = assigned_locations | map(attribute='id') | list %}
+
+        <div class="multi-select-shell" data-multi-select="assigned-locations">
+          <div class="multi-select-row">
+            <select id="assigned-location-select">
+              <option value="">Избери обект</option>
+              {% for location in locations %}
+              {% if location.id not in assigned_location_ids %}
+              <option value="{{ location.id }}">{{ location_meta[location.type].icon }} {{ location.name }}</option>
+              {% endif %}
+              {% endfor %}
+            </select>
+            <button type="button" class="btn-secondary" id="assigned-location-add">Добави</button>
+          </div>
+
+          <div class="chip-list user-location-chips" id="assigned-location-chips">
+            {% for location in assigned_locations %}
+            <span class="chip user-location-chip" data-location-id="{{ location.id }}">
+              <a class="chip-link" href="{{ url_for('location_detail', location_id=location.id) }}">{{ location.name }}</a>
+              <button type="button" class="chip-remove" aria-label="Премахни обект" data-remove-location="{{ location.id }}">×</button>
+            </span>
+            {% endfor %}
+          </div>
+
+          {% for location in assigned_locations %}
+          <input type="hidden" name="team_location_ids" value="{{ location.id }}" data-hidden-location-id="{{ location.id }}">
+          {% endfor %}
+
+          <input type="hidden" name="assigned_location_id" id="primary-assigned-location-id" value="{{ assigned_location_ids[0] if assigned_location_ids else '' }}">
+        </div>
+      </div>
+      {% endif %}
+
+    </div><!-- /uef-right -->
+  </div><!-- /uef-grid -->
+
+  <div class="form-actions" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line-soft);">
+    <button type="submit">{{ 'Създай' if is_new else 'Запази' }}</button>
+    <a href="{{ url_for('users_manage') }}" class="btn-secondary">Отказ</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  const section = document.getElementById('assigned-locations-section');
+  if (!section) return;
+
+  const select = document.getElementById('assigned-location-select');
+  const addButton = document.getElementById('assigned-location-add');
+  const chips = document.getElementById('assigned-location-chips');
+
+  function selectedIds() {
+    return Array.from(section.querySelectorAll('input[name="team_location_ids"]')).map((input) => String(input.value));
+  }
+
+  function refreshOptions() {
+    const ids = new Set(selectedIds());
+    Array.from(select.options).forEach((opt) => {
+      if (!opt.value) return;
+      opt.hidden = ids.has(String(opt.value));
+    });
+    if (ids.has(String(select.value))) select.value = '';
+  }
+
+  function addLocation(id, text) {
+    if (!id) return;
+    if (selectedIds().includes(String(id))) return;
+
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden';
+    hidden.name = 'team_location_ids';
+    hidden.value = id;
+    hidden.dataset.hiddenLocationId = id;
+    section.querySelector('.multi-select-shell').appendChild(hidden);
+    document.getElementById('primary-assigned-location-id').value = selectedIds()[0] || id;
+
+    const chip = document.createElement('span');
+    chip.className = 'chip user-location-chip';
+    chip.dataset.locationId = id;
+    chip.innerHTML = `
+      <a class="chip-link" href="/locations/${id}">${text}</a>
+      <button type="button" class="chip-remove" aria-label="Премахни обект" data-remove-location="${id}">×</button>
+    `;
+    chips.appendChild(chip);
+    refreshOptions();
+  }
+
+  addButton.addEventListener('click', () => {
+    const opt = select.options[select.selectedIndex];
+    if (!select.value) return;
+    addLocation(select.value, opt ? opt.text : select.value);
+    select.value = '';
+  });
+
+  chips.addEventListener('click', (event) => {
+    const btn = event.target.closest('[data-remove-location]');
+    if (!btn) return;
+    const id = String(btn.dataset.removeLocation);
+    const chip = chips.querySelector(`[data-location-id="${CSS.escape(id)}"]`);
+    const hidden = section.querySelector(`input[data-hidden-location-id="${CSS.escape(id)}"]`);
+    if (chip) chip.remove();
+    if (hidden) hidden.remove();
+    document.getElementById('primary-assigned-location-id').value = selectedIds()[0] || '';
+    refreshOptions();
+  });
+
+  refreshOptions();
+})();
+</script>
+
+{% endblock %}

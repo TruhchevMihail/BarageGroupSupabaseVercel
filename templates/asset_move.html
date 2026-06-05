@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Машини и инструменти</span>
+    <h1>Преместване / заявка</h1>
+  </div>
+  <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
+</div>
+
+<section class="panel asset-detail-panel">
+  <div class="section-head"><h2>{{ asset.inventory_number }} · {{ asset.name }}</h2></div>
+  <form method="post" action="{{ url_for('transfer_asset', asset_id=asset.id) }}" class="form-card compact">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Към локация
+      <select name="to_location_id" required>
+        {% for location in locations %}
+        <option value="{{ location.id }}">{{ location_meta[location.type].icon }} {{ location.name }}{% if can_direct[location.id] %} — директно преместване{% else %} — заявка за одобрение{% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Причина<textarea name="reason"></textarea></label>
+    <button type="submit">Изпрати</button>
+  </form>
+</section>
+{% endblock %}

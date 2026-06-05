@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Търсене</span>
+    <h1>Глобални резултати</h1>
+    <p class="muted">Показват се само намерените резултати за: <strong>{{ query or '-' }}</strong></p>
+  </div>
+  <div class="detail-actions">
+    <a class="btn-secondary" href="{{ url_for('dashboard') }}">Табло</a>
+    <a class="btn-secondary" href="{{ url_for('assets') }}">Машини</a>
+    <a class="btn-primary" href="{{ url_for('locations_list') }}">Обекти</a>
+  </div>
+</div>
+
+<section class="panel">
+  <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get">
+    <input type="search" name="q" value="{{ query }}" placeholder="Търси по машина, обект или потребител" required>
+    <button type="submit" {% if not query %}disabled{% endif %}>Търси</button>
+  </form>
+</section>
+
+<script>
+(() => {
+  const form = document.querySelector('.dashboard-search');
+  if (!form) return;
+  const input = form.querySelector('input[name="q"]');
+  const button = form.querySelector('button[type="submit"]');
+  const sync = () => {
+    button.disabled = !input.value.trim();
+  };
+  input.addEventListener('input', sync);
+  sync();
+})();
+</script>
+
+{% if results %}
+{% set has_assets = results.assets|length > 0 %}
+{% set has_locations = results.locations|length > 0 %}
+{% set has_users = results.users|length > 0 %}
+
+{% if has_assets or has_locations %}
+<div class="grid-2">
+  {% if has_assets %}
+  <section class="panel">
+    <div class="section-head"><h2>Машини</h2><span class="chip chip-neutral">{{ results.assets|length }}</span></div>
+    <div class="stack-list">
+      {% for asset in results.assets %}
+      {% set display_status = asset_display_status(asset) %}
+      <a class="list-card" href="{{ url_for('asset_detail', asset_id=asset.id) }}">
+        <div>
+          <strong>{{ asset.inventory_number }} · {{ asset.name }}</strong>
+          <span>{{ asset.brand }} {{ asset.model }}</span>
+        </div>
+        <span class="chip {{ status_meta.get(display_status, {'chip': 'chip-neutral'}).chip }}">{{ display_status }}</span>
+      </a>
+      {% else %}
+      <p class="muted">Няма резултати.</p>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if has_locations %}
+  <section class="panel">
+    <div class="section-head"><h2>Обекти</h2><span class="chip chip-neutral">{{ results.locations|length }}</span></div>
+    <div class="stack-list">
+      {% for location in results.locations %}
+      <a class="list-card" href="{{ url_for('location_detail', location_id=location.id) }}">
+        <div>
+          <strong>{{ location_meta[location.type].icon }} {{ location.name }}</strong>
+          <span>{{ location_meta[location.type].label }}{% if location.city %} · {{ location.city }}{% endif %}</span>
+        </div>
+      </a>
+      {% else %}
+      <p class="muted">Няма резултати.</p>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+
+  {% if has_users %}
+  <section class="panel">
+    <div class="section-head"><h2>Потребители</h2><span class="chip chip-neutral">{{ results.users|length }}</span></div>
+    <div class="stack-list">
+      {% for user in results.users %}
+      <a class="list-card" href="{{ url_for('user_profile', user_id=user.id) }}">
+        <div>
+          <strong>{{ user.full_name }}</strong>
+          <span>{{ user.email }}{% if user.assigned_location %} · {{ user.assigned_location.name }}{% endif %}</span>
+        </div>
+        <span class="chip {{ role_meta[user.role].chip }}">{{ user.role|role_label }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+{% else %}
+<section class="panel">
+  <p class="muted">Няма намерени резултати.</p>
+</section>
+{% endif %}
+{% endif %}
+{% endblock %}

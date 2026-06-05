@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Профил</span>
+    <h1>Профил на потребител</h1>
+  </div>
+  <div class="detail-actions profile-actions">
+    {% if is_self %}
+    <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
+    {% else %}
+    {% if can_delete_user %}
+    <form method="post" action="{{ url_for('user_delete', user_id=user.id) }}" onsubmit="return confirm('Да изтрия ли този потребител?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-secondary danger">Изтрий</button>
+    </form>
+    {% endif %}
+    {% if can_toggle_user %}
+    <form method="post" action="{{ url_for('user_toggle', user_id=user.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-secondary">{{ 'Изключи' if user.is_active else 'Активирай' }}</button>
+    </form>
+    {% endif %}
+    {% if can_edit_user %}
+    <a class="btn-secondary" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<section class="panel profile-panel">
+  <div class="profile-layout profile-layout-single">
+    <div class="profile-summary-block profile-info-card">
+      <dl class="details-list profile-details">
+        <div><dt>Име</dt><dd>{{ user.full_name }}</dd></div>
+        <div><dt>Роля</dt><dd><span class="chip {{ role_meta[user.role].chip }}">{{ user.role|role_label }}</span></dd></div>
+        <div><dt>Имейл</dt><dd>{{ user.email }}</dd></div>
+        <div><dt>Телефон</dt><dd>{{ user.phone_number or '-' }}</dd></div>
+        <div class="user-profile-row assigned-locations-row">
+          <dt>Назначени обекти</dt>
+          <dd>
+            {% set profile_locations = user_locations(user) %}
+            {% if profile_locations %}
+            <div class="user-location-chips user-assigned-locations assigned-location-chips">
+              {% for location in profile_locations %}
+              <a class="chip chip-link user-location-chip user-assigned-location-chip assigned-location-chip {{ location_meta[location.type].chip }}" href="{{ url_for('location_detail', location_id=location.id) }}">{{ location.name }}</a>
+              {% endfor %}
+            </div>
+            {% else %}
+            Без назначени обекти
+            {% endif %}
+          </dd>
+        </div>
+        <div><dt>Статус</dt><dd>{{ 'Активен' if user.is_active else 'Изключен' }}</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+{% endblock %}
