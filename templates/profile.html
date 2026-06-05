@@ -8,6 +8,7 @@
   <div class="detail-actions profile-actions">
     {% if is_self %}
     <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
+    <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>
     {% else %}
     {% if can_delete_user %}
     <form method="post" action="{{ url_for('user_delete', user_id=user.id) }}" onsubmit="return confirm('Да изтрия ли този потребител?');">
@@ -23,6 +24,7 @@
     {% endif %}
     {% if can_edit_user %}
     <a class="btn-secondary" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
+    <a class="btn-secondary" href="{{ url_for('user_password', user_id=user.id) }}">Нова парола</a>
     {% endif %}
     {% endif %}
   </div>

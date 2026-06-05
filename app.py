@@ -3374,6 +3374,67 @@ def asset_delete(asset_id):
     return redirect(url_for('assets'))
 
 
+def validate_password_change_form():
+    password = request.form.get('password', '')
+    password_confirm = request.form.get('password_confirm', '')
+    if not password:
+        return None, None, 'Въведете нова парола.'
+    if not password_confirm:
+        return None, None, 'Потвърдете новата парола.'
+    if password != password_confirm:
+        return None, None, 'Паролите не съвпадат.'
+    if len(password) < 8:
+        return None, None, 'Паролата трябва да е поне 8 символа.'
+    if not password.strip():
+        return None, None, 'Паролата не може да бъде само интервали.'
+    return password, password_confirm, None
+
+
+def update_user_password(target_user, password, actor_user, *, is_self_change):
+    target_user.set_password(password)
+    db.session.commit()
+    if is_self_change:
+        app.logger.info('password_change actor_id=%s target_id=%s self_change=true', actor_user.id, target_user.id)
+        flash('Паролата е обновена успешно.', 'success')
+    else:
+        app.logger.info(
+            'password_change actor_id=%s target_id=%s actor_role=%s target_role=%s self_change=false',
+            actor_user.id,
+            target_user.id,
+            actor_user.role,
+            target_user.role,
+        )
+        flash('Паролата на потребителя е обновена успешно.', 'success')
+
+
+@app.route('/profile/password', methods=['GET', 'POST'])
+@login_required
+def profile_password():
+    if request.method == 'POST':
+        password, _, error = validate_password_change_form()
+        if error:
+            flash(error, 'error')
+            return redirect(url_for('profile_password'))
+        update_user_password(g.user, password, g.user, is_self_change=True)
+        return redirect(url_for('profile'))
+    return render_template('password_form.html', back_url=url_for('profile'))
+
+
+@app.route('/users/<int:user_id>/password', methods=['GET', 'POST'])
+@login_required
+@roles_required(ROLE_SUPERUSER)
+def user_password(user_id):
+    target_user = User.query.get_or_404(user_id)
+    if request.method == 'POST':
+        password, _, error = validate_password_change_form()
+        if error:
+            flash(error, 'error')
+            return redirect(url_for('user_password', user_id=target_user.id))
+        update_user_password(target_user, password, g.user, is_self_change=False)
+        return redirect(url_for('user_profile', user_id=target_user.id))
+    return render_template('password_form.html', back_url=url_for('user_profile', user_id=target_user.id))
+
+
 @app.template_filter('dt')
 def format_dt(value):
     if not value:
