@@ -97,7 +97,7 @@
       <td class="asset-alias-cell" title="{{ asset.alias_name or '' }}"><span class="asset-cell-text">{{ asset.alias_name or '-' }}</span></td>
       <td class="asset-brand-cell" title="{{ asset.brand }}"><span class="asset-cell-text">{{ asset.brand }}</span></td>
       <td class="asset-model-cell" title="{{ asset.model }}"><span class="asset-cell-text">{{ asset.model }}</span></td>
-      <td class="asset-serial-cell nowrap">{{ asset.serial_number or '-' }}</td>
+      <td class="asset-serial-cell" title="{{ asset.serial_number or '' }}"><span class="asset-cell-text">{{ asset.serial_number or '-' }}</span></td>
       <td class="asset-location-cell">
         {% if asset.current_location %}
         <a class="chip chip-link asset-location-chip {{ location_meta[asset.current_location.type].chip }}" title="{{ asset.current_location.name }}" href="{{ url_for('location_detail', location_id=asset.current_location.id) }}">

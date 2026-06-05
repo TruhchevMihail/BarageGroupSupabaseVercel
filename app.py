@@ -23,8 +23,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
 
 
-import psycopg2
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - Vercel/local env vars can still work without python-dotenv
+    load_dotenv = None
 
 
 
@@ -40,40 +42,14 @@ except ImportError:  # pragma: no cover - optional storage dependency
     create_client = None
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+if load_dotenv is not None:
+    load_dotenv(os.path.join(BASE_DIR, '.env'))
+
 PUBLIC_ROOT = os.path.join(BASE_DIR, 'public')
 STATIC_ROOT = os.path.join(PUBLIC_ROOT, 'static')
 
 
-def load_dotenv(path):
-    if not os.path.exists(path):
-        return
-    try:
-        with open(path, 'r', encoding='utf-8') as handle:
-            for raw_line in handle:
-                line = raw_line.strip()
-                if not line or line.startswith('#') or '=' not in line:
-                    continue
-                key, value = line.split('=', 1)
-                key = key.strip()
-                value = value.strip()
-                if not key or key in os.environ:
-                    continue
-                if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
-                    value = value[1:-1]
-                os.environ[key] = value
-    except OSError:
-        pass
-
-
-load_dotenv(os.path.join(BASE_DIR, '.env.example'))
-
-
-
-# Fetch variables
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Connect to the database
-connection = psycopg2.connect(DATABASE_URL)
 
 def normalize_database_url(raw_url):
     """Return a SQLAlchemy-compatible Postgres URL for Supabase/Vercel.
