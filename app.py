@@ -3363,6 +3363,7 @@ def asset_delete(asset_id):
     service_invoice_paths = [extract_service_invoice_path(record.notes) for record in service_records if extract_service_invoice_path(record.notes)]
     deleted_requests = TransferRequest.query.filter_by(asset_id=asset_id).delete(synchronize_session=False)
     deleted_history = AssetHistory.query.filter_by(asset_id=asset_id).delete(synchronize_session=False)
+    deleted_service_records = AssetServiceRecord.query.filter_by(asset_id=asset_id).delete(synchronize_session=False)
     app.logger.info('asset_delete actor_id=%s asset_id=%s inventory=%s', g.user.id, asset.id, asset.inventory_number)
     db.session.delete(asset)
     db.session.commit()
@@ -3370,7 +3371,7 @@ def asset_delete(asset_id):
         delete_upload_if_unreferenced(image_path)
     for invoice_path in service_invoice_paths:
         delete_upload_if_unreferenced(invoice_path, excluding_service_record_ids=service_record_ids)
-    flash(f'Машината е изтрита успешно. Премахнати са {deleted_requests} заявки и {deleted_history} записи от историята.', 'success')
+    flash(f'Машината е изтрита успешно. Премахнати са {deleted_requests} заявки, {deleted_history} записи от историята и {deleted_service_records} сервизни записи.', 'success')
     return redirect(url_for('assets'))
 
 
