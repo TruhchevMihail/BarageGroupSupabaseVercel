@@ -6,6 +6,9 @@
     <h1>Профил на потребител</h1>
   </div>
   <div class="detail-actions profile-actions">
+    {% if show_users_back_link %}
+    <a class="btn-secondary" href="{{ url_for('users_manage') }}">Към потребители</a>
+    {% endif %}
     {% if is_self %}
     <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
     <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>

@@ -5,6 +5,7 @@
     <span class="eyebrow">Детайли за актив</span>
   </div>
   <div class="detail-actions asset-header-actions">
+    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
     {% if can_move_asset %}
     <a class="btn-link" href="{{ url_for('asset_move', asset_id=asset.id) }}">Премести / заявка</a>
     {% endif %}

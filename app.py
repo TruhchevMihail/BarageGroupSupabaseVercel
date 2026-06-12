@@ -15,7 +15,7 @@ from urllib.parse import quote, unquote
 from flask import Flask, abort, flash, g, jsonify, redirect, render_template, request, session, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, case, func, or_
+from sqlalchemy import Integer, and_, case, cast, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 from werkzeug.utils import secure_filename
@@ -2028,6 +2028,7 @@ def user_profile(user_id):
         can_edit_user=can_manage_user(g.user, target),
         can_toggle_user=can_toggle_user(g.user, target),
         can_delete_user=can_delete_user(g.user, target),
+        show_users_back_link=g.user.role in {ROLE_SUPERUSER, ROLE_USER_PLUS},
     )
 
 
@@ -2144,8 +2145,9 @@ def assets():
     if responsible_user_id:
         query = query.filter_by(responsible_user_id=responsible_user_id)
 
+    inventory_order = (cast(Asset.inventory_number, Integer).asc(), Asset.inventory_number.asc())
     sort_map = {
-        'inventory': Asset.inventory_number.asc(),
+        'inventory': inventory_order,
         'type': Asset.name.asc(),
         'brand': Asset.brand.asc(),
         'model': Asset.model.asc(),
@@ -2153,7 +2155,9 @@ def assets():
         'purchase_date': Asset.purchase_date.asc(),
         'created_at': Asset.created_at.asc(),
     }
-    order_by = (sort_map.get(sort, Asset.inventory_number.asc()),)
+    order_by = sort_map.get(sort, inventory_order)
+    if not isinstance(order_by, tuple):
+        order_by = (order_by,)
     pagination = query.order_by(*order_by).paginate(page=page, per_page=15, error_out=False)
     locations = Location.query.order_by(Location.name).all()
     categories = [

@@ -156,7 +156,16 @@
   let submitTimer = null;
 
   const normalize = (value) => (value || '').toString().trim().toLowerCase();
+  const parseInventory = (value) => {
+    const match = (value || '').toString().match(/\d+/);
+    return match ? Number.parseInt(match[0], 10) : Number.POSITIVE_INFINITY;
+  };
   const compare = (a, b) => normalize(a).localeCompare(normalize(b), 'bg');
+  const compareByKey = (key, a, b) => {
+    if (key !== 'inventory') return compare(a, b);
+    const numberResult = parseInventory(a) - parseInventory(b);
+    return numberResult || compare(a, b);
+  };
 
   const updateArrows = () => {
     headers.forEach((header) => {
@@ -180,7 +189,7 @@
     }
     const rows = Array.from(tbody.querySelectorAll('tr')).filter((row) => row.dataset.name && !row.hidden);
     rows.sort((rowA, rowB) => {
-      const result = compare(rowA.dataset[key], rowB.dataset[key]);
+      const result = compareByKey(key, rowA.dataset[key], rowB.dataset[key]);
       return state.dir === 'asc' ? result : -result;
     });
     rows.forEach((row) => tbody.appendChild(row));
