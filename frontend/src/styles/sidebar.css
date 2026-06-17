@@ -1,0 +1,13 @@
+.sidebar {
+  width: 308px;
+  flex-basis: 308px;
+  padding: 26px 22px 22px;
+}
+
+.sidebar-nav a {
+  min-height: 46px;
+}
+
+.userbox {
+  gap: 14px;
+}

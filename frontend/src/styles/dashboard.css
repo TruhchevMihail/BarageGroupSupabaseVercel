@@ -1,0 +1,22 @@
+.content {
+  padding: 28px 28px 40px;
+}
+
+.dashboard-section {
+  margin-bottom: 20px;
+}
+
+.dashboard-summary-strip,
+.dashboard-mini-metrics,
+.dashboard-action-grid,
+.dashboard-workgrid {
+  gap: 14px;
+}
+
+.dashboard-search-panel {
+  padding: 18px 20px;
+}
+
+.dashboard-search {
+  max-width: 920px;
+}

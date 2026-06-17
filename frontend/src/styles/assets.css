@@ -1,0 +1,33 @@
+.assets-page {
+  gap: 18px;
+}
+
+.assets-page .filter-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(4, minmax(140px, 0.8fr)) auto;
+  gap: 12px;
+}
+
+.assets-page .assets-table {
+  table-layout: fixed;
+}
+
+.assets-page .assets-table th:nth-child(2),
+.assets-page .assets-table td:nth-child(2) {
+  width: 96px;
+}
+
+.assets-page .assets-table th:nth-child(3),
+.assets-page .assets-table td:nth-child(3) {
+  width: 168px;
+}
+
+.assets-page .assets-table th:nth-child(7),
+.assets-page .assets-table td:nth-child(7) {
+  width: 190px;
+}
+
+.assets-page .assets-table th:nth-child(8),
+.assets-page .assets-table td:nth-child(8) {
+  width: 58px;
+}

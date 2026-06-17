@@ -29,20 +29,6 @@
   </form>
 </section>
 
-<script>
-(() => {
-  const form = document.querySelector('.dashboard-search');
-  if (!form) return;
-  const input = form.querySelector('input[name="q"]');
-  const button = form.querySelector('button[type="submit"]');
-  const sync = () => {
-    button.disabled = !input.value.trim();
-  };
-  input.addEventListener('input', sync);
-  sync();
-})();
-</script>
-
 <section class="panel dashboard-section">
   <div class="section-head">
     <h2>Статус на машините</h2>

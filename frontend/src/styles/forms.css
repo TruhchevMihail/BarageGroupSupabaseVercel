@@ -1,0 +1,31 @@
+.filter-row {
+  align-items: end;
+}
+
+.filter-row label,
+.dashboard-search,
+.locations-search-form {
+  gap: 8px;
+}
+
+.dashboard-search {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.dashboard-search input[type="search"],
+.users-search,
+.assets-search-input,
+.locations-search-form .users-search {
+  min-height: 44px;
+}
+
+.form-grid,
+.form-grid-2,
+.uef-grid {
+  align-items: start;
+}
+
+.multi-select-shell {
+  gap: 10px;
+}

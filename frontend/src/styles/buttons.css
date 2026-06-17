@@ -1,0 +1,32 @@
+.btn-primary,
+.btn-secondary,
+.btn-link,
+button,
+input[type="submit"] {
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-link,
+button,
+input[type="submit"] {
+  min-height: 40px;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-link:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(53, 107, 140, 0.45);
+  outline-offset: 2px;
+}

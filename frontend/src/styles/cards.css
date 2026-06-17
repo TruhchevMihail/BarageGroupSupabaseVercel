@@ -1,0 +1,18 @@
+.panel,
+.card {
+  border-radius: 14px;
+}
+
+.summary-strip {
+  gap: 14px;
+}
+
+.summary-pill {
+  min-height: 88px;
+}
+
+.list-card,
+.location-row,
+.mini-asset {
+  border-radius: 12px;
+}

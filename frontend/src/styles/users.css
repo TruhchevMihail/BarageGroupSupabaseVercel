@@ -1,0 +1,15 @@
+.users-page .summary-strip {
+  grid-template-columns: minmax(260px, 420px);
+}
+
+.users-search-pill {
+  min-height: 88px;
+}
+
+.users-page .users-table td:nth-child(2) a {
+  word-break: break-word;
+}
+
+.users-page .chip-stack {
+  gap: 6px;
+}

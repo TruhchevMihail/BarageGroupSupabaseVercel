@@ -1,0 +1,21 @@
+.table-wrap,
+.assets-table-card {
+  overflow: hidden;
+}
+
+table {
+  table-layout: fixed;
+}
+
+th,
+td {
+  vertical-align: top;
+}
+
+.table-sort {
+  white-space: nowrap;
+}
+
+.pagination-row {
+  flex-wrap: wrap;
+}

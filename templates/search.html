@@ -20,20 +20,6 @@
   </form>
 </section>
 
-<script>
-(() => {
-  const form = document.querySelector('.dashboard-search');
-  if (!form) return;
-  const input = form.querySelector('input[name="q"]');
-  const button = form.querySelector('button[type="submit"]');
-  const sync = () => {
-    button.disabled = !input.value.trim();
-  };
-  input.addEventListener('input', sync);
-  sync();
-})();
-</script>
-
 {% if results %}
 {% set has_assets = results.assets|length > 0 %}
 {% set has_locations = results.locations|length > 0 %}
