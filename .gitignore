@@ -28,3 +28,14 @@ static/uploads/
 
 .vercel
 .env*
+
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+app.db
+.env
+.env.local
+.vercel/
+.idea/
