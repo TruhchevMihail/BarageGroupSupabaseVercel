@@ -1,4 +1,4 @@
-from barage_app.routes import (
+from barage_app.routes.legacy import (
     apply_asset_scope,
     apply_request_scope,
     assignable_locations_for_user,

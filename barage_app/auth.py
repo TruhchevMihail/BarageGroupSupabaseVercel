@@ -1,4 +1,4 @@
-from barage_app.routes import (
+from barage_app.routes.legacy import (
     generate_csrf_token,
     load_logged_in_user,
     login_required,
