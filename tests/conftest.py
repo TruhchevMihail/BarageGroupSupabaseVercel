@@ -20,20 +20,22 @@ def app(tmp_path):
     invoice_map = tmp_path / 'service_invoice_images.json'
     invoice_map.write_text('{}', encoding='utf-8')
 
-    app_module.app.config.update(
+    test_app = app_module.create_app(dict(
         TESTING=True,
         SQLALCHEMY_DATABASE_URI=f'sqlite:///{db_path}',
         WTF_CSRF_ENABLED=False,
         UPLOAD_FOLDER=str(upload_root),
-    )
+        SERVICE_INVOICE_MAP=str(invoice_map),
+    ))
+    app_module.app = test_app
     app_module.UPLOAD_FOLDER = str(upload_root)
     app_module.SERVICE_INVOICE_MAP = str(invoice_map)
     app_module.RATE_LIMIT_BUCKETS.clear()
 
-    with app_module.app.app_context():
+    with test_app.app_context():
         app_module.db.drop_all()
         app_module.db.create_all()
-        yield app_module.app
+        yield test_app
         app_module.db.session.remove()
         app_module.db.drop_all()
 
