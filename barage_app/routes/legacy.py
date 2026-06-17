@@ -1795,6 +1795,9 @@ def assets():
     condition = request.args.get('condition', '').strip()
     responsible_user_id = request.args.get('responsible_user_id', type=int)
     sort = request.args.get('sort', 'inventory').strip()
+    direction = request.args.get('direction', 'asc').lower().strip()
+    if direction not in ('asc', 'desc'):
+        direction = 'asc'
     page = max(request.args.get('page', 1, type=int) or 1, 1)
     query = Asset.query.options(joinedload(Asset.current_location), joinedload(Asset.created_by),
                                 joinedload(Asset.responsible_user))
@@ -1833,19 +1836,18 @@ def assets():
     if responsible_user_id:
         query = query.filter_by(responsible_user_id=responsible_user_id)
 
-    inventory_order = (cast(Asset.inventory_number, Integer).asc(), Asset.inventory_number.asc())
+    inventory_order = [cast(Asset.inventory_number, Integer), Asset.inventory_number]
     sort_map = {
         'inventory': inventory_order,
-        'type': Asset.asset_type.asc(),
-        'brand': Asset.brand.asc(),
-        'model': Asset.model.asc(),
-        'serial': Asset.serial_number.asc(),
-        'purchase_date': Asset.purchase_date.asc(),
-        'created_at': Asset.created_at.asc(),
+        'type': [Asset.asset_type],
+        'brand': [Asset.brand],
+        'model': [Asset.model],
+        'serial': [Asset.serial_number],
+        'purchase_date': [Asset.purchase_date],
+        'created_at': [Asset.created_at],
     }
-    order_by = sort_map.get(sort, inventory_order)
-    if not isinstance(order_by, tuple):
-        order_by = (order_by,)
+    columns = sort_map.get(sort, inventory_order)
+    order_by = tuple(col.desc() if direction == 'desc' else col.asc() for col in columns)
     pagination = query.order_by(*order_by).paginate(page=page, per_page=15, error_out=False)
     locations = Location.query.order_by(Location.name).all()
     categories = [
@@ -1877,6 +1879,7 @@ def assets():
         'condition': condition,
         'responsible_user_id': responsible_user_id,
         'sort': sort,
+        'direction': direction,
     }
     return render_template('assets.html', items=pagination.items, pagination=pagination, page_url=page_url,
                            filters=filters, locations=locations, categories=categories, asset_types=asset_types,
@@ -2256,6 +2259,9 @@ def requests_list():
     status = request.args.get('status', '').strip()
     request_type = request.args.get('type', '').strip()
     sort = request.args.get('sort', 'newest').strip()
+    direction = request.args.get('direction', 'asc').lower().strip()
+    if direction not in ('asc', 'desc'):
+        direction = 'asc'
     query = TransferRequest.query.options(
         joinedload(TransferRequest.asset),
         joinedload(TransferRequest.from_location),
@@ -2275,13 +2281,20 @@ def requests_list():
     if request_type in ['transfer', 'scrap']:
         query = query.filter_by(request_type=request_type)
     sort_map = {
-        'newest': TransferRequest.created_at.desc(),
-        'oldest': TransferRequest.created_at.asc(),
-        'status': TransferRequest.status.asc(),
-        'type': TransferRequest.request_type.asc(),
+        'newest': [TransferRequest.created_at],
+        'oldest': [TransferRequest.created_at],
+        'status': [TransferRequest.status],
+        'type': [TransferRequest.request_type],
     }
-    pagination = query.order_by(sort_map.get(sort, TransferRequest.created_at.desc())).paginate(page=page, per_page=15, error_out=False)
-    filters = {'status': status, 'type': request_type, 'sort': sort}
+    columns = sort_map.get(sort, sort_map['newest'])
+    if sort == 'newest':
+        order_by = (TransferRequest.created_at.desc(),)
+    elif sort == 'oldest':
+        order_by = (TransferRequest.created_at.asc(),)
+    else:
+        order_by = tuple(col.desc() if direction == 'desc' else col.asc() for col in columns)
+    pagination = query.order_by(*order_by).paginate(page=page, per_page=15, error_out=False)
+    filters = {'status': status, 'type': request_type, 'sort': sort, 'direction': direction}
     request_permissions = {
         item.id: {
             'approve': can_approve_request(g.user, item),
@@ -2345,6 +2358,9 @@ def users_manage():
     role_filter = request.args.get('role', '').strip()
     status_filter = request.args.get('status', '').strip()
     sort = request.args.get('sort', 'newest').strip()
+    direction = request.args.get('direction', 'asc').lower().strip()
+    if direction not in ('asc', 'desc'):
+        direction = 'asc'
     users_query = visible_users_query(g.user, User.query)
     user_summary = {
         'total': users_query.count(),
@@ -2359,17 +2375,24 @@ def users_manage():
         users_query = users_query.filter_by(is_active=False)
     page = max(request.args.get('page', 1, type=int) or 1, 1)
     sort_map = {
-        'newest': (User.is_active.desc(), User.id.desc()),
-        'oldest': (User.is_active.desc(), User.id.asc()),
-        'name': (User.is_active.desc(), User.full_name.asc()),
-        'role': (User.is_active.desc(), User.role.asc(), User.full_name.asc()),
-        'status': (User.is_active.desc(), User.role.asc(), User.full_name.asc()),
-        'location': (User.is_active.desc(), User.assigned_location_id.asc(), User.full_name.asc()),
+        'newest': [User.is_active, User.id],
+        'oldest': [User.is_active, User.id],
+        'name': [User.is_active, User.full_name],
+        'role': [User.is_active, User.role, User.full_name],
+        'status': [User.is_active, User.role, User.full_name],
+        'location': [User.is_active, User.assigned_location_id, User.full_name],
     }
+    columns = sort_map.get(sort, sort_map['name'])
+    if sort == 'newest':
+        order_by = (User.is_active.desc(), User.id.desc())
+    elif sort == 'oldest':
+        order_by = (User.is_active.desc(), User.id.asc())
+    else:
+        order_by = tuple(col.desc() if direction == 'desc' else col.asc() for col in columns)
     pagination = (
         users_query
         .options(selectinload(User.assigned_location), selectinload(User.managed_locations))
-        .order_by(*sort_map.get(sort, sort_map['name']))
+        .order_by(*order_by)
         .paginate(page=page, per_page=20, error_out=False)
     )
     users = pagination.items
@@ -2386,7 +2409,7 @@ def users_manage():
         for user in users
     }
     return render_template('users.html', users=users, locations=locations, all_locations=all_locations,
-                           filters={'role': role_filter, 'status': status_filter, 'sort': sort}, user_summary=user_summary,
+                           filters={'role': role_filter, 'status': status_filter, 'sort': sort, 'direction': direction}, user_summary=user_summary,
                            pagination=pagination, user_permissions=user_permissions,
                            can_create_user=can_create_user(g.user))
 
@@ -2565,6 +2588,9 @@ def locations_list():
     q = request.args.get('q', '').strip()
     location_type = request.args.get('type', '').strip()
     sort = request.args.get('sort', 'newest').strip()
+    direction = request.args.get('direction', 'asc').lower().strip()
+    if direction not in ('asc', 'desc'):
+        direction = 'asc'
     page = max(request.args.get('page', 1, type=int) or 1, 1)
     query = (
         Location.query
@@ -2585,12 +2611,19 @@ def locations_list():
     if location_type in LOCATION_META:
         query = query.filter_by(type=location_type)
     sort_map = {
-        'newest': (Location.is_active.desc(), Location.id.desc()),
-        'oldest': (Location.is_active.desc(), Location.id.asc()),
-        'name': (Location.is_active.desc(), Location.name.asc()),
-        'type': (Location.is_active.desc(), Location.type.asc(), Location.name.asc()),
+        'newest': [Location.is_active, Location.id],
+        'oldest': [Location.is_active, Location.id],
+        'name': [Location.is_active, Location.name],
+        'type': [Location.is_active, Location.type, Location.name],
     }
-    pagination = query.order_by(*sort_map.get(sort, sort_map['newest'])).paginate(page=page, per_page=20, error_out=False)
+    columns = sort_map.get(sort, sort_map['newest'])
+    if sort == 'newest':
+        order_by = (Location.is_active.desc(), Location.id.desc())
+    elif sort == 'oldest':
+        order_by = (Location.is_active.desc(), Location.id.asc())
+    else:
+        order_by = tuple(col.desc() if direction == 'desc' else col.asc() for col in columns)
+    pagination = query.order_by(*order_by).paginate(page=page, per_page=20, error_out=False)
     locations = pagination.items
     location_team_counts = {
         location.id: len(get_location_team(location))
@@ -2610,7 +2643,7 @@ def locations_list():
     }
     return render_template('locations.html', locations=locations, asset_counts=asset_counts,
                            location_team_counts=location_team_counts,
-                           filters={'q': q, 'type': location_type, 'sort': sort}, location_summary=location_summary,
+                           filters={'q': q, 'type': location_type, 'sort': sort, 'direction': direction}, location_summary=location_summary,
                            pagination=pagination, location_minimal_types=LOCATION_MINIMAL_TYPES,
                            can_create_location=can_manage_location(g.user),
                            can_edit_location=can_manage_location(g.user))

@@ -11,36 +11,27 @@ function initAssetsTable(): void {
   }
 
   const form = document.querySelector<HTMLFormElement>('[data-assets-filter-form]');
-  const tbody = table.tBodies[0];
   const headers = Array.from(table.querySelectorAll<HTMLButtonElement>('.table-sort'));
   const searchInput = form?.querySelector<HTMLInputElement>('[data-list-search]');
   const locationSelect = form?.querySelector<HTMLSelectElement>('select[name="location"]');
-  const state: { key: string; dir: SortDirection } = { key: 'inventory', dir: 'asc' };
   let submitTimer: number | null = null;
 
-  const parseInventory = (value: string | null | undefined): number => {
-    const match = (value || '').toString().match(/\d+/);
-    return match ? Number.parseInt(match[0], 10) : Number.POSITIVE_INFINITY;
-  };
-
-  const compare = (a: string | null | undefined, b: string | null | undefined): number =>
-    normalize(a).localeCompare(normalize(b), 'bg');
-
-  const compareByKey = (key: string, a: string | null | undefined, b: string | null | undefined): number => {
-    if (key !== 'inventory') {
-      return compare(a, b);
-    }
-    const inventoryResult = parseInventory(a) - parseInventory(b);
-    return inventoryResult || compare(a, b);
+  const getCurrentSort = (): { key: string; direction: SortDirection } => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      key: params.get('sort') || 'inventory',
+      direction: (params.get('direction') || 'asc') as SortDirection,
+    };
   };
 
   const updateArrows = (): void => {
+    const current = getCurrentSort();
     headers.forEach((header) => {
       const arrow = header.querySelector<HTMLElement>('.sort-arrow');
       if (!arrow) {
         return;
       }
-      arrow.textContent = header.dataset.sortKey === state.key ? (state.dir === 'asc' ? '▲' : '▼') : '';
+      arrow.textContent = header.dataset.sortKey === current.key ? (current.direction === 'asc' ? '▲' : '▼') : '';
     });
   };
 
@@ -54,27 +45,21 @@ function initAssetsTable(): void {
     submitTimer = window.setTimeout(() => form.submit(), 250);
   };
 
-  const sortRows = (key: string): void => {
-    if (state.key === key) {
-      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
-    } else {
-      state.key = key;
-      state.dir = 'asc';
+  const navigateWithSort = (sortKey: string): void => {
+    const current = getCurrentSort();
+    const params = new URLSearchParams(window.location.search);
+    let newDirection: SortDirection = 'asc';
+    if (current.key === sortKey && current.direction === 'asc') {
+      newDirection = 'desc';
     }
-
-    const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr')).filter(
-      (row) => row.dataset.name && !row.hidden,
-    );
-    rows.sort((rowA, rowB) => {
-      const result = compareByKey(key, rowA.dataset[key], rowB.dataset[key]);
-      return state.dir === 'asc' ? result : -result;
-    });
-    rows.forEach((row) => tbody.appendChild(row));
-    updateArrows();
+    params.set('sort', sortKey);
+    params.set('direction', newDirection);
+    params.set('page', '1');
+    window.location.search = params.toString();
   };
 
   headers.forEach((header) => {
-    header.addEventListener('click', () => sortRows(header.dataset.sortKey || 'inventory'));
+    header.addEventListener('click', () => navigateWithSort(header.dataset.sortKey || 'inventory'));
   });
 
   searchInput?.addEventListener('input', scheduleSubmit);
@@ -91,19 +76,27 @@ function initUsersTable(): void {
 
   const tbody = table.tBodies[0];
   const headers = Array.from(table.querySelectorAll<HTMLButtonElement>('.table-sort'));
-  const state: { key: string; dir: SortDirection } = { key: 'name', dir: 'asc' };
   const sortableKeys = new Set(['name', 'role', 'location', 'status']);
 
   const compare = (a: string | null | undefined, b: string | null | undefined): number =>
     normalize(a).localeCompare(normalize(b), 'bg');
 
+  const getCurrentSort = (): { key: string; direction: SortDirection } => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      key: params.get('sort') || 'name',
+      direction: (params.get('direction') || 'asc') as SortDirection,
+    };
+  };
+
   const updateArrows = (): void => {
+    const current = getCurrentSort();
     headers.forEach((header) => {
       const arrow = header.querySelector<HTMLElement>('.sort-arrow');
       if (!arrow) {
         return;
       }
-      arrow.textContent = header.dataset.sortKey === state.key ? (state.dir === 'asc' ? '▲' : '▼') : '';
+      arrow.textContent = header.dataset.sortKey === current.key ? (current.direction === 'asc' ? '▲' : '▼') : '';
     });
   };
 
@@ -132,28 +125,24 @@ function initUsersTable(): void {
     });
   };
 
-  const sortRows = (key: string): void => {
-    if (!sortableKeys.has(key)) {
+  const navigateWithSort = (sortKey: string): void => {
+    if (!sortableKeys.has(sortKey)) {
       return;
     }
-    if (state.key === key) {
-      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
-    } else {
-      state.key = key;
-      state.dir = 'asc';
+    const current = getCurrentSort();
+    const params = new URLSearchParams(window.location.search);
+    let newDirection: SortDirection = 'asc';
+    if (current.key === sortKey && current.direction === 'asc') {
+      newDirection = 'desc';
     }
-
-    const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr')).filter((row) => row.dataset.name);
-    rows.sort((rowA, rowB) => {
-      const result = compare(rowA.dataset[key], rowB.dataset[key]);
-      return state.dir === 'asc' ? result : -result;
-    });
-    rows.forEach((row) => tbody.appendChild(row));
-    updateArrows();
+    params.set('sort', sortKey);
+    params.set('direction', newDirection);
+    params.set('page', '1');
+    window.location.search = params.toString();
   };
 
   headers.forEach((header) => {
-    header.addEventListener('click', () => sortRows(header.dataset.sortKey || 'name'));
+    header.addEventListener('click', () => navigateWithSort(header.dataset.sortKey || 'name'));
   });
 
   search?.addEventListener('input', applySearchFilter);
@@ -170,7 +159,6 @@ function initRequestsTable(): void {
 
   const tbody = table.tBodies[0];
   const headers = Array.from(table.querySelectorAll<HTMLButtonElement>('.table-sort'));
-  const state: { key: string; dir: SortDirection } = { key: 'created_at', dir: 'desc' };
 
   const getRowValue = (row: HTMLTableRowElement, key: string): string | undefined => {
     if (key === 'requested_by') {
@@ -198,13 +186,22 @@ function initRequestsTable(): void {
     return compareText(getRowValue(rowA, key), getRowValue(rowB, key));
   };
 
+  const getCurrentSort = (): { key: string; direction: SortDirection } => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      key: params.get('sort') || 'created_at',
+      direction: (params.get('direction') || 'desc') as SortDirection,
+    };
+  };
+
   const updateArrows = (): void => {
+    const current = getCurrentSort();
     headers.forEach((header) => {
       const arrow = header.querySelector<HTMLElement>('.sort-arrow');
       if (!arrow) {
         return;
       }
-      arrow.textContent = header.dataset.sortKey === state.key ? (state.dir === 'asc' ? '▲' : '▼') : '';
+      arrow.textContent = header.dataset.sortKey === current.key ? (current.direction === 'asc' ? '▲' : '▼') : '';
     });
   };
 
@@ -227,26 +224,21 @@ function initRequestsTable(): void {
     });
   };
 
-  const sortRows = (key: string): void => {
-    if (state.key === key) {
-      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
-    } else {
-      state.key = key;
-      state.dir = key === 'created_at' ? 'desc' : 'asc';
+  const navigateWithSort = (sortKey: string): void => {
+    const current = getCurrentSort();
+    const params = new URLSearchParams(window.location.search);
+    let newDirection: SortDirection = 'asc';
+    if (current.key === sortKey && current.direction === 'asc') {
+      newDirection = 'desc';
     }
-
-    const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr')).filter((row) => row.dataset.id);
-    rows.sort((rowA, rowB) => {
-      const result = compareValues(rowA, rowB, key);
-      return state.dir === 'asc' ? result : -result;
-    });
-    rows.forEach((row) => tbody.appendChild(row));
-    updateArrows();
-    applySearchFilter();
+    params.set('sort', sortKey);
+    params.set('direction', newDirection);
+    params.set('page', '1');
+    window.location.search = params.toString();
   };
 
   headers.forEach((header) => {
-    header.addEventListener('click', () => sortRows(header.dataset.sortKey || 'created_at'));
+    header.addEventListener('click', () => navigateWithSort(header.dataset.sortKey || 'created_at'));
   });
 
   search?.addEventListener('input', applySearchFilter);

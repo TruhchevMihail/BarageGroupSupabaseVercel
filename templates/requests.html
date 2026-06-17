@@ -84,7 +84,7 @@
   <nav class="pagination">
     {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
       {% if page %}
-      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('requests_list', page=page) }}">{{ page }}</a>
+      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('requests_list', status=filters.status, type=filters.type, sort=filters.sort, direction=filters.direction, page=page) }}">{{ page }}</a>
       {% else %}
       <span>...</span>
       {% endif %}
