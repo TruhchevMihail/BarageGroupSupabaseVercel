@@ -28,13 +28,14 @@
   or filters.status
   or filters.condition
   or filters.responsible_user_id
+  or filters.service_stay
   or filters.sort != 'inventory'
   or request.args.get('category', '').strip()
   or request.args.get('asset_type', '').strip()
   or request.args.get('page', '').strip()
 ) %}
 <form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form>
-  <input type="text" name="q" class="assets-search-input" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search>
+  <input type="text" name="q" class="assets-search-input" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
   <select name="location">
     <option value="">Всички локации</option>
     {% for location in locations %}
@@ -44,9 +45,34 @@
   {% if filters.status %}
   <input type="hidden" name="status" value="{{ filters.status }}">
   {% endif %}
+  {% if filters.service_stay %}
+  <input type="hidden" name="service_stay" value="{{ filters.service_stay }}">
+  {% endif %}
   <div class="filter-actions">
+    {% if filters.q %}
+    <span class="chip chip-active-filter">Търсене: {{ filters.q }}</span>
+    {% endif %}
+    {% if filters.status %}
+    <span class="chip chip-active-filter">{{ filters.status }}</span>
+    {% endif %}
+    {% if filters.location_id %}
+      {% for location in locations %}
+        {% if location.id == filters.location_id %}
+        <span class="chip chip-active-filter">{{ location.name }}</span>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% if request.args.get('category', '').strip() %}
+    <span class="chip chip-active-filter">{{ request.args.get('category', '').strip() }}</span>
+    {% endif %}
+    {% if request.args.get('asset_type', '').strip() %}
+    <span class="chip chip-active-filter">{{ request.args.get('asset_type', '').strip() }}</span>
+    {% endif %}
+    {% if filters.service_stay == 'long' %}
+    <span class="chip chip-service-stay-filter">Дълъг престой в сервиз</span>
+    {% endif %}
     {% if has_active_filters %}
-    <a href="{{ url_for('assets') }}" class="btn-secondary clear-filters-button assets-clear-filter">Изчисти</a>
+    <a href="{{ url_for('assets') }}" class="btn-secondary clear-filters-button assets-clear-filter">Изчисти всички</a>
     {% endif %}
   </div>
 </form>
@@ -85,6 +111,7 @@
     {% for asset in items %}
     {% set loc_meta = location_meta.get(asset.current_location.type, {'chip': 'chip-neutral', 'icon': '📍', 'label': asset.current_location.type}) if asset.current_location else None %}
     <tr data-list-search-item
+        data-highlight-id="{{ asset.id }}"
         data-name="{{ asset.name|lower }}"
         data-inventory="{{ asset.inventory_number|lower }}"
         data-type="{{ asset.name|lower }}"
@@ -97,7 +124,12 @@
         data-status="{{ 'В склад' if asset.current_location and asset.current_location.type == 'warehouse' else 'На обект' if asset.current_location and asset.current_location.type == 'site' else 'В сервиз' if asset.current_location and asset.current_location.type == 'service' else 'Брак' if asset.current_location and asset.current_location.type == 'scrap' else '' }}"
         data-responsible-user-id="{{ asset.responsible_user.id if asset.responsible_user else '' }}"
         data-search-text="{{ asset.inventory_number }} {{ asset.name }} {{ asset.alias_name or '' }} {{ asset.brand }} {{ asset.model }} {{ asset.serial_number or '' }} {{ asset.invoice_number or '' }} {{ asset.supplier_company or asset.company_name or '' }} {{ asset.notes or '' }}">
-      <td class="asset-inventory-cell"><a class="asset-row-link nowrap" href="{{ url_for('asset_detail', asset_id=asset.id) }}"><strong>{{ asset.inventory_number }}</strong></a></td>
+      <td class="asset-inventory-cell">
+        <div class="asset-inventory-stack">
+          <a class="asset-row-link nowrap" href="{{ url_for('asset_detail', asset_id=asset.id) }}"><strong>{{ asset.inventory_number }}</strong></a>
+          <button type="button" class="copy-inline-button" data-copy-text="{{ asset.inventory_number }}" aria-label="Копирай инвентарен номер {{ asset.inventory_number }}">Копирай №</button>
+        </div>
+      </td>
       <td class="asset-type-cell" title="{{ asset.name }}"><span class="asset-type-text">{{ asset.name }}</span></td>
       <td class="asset-alias-cell" title="{{ asset.alias_name or '' }}"><span class="asset-cell-text">{{ asset.alias_name or '-' }}</span></td>
       <td class="asset-brand-cell" title="{{ asset.brand }}"><span class="asset-cell-text">{{ asset.brand }}</span></td>
@@ -108,6 +140,9 @@
         <a class="chip chip-link asset-location-chip {{ location_meta[asset.current_location.type].chip }}" title="{{ asset.current_location.name }}" href="{{ url_for('location_detail', location_id=asset.current_location.id) }}">
           <span class="asset-location-chip-text">{{ location_meta[asset.current_location.type].icon }} {{ asset.current_location.name }}</span>
         </a>
+        {% if asset.service_stay_is_long %}
+        <span class="chip chip-service-stay-warning">⚠️ Дълъг престой · {{ asset.service_stay_days }} дни</span>
+        {% endif %}
         {% else %}
         -
         {% endif %}

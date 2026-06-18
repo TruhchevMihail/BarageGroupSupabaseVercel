@@ -1,18 +1,305 @@
 .panel,
 .card {
-  border-radius: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .06);
+}
+
+.section-head {
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.section-head h2 {
+  color: var(--text);
+  font-size: 17px;
+  letter-spacing: -.01em;
+}
+
+.page-head {
+  margin-bottom: 20px;
+}
+
+.page-head h1 {
+  color: var(--text);
+  letter-spacing: -.035em;
+}
+
+.eyebrow {
+  color: var(--primary-dark);
+  letter-spacing: .10em;
 }
 
 .summary-strip {
-  gap: 14px;
+  gap: 12px;
 }
 
 .summary-pill {
-  min-height: 88px;
+  min-height: 86px;
+  gap: 8px;
+  padding: 15px 16px;
+  border-radius: 15px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+}
+
+.summary-pill:hover,
+.list-card:hover,
+.mini-asset:hover,
+.location-row-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .09);
+  filter: none;
+}
+
+.summary-pill span {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: .07em;
+}
+
+.summary-pill strong {
+  color: var(--text);
+  font-size: 30px;
+  letter-spacing: -.03em;
+}
+
+.summary-pill-total {
+  border-top-color: #64748b;
+}
+
+.summary-pill-warehouse {
+  border-top-color: var(--blue);
+}
+
+.summary-pill-site {
+  border-top-color: var(--green);
+}
+
+.summary-pill-service {
+  border-top-color: var(--amber);
+}
+
+.summary-pill-scrap {
+  border-top-color: var(--red);
 }
 
 .list-card,
 .location-row,
 .mini-asset {
+  border-radius: 13px;
+  border-color: var(--line-soft);
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
+}
+
+.list-card strong,
+.mini-asset strong {
+  color: var(--text);
+}
+
+.list-card span,
+.mini-asset span,
+.mini-asset small {
+  color: var(--muted);
+}
+
+.chip,
+.mini-chip {
+  min-height: 26px;
+  border: 1px solid transparent;
+  font-size: 11px;
+  letter-spacing: .015em;
+}
+
+.chip-warehouse,
+.chip-pending {
+  background: rgba(37, 99, 235, .10);
+  color: #1d4ed8;
+  border-color: rgba(37, 99, 235, .16);
+}
+
+.chip-site,
+.chip-approved {
+  background: rgba(22, 163, 74, .10);
+  color: #15803d;
+  border-color: rgba(22, 163, 74, .16);
+}
+
+.chip-service,
+.chip-repair,
+.chip-service-red {
+  background: rgba(245, 158, 11, .13);
+  color: #b45309;
+  border-color: rgba(245, 158, 11, .20);
+}
+
+.chip-scrap,
+.chip-rejected,
+.chip-super,
+.chip-role-admin {
+  background: rgba(220, 38, 38, .10);
+  color: #b91c1c;
+  border-color: rgba(220, 38, 38, .16);
+}
+
+.chip-neutral,
+.mini-chip {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: var(--line-soft);
+}
+
+.empty-state {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 34px;
+  border-style: dashed;
+  background: linear-gradient(180deg, #fff, #f8fafc);
+}
+
+.flash {
   border-radius: 12px;
+  box-shadow: var(--shadow-soft);
+}
+
+.flash.success {
+  background: #ecfdf5;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.flash.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.collapsible-toggle {
+  margin-left: auto;
+}
+
+[data-collapsible-body][hidden] {
+  display: none;
+}
+
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .summary-pill,
+html[data-theme="dark"] .list-card,
+html[data-theme="dark"] .location-row,
+html[data-theme="dark"] .mini-asset {
+  background: #111827;
+  border-color: #263244;
+  box-shadow: 0 12px 28px rgba(0,0,0,.24);
+}
+
+html[data-theme="dark"] .section-head {
+  border-bottom-color: #263244;
+}
+
+html[data-theme="dark"] .chip-warehouse,
+html[data-theme="dark"] .chip-pending {
+  background: rgba(96, 165, 250, .14);
+  color: #bfdbfe;
+  border-color: rgba(96, 165, 250, .22);
+}
+
+html[data-theme="dark"] .chip-site,
+html[data-theme="dark"] .chip-approved {
+  background: rgba(74, 222, 128, .13);
+  color: #bbf7d0;
+  border-color: rgba(74, 222, 128, .22);
+}
+
+html[data-theme="dark"] .chip-service,
+html[data-theme="dark"] .chip-repair,
+html[data-theme="dark"] .chip-service-red {
+  background: rgba(251, 191, 36, .14);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, .24);
+}
+
+html[data-theme="dark"] .chip-scrap,
+html[data-theme="dark"] .chip-rejected,
+html[data-theme="dark"] .chip-super,
+html[data-theme="dark"] .chip-role-admin {
+  background: rgba(248, 113, 113, .13);
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, .22);
+}
+
+html[data-theme="dark"] .chip-neutral,
+html[data-theme="dark"] .mini-chip {
+  background: rgba(148, 163, 184, .10);
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+.login-shell {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(249, 115, 22, .22), transparent 22rem),
+    linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.login-hero {
+  padding: clamp(40px, 7vw, 86px);
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, .96), rgba(30, 41, 59, .92)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 36px);
+}
+
+.login-hero .eyebrow {
+  color: #fed7aa;
+}
+
+.login-hero h1 {
+  max-width: 680px;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 1;
+  letter-spacing: -.045em;
+}
+
+.login-hero p {
+  max-width: 560px;
+  color: rgba(226, 232, 240, .78);
+  font-size: 16px;
+}
+
+.auth-card {
+  max-width: 480px;
+  justify-self: center;
+  border-radius: 18px;
+  border-color: rgba(226, 232, 240, .82);
+  box-shadow: 0 28px 70px rgba(15, 23, 42, .22);
+}
+
+.auth-card .eyebrow {
+  color: var(--primary-dark);
+}
+
+.auth-head h2 {
+  color: var(--text);
+}
+
+.login-theme-toggle {
+  border-color: rgba(249, 115, 22, .28);
+}
+
+html[data-theme="dark"] .login-shell {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(249, 115, 22, .18), transparent 22rem),
+    linear-gradient(135deg, #020617, #0f172a);
+}
+
+html[data-theme="dark"] .login-hero {
+  background:
+    linear-gradient(135deg, rgba(2, 6, 23, .96), rgba(15, 23, 42, .94)),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 36px);
 }

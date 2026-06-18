@@ -52,6 +52,7 @@ from barage_app.config import (
 from barage_app.constants import *  # noqa: F403
 from barage_app.extensions import db
 from barage_app.models import Asset, AssetHistory, AssetImage, AssetServiceRecord, Location, TransferRequest, User
+from barage_app.services.service_stay import apply_long_service_stay_filter, enrich_assets_with_service_stay
 
 
 _ROUTES = []
@@ -1390,6 +1391,7 @@ def user_can_direct_transfer(user, asset, to_location):
 
 
 def update_asset_status(asset, target_location):
+    previous_location_id = asset.current_location_id
     asset.current_location_id = target_location.id
     if target_location.type == LOC_WAREHOUSE:
         asset.status = STATUS_WAREHOUSE
@@ -1400,7 +1402,8 @@ def update_asset_status(asset, target_location):
     elif target_location.type == LOC_SCRAP:
         asset.status = STATUS_SCRAP
     asset.condition = asset_condition_from_status(asset.status)
-    asset.last_moved_at = datetime.utcnow()
+    if previous_location_id != target_location.id:
+        asset.last_moved_at = datetime.utcnow()
 
 
 def init_database():
@@ -1732,6 +1735,7 @@ def dashboard():
         'site_total': asset_counts['site'],
         'service_total': asset_counts['service'],
         'scrap_total': asset_counts['scrap'],
+        'long_service_stay_total': apply_long_service_stay_filter(asset_query).count(),
         'pending_requests': request_query.filter_by(status='pending').count(),
     }
     recent_history = (
@@ -1794,6 +1798,7 @@ def assets():
     asset_type = request.args.get('asset_type', '').strip()
     condition = request.args.get('condition', '').strip()
     responsible_user_id = request.args.get('responsible_user_id', type=int)
+    service_stay = request.args.get('service_stay', '').strip()
     sort = request.args.get('sort', 'inventory').strip()
     direction = request.args.get('direction', 'asc').lower().strip()
     if direction not in ('asc', 'desc'):
@@ -1835,6 +1840,8 @@ def assets():
         query = query.filter_by(condition=condition)
     if responsible_user_id:
         query = query.filter_by(responsible_user_id=responsible_user_id)
+    if service_stay == 'long':
+        query = apply_long_service_stay_filter(query)
 
     inventory_order = [cast(Asset.inventory_number, Integer), Asset.inventory_number]
     sort_map = {
@@ -1849,6 +1856,7 @@ def assets():
     columns = sort_map.get(sort, inventory_order)
     order_by = tuple(col.desc() if direction == 'desc' else col.asc() for col in columns)
     pagination = query.order_by(*order_by).paginate(page=page, per_page=15, error_out=False)
+    enrich_assets_with_service_stay(pagination.items)
     locations = Location.query.order_by(Location.name).all()
     categories = [
         row[0] for row in db.session.query(Asset.category)
@@ -1878,6 +1886,7 @@ def assets():
         'location_id': location_id,
         'condition': condition,
         'responsible_user_id': responsible_user_id,
+        'service_stay': service_stay,
         'sort': sort,
         'direction': direction,
     }
@@ -1971,6 +1980,7 @@ def asset_detail(asset_id):
                                  joinedload(Asset.created_by), selectinload(Asset.images)).get_or_404(asset_id)
     if not can_view_asset(g.user, asset):
         abort(403)
+    enrich_assets_with_service_stay([asset])
     history_page = request.args.get('history_page', 1, type=int)
     history_pagination = (
         AssetHistory.query

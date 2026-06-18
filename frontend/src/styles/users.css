@@ -1,15 +1,129 @@
+.users-page {
+  display: grid;
+  gap: 16px;
+}
+
+.users-page .summary-strip,
+.requests-search-row {
+  margin-bottom: 0;
+}
+
 .users-page .summary-strip {
-  grid-template-columns: minmax(260px, 420px);
+  grid-template-columns: minmax(280px, 520px);
 }
 
 .users-search-pill {
   min-height: 88px;
 }
 
-.users-page .users-table td:nth-child(2) a {
+.users-search {
+  min-height: 44px;
+  background: var(--panel);
+  border-color: var(--line);
+}
+
+.users-table-wrap,
+.requests-table-wrap {
+  overflow-x: auto;
+}
+
+.users-table {
+  min-width: 980px;
+}
+
+.requests-table {
+  min-width: 1040px;
+}
+
+.users-page .users-table th,
+.users-page .users-table td,
+.requests-table th,
+.requests-table td {
+  padding: 11px 12px;
+}
+
+.users-page .users-table th,
+.requests-table th {
+  background: #f1f5f9;
+  font-weight: 900;
+}
+
+.users-page .users-table td:nth-child(2) a,
+.requests-table td:nth-child(2) a {
   word-break: break-word;
 }
 
 .users-page .chip-stack {
   gap: 6px;
+}
+
+.user-name-plain,
+.user-email {
+  color: var(--text);
+}
+
+.user-name-plain:hover,
+.user-email:hover {
+  color: var(--primary-dark);
+}
+
+.status-dot {
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 3px rgba(100, 116, 139, .10);
+}
+
+.status-dot.ok {
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, .12);
+}
+
+.status-dot.off {
+  background: var(--red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
+}
+
+.requests-summary-strip {
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+}
+
+.requests-pill-pending {
+  border-top-color: var(--amber);
+}
+
+.requests-pill-approved {
+  border-top-color: var(--green);
+}
+
+.requests-pill-rejected {
+  border-top-color: var(--red);
+}
+
+.requests-table .form-actions {
+  padding-top: 0;
+  border-top: 0;
+  gap: 6px;
+  justify-content: flex-start;
+}
+
+.requests-table .form-actions form {
+  margin: 0;
+}
+
+html[data-theme="dark"] .users-page .users-table th,
+html[data-theme="dark"] .requests-table th {
+  background: #1e293b;
+}
+
+html[data-theme="dark"] .user-name-plain,
+html[data-theme="dark"] .user-email,
+html[data-theme="dark"] .requests-table td:nth-child(2) a {
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .users-page .summary-strip,
+  .requests-summary-strip {
+    grid-template-columns: 1fr;
+  }
 }

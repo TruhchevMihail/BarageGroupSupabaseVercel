@@ -14,13 +14,13 @@
     <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>
     {% else %}
     {% if can_delete_user %}
-    <form method="post" action="{{ url_for('user_delete', user_id=user.id) }}" onsubmit="return confirm('Да изтрия ли този потребител?');">
+    <form method="post" action="{{ url_for('user_delete', user_id=user.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary danger">Изтрий</button>
     </form>
     {% endif %}
     {% if can_toggle_user %}
-    <form method="post" action="{{ url_for('user_toggle', user_id=user.id) }}">
+    <form method="post" action="{{ url_for('user_toggle', user_id=user.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary">{{ 'Изключи' if user.is_active else 'Активирай' }}</button>
     </form>

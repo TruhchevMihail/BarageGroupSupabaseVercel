@@ -15,7 +15,7 @@
 
 <section class="panel">
   <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get">
-    <input type="search" name="q" value="{{ query }}" placeholder="Търси по машина, обект или потребител" required>
+    <input type="search" name="q" value="{{ query }}" placeholder="Търси по машина, обект или потребител" required data-main-search>
     <button type="submit" {% if not query %}disabled{% endif %}>Търси</button>
   </form>
 </section>

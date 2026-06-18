@@ -81,6 +81,35 @@
       {% block content %}{% endblock %}
     </main>
   </div>
+  {% if g.user %}
+  <div class="command-palette" data-command-palette hidden>
+    <div class="command-palette-panel" data-command-palette-panel role="dialog" aria-modal="true" aria-label="Бърза навигация">
+      <input
+        type="search"
+        class="command-palette-input"
+        data-command-palette-input
+        placeholder="Търси команда или страница..."
+        autocomplete="off"
+        aria-label="Търси команда или страница"
+      >
+      <div class="command-palette-list" data-command-palette-list role="listbox"></div>
+      <div class="command-palette-footer">Ctrl/Cmd+K за бърза навигация · Esc за затваряне</div>
+      <div data-command data-label="Табло" data-url="{{ url_for('dashboard') }}" data-keywords="dashboard начало общ преглед"></div>
+      <div data-command data-label="Машини" data-url="{{ url_for('assets') }}" data-keywords="активи техника инвентар"></div>
+      {% if g.user.role == 'superuser' %}
+      <div data-command data-label="Нова машина" data-url="{{ url_for('asset_new') }}" data-keywords="добави актив машина"></div>
+      {% endif %}
+      <div data-command data-label="Локации" data-url="{{ url_for('locations_list') }}" data-keywords="обекти складове сервиз брак"></div>
+      {% if can_view_users %}
+      <div data-command data-label="Потребители" data-url="{{ url_for('users_manage') }}" data-keywords="профили роли екип"></div>
+      {% endif %}
+      <div data-command data-label="Заявки" data-url="{{ url_for('requests_list') }}" data-keywords="одобрения преместване"></div>
+      <div data-command data-label="Търсене" data-url="{{ url_for('global_search') }}" data-keywords="глобално търсене"></div>
+      <div data-command data-label="Машини в сервиз" data-url="{{ url_for('assets', status='В сервиз') }}" data-keywords="сервиз ремонт"></div>
+      <div data-command data-label="Дълъг престой в сервиз" data-url="{{ url_for('assets', service_stay='long') }}" data-keywords="сервиз престой предупреждение"></div>
+    </div>
+  </div>
+  {% endif %}
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

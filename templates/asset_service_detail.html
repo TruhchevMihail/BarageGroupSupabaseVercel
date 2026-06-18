@@ -11,7 +11,7 @@
     <a class="btn-link" href="{{ url_for('asset_service_edit', asset_id=asset.id, record_id=record.id) }}">Редакция</a>
     {% endif %}
     {% if can_delete_service_record %}
-    <form method="post" action="{{ url_for('asset_service_delete', asset_id=asset.id, record_id=record.id) }}" onsubmit="return confirm('Да изтрия ли този сервизен запис?');">
+    <form method="post" action="{{ url_for('asset_service_delete', asset_id=asset.id, record_id=record.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-small danger">Изтрий</button>
     </form>

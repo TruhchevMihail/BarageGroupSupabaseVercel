@@ -19,7 +19,7 @@
 <div class="summary-strip requests-search-row">
   <div class="summary-pill users-search-pill">
     <span>Търсене</span>
-    <input type="search" id="requests-search" class="users-search" placeholder="ID, машина, посока, статус, заявил..." autocomplete="off">
+    <input type="search" id="requests-search" class="users-search" placeholder="ID, машина, посока, статус, заявил..." autocomplete="off" data-main-search>
   </div>
 </div>
 
@@ -61,10 +61,10 @@
       {% if permissions.get('approve') or permissions.get('reject') %}
       <div class="form-actions">
         {% if permissions.get('approve') %}
-        <form method="post" action="{{ url_for('request_action', req_id=item.id, action='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-small" type="submit">Одобри</button></form>
+        <form method="post" action="{{ url_for('request_action', req_id=item.id, action='approve') }}" data-confirm="Това действие може да промени състоянието на машината. Продължавате ли?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-small" type="submit">Одобри</button></form>
         {% endif %}
         {% if permissions.get('reject') %}
-        <form method="post" action="{{ url_for('request_action', req_id=item.id, action='reject') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-small danger" type="submit">Откажи</button></form>
+        <form method="post" action="{{ url_for('request_action', req_id=item.id, action='reject') }}" data-confirm="Сигурни ли сте, че искате да продължите?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn-small danger" type="submit">Откажи</button></form>
         {% endif %}
       </div>
       {% else %}-{% endif %}

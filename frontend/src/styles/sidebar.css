@@ -1,13 +1,95 @@
 .sidebar {
-  width: 308px;
-  flex-basis: 308px;
-  padding: 26px 22px 22px;
+  width: 300px;
+  flex-basis: 300px;
+  padding: 24px 20px;
+  gap: 22px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, .98), rgba(30, 41, 59, .98)),
+    repeating-linear-gradient(135deg, rgba(255,255,255,.035) 0 1px, transparent 1px 12px);
+  border-right: 1px solid rgba(148, 163, 184, .18);
+  box-shadow: 12px 0 34px rgba(15, 23, 42, .12);
+}
+
+.brand-block {
+  padding: 6px;
+  border-radius: 16px;
+}
+
+.brand-mark {
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 12px 26px rgba(0,0,0,.26);
+}
+
+.brand-title {
+  letter-spacing: .045em;
+}
+
+.brand-tagline {
+  color: rgba(226, 232, 240, .68);
+}
+
+.sidebar-nav {
+  gap: 7px;
+  padding-top: 4px;
 }
 
 .sidebar-nav a {
-  min-height: 46px;
+  position: relative;
+  min-height: 44px;
+  padding: 11px 14px 11px 16px;
+  color: rgba(226, 232, 240, .76);
+  border-radius: 12px;
+  border-color: rgba(148, 163, 184, .08);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.sidebar-nav a:hover {
+  background: rgba(248, 250, 252, .08);
+  border-color: rgba(248, 250, 252, .13);
+  color: #fff;
+}
+
+.sidebar-nav a.active {
+  background: linear-gradient(90deg, rgba(249, 115, 22, .20), rgba(248, 250, 252, .07));
+  border-color: rgba(249, 115, 22, .38);
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.sidebar-nav a.active::after {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, .14);
 }
 
 .userbox {
   gap: 14px;
+  padding: 16px;
+  background: rgba(15, 23, 42, .52);
+  border: 1px solid rgba(148, 163, 184, .16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.user-meta small {
+  color: rgba(226, 232, 240, .72);
+}
+
+.user-actions a,
+.user-action-button {
+  background: rgba(248, 250, 252, .08);
+  border: 1px solid rgba(248, 250, 252, .10);
+}
+
+.user-actions a:hover,
+.user-action-button:hover {
+  background: rgba(249, 115, 22, .18);
+  border-color: rgba(249, 115, 22, .24);
+}
+
+.userbox-footer .theme-toggle {
+  background: rgba(248, 250, 252, .94);
+  color: var(--ink);
+  box-shadow: none;
 }

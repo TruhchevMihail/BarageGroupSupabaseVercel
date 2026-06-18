@@ -1,3 +1,12 @@
+import { showToast } from './toast';
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function initAssetUploadForms(csrfToken: string): void {
   document.querySelectorAll<HTMLFormElement>('[data-asset-image-form]').forEach((form) => {
     if (form.dataset.boundAssetImageForm === '1') {
@@ -61,13 +70,22 @@ function initAssetPreviewInputs(): void {
 
     input.addEventListener('change', () => {
       preview.querySelectorAll<HTMLElement>('.asset-image-thumb--new').forEach((node) => node.remove());
+      let previewCount = 0;
 
       Array.from(input.files || [])
         .slice(0, 3)
         .forEach((file) => {
+          if (!file.type.startsWith('image/')) {
+            return;
+          }
+
           const url = URL.createObjectURL(file);
           const figure = document.createElement('figure');
           figure.className = 'asset-image-thumb asset-image-thumb--new';
+
+          const label = document.createElement('div');
+          label.className = 'asset-image-preview-label';
+          label.textContent = 'Преглед на снимката';
 
           const image = document.createElement('img');
           image.src = url;
@@ -83,11 +101,16 @@ function initAssetPreviewInputs(): void {
 
           const caption = document.createElement('figcaption');
           caption.className = 'asset-image-thumb-caption';
-          caption.textContent = file.name;
+          caption.textContent = `Избрана снимка: ${file.name} · ${formatFileSize(file.size)}`;
 
-          figure.append(image, caption);
+          figure.append(label, image, caption);
           preview.appendChild(figure);
+          previewCount += 1;
         });
+
+      if (previewCount > 0) {
+        showToast('Снимката е избрана');
+      }
     });
   });
 }

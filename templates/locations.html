@@ -25,7 +25,7 @@
   <div class="summary-pill users-search-pill locations-search-pill">
     <span>Търсене</span>
     <form method="get" class="locations-search-form" data-list-search-form>
-      <input type="search" name="q" id="locations-search" class="users-search" placeholder="Търсене по всички критерии" value="{{ filters.q }}" autocomplete="off" data-list-search>
+      <input type="search" name="q" id="locations-search" class="users-search" placeholder="Търсене по всички критерии" value="{{ filters.q }}" autocomplete="off" data-list-search data-main-search>
       <input type="hidden" name="type" value="{{ filters.type }}">
       <input type="hidden" name="sort" value="{{ filters.sort }}">
       {% if filters.q %}

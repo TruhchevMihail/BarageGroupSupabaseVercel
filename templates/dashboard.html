@@ -18,13 +18,24 @@
       <span class="pending-requests-badge">{{ stats.pending_requests }}</span>
       {% endif %}
     </a>
+    {% if stats.long_service_stay_total %}
+    <a
+      class="btn-primary long-service-button long-service-button--active"
+      href="{{ url_for('assets', service_stay='long') }}"
+      title="Има машини с дълъг престой в сервиз"
+      aria-label="Дълъг престой в сервиз, има машини за преглед"
+    >
+      <span>Дълъг престой в сервиз</span>
+      <span class="long-service-badge">{{ stats.long_service_stay_total }}</span>
+    </a>
+    {% endif %}
     {% endif %}
   </div>
 </div>
 
 <section class="panel dashboard-section dashboard-search-panel">
   <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get">
-    <input type="search" name="q" placeholder="Бързо търсене по инвентарен №, име, марка, модел или сериен №" required>
+    <input type="search" name="q" placeholder="Бързо търсене по инвентарен №, име, марка, модел или сериен №" required data-main-search>
     <button type="submit" disabled>Търси</button>
   </form>
 </section>
@@ -33,12 +44,12 @@
   <div class="section-head">
     <h2>Статус на машините</h2>
   </div>
-  <div class="summary-strip dashboard-summary-strip">
+  <div class="summary-strip dashboard-summary-strip dashboard-status-strip">
     <a class="summary-pill summary-pill-total" href="{{ url_for('assets') }}"><span>Общо</span><strong>{{ stats.assets_total }}</strong></a>
     <a class="summary-pill summary-pill-warehouse" href="{{ url_for('assets', status='В склад') }}"><span>В склад</span><strong>{{ stats.warehouse_total }}</strong></a>
     <a class="summary-pill summary-pill-site" href="{{ url_for('assets', status='На обект') }}"><span>На обект</span><strong>{{ stats.site_total }}</strong></a>
     <a class="summary-pill summary-pill-service" href="{{ url_for('assets', status='В сервиз') }}"><span>В сервиз</span><strong>{{ stats.service_total }}</strong></a>
-    <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}"><span>Брак</span><strong>{{ stats.get('scrap_total', 0) }}</strong></a>
+    <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}"><span>Брак</span><strong>{{ stats.scrap_total }}</strong></a>
   </div>
 </section>
 

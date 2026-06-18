@@ -246,8 +246,26 @@ function initRequestsTable(): void {
   updateArrows();
 }
 
+function initRowHighlight(): void {
+  const params = new URLSearchParams(window.location.search);
+  const highlightId = params.get('highlight');
+  if (!highlightId) {
+    return;
+  }
+
+  const row = document.querySelector<HTMLElement>(`[data-highlight-id="${CSS.escape(highlightId)}"]`);
+  if (!row) {
+    return;
+  }
+
+  row.classList.add('row-highlighted');
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  window.setTimeout(() => row.classList.remove('row-highlighted'), 3200);
+}
+
 export function initTableEnhancements(): void {
   initAssetsTable();
   initUsersTable();
   initRequestsTable();
+  initRowHighlight();
 }

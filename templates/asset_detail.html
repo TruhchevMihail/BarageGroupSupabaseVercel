@@ -15,8 +15,9 @@
     {% if can_edit_asset or can_edit_asset_notes_and_images %}
     <a class="btn-link" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Редакция</a>
     {% endif %}
+    <button type="button" class="btn-secondary btn-small" data-copy-current-url>Копирай линк</button>
     {% if can_delete_asset %}
-    <form method="post" action="{{ url_for('asset_delete', asset_id=asset.id) }}" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този актив?');">
+    <form method="post" action="{{ url_for('asset_delete', asset_id=asset.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този актив?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-small danger">Изтрий</button>
     </form>
@@ -24,12 +25,21 @@
   </div>
 </div>
 
+{% if asset.service_stay_is_long %}
+<div class="alert-banner service-stay-detail-warning">
+  ⚠️ Тази машина е в сервиз от {{ asset.service_stay_days }} дни. Проверете дали ремонтът е приключен или дали трябва да бъде преместена.
+</div>
+{% endif %}
+
 <section class="panel asset-detail-panel asset-summary asset-main-card asset-detail-section">
   <div class="section-head"><h2>Основни данни</h2></div>
   <div class="asset-main-fields-grid">
     <div class="asset-detail-field">
       <div class="asset-detail-label">Инвентарен №</div>
-      <div class="asset-detail-value">{{ asset.inventory_number }}</div>
+      <div class="asset-detail-value detail-copy-row">
+        <span>{{ asset.inventory_number }}</span>
+        <button type="button" class="copy-inline-button" data-copy-text="{{ asset.inventory_number }}" aria-label="Копирай инвентарен номер">Копирай №</button>
+      </div>
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Тип / Име</div>
@@ -67,7 +77,12 @@
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Сериен №</div>
-      <div class="asset-detail-value">{{ asset.serial_number or '-' }}</div>
+      <div class="asset-detail-value detail-copy-row">
+        <span>{{ asset.serial_number or '-' }}</span>
+        {% if asset.serial_number %}
+        <button type="button" class="copy-inline-button" data-copy-text="{{ asset.serial_number }}" aria-label="Копирай сериен номер">Копирай</button>
+        {% endif %}
+      </div>
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Дата на създаване</div>
@@ -100,16 +115,16 @@
   </div>
 </section>
 
-<section class="panel asset-detail-panel asset-detail-section">
+<section class="panel asset-detail-panel asset-detail-section" data-collapsible>
   {% set ns = namespace(total=0) %}
   {% for item in service_records %}
     {% set ns.total = ns.total + ((item.price or 0) | float) %}
   {% endfor %}
-  <div class="section-head split">
+  <div class="section-head split" data-collapsible-title>
     <h2>Сервизна история</h2>
     <strong>Общо: {{ ns.total | eur }}</strong>
   </div>
-  <div class="table-wrap">
+  <div class="table-wrap" data-collapsible-body>
     <table>
       <tr><th>Дата</th><th>Проблем</th><th>Действие</th><th>Сервиз</th><th>Цена</th><th>Забележки</th><th>Кой</th><th>Действия</th></tr>
       {% for record in service_records %}
@@ -132,9 +147,9 @@
   </div>
 </section>
 
-<section class="panel asset-detail-panel">
-  <div class="section-head"><h2>История</h2></div>
-  <div class="table-wrap">
+<section class="panel asset-detail-panel" data-collapsible>
+  <div class="section-head" data-collapsible-title><h2>История</h2></div>
+  <div class="table-wrap" data-collapsible-body>
     <table>
       <tr><th>Дата</th><th>Действие</th><th>Детайли</th><th>Кой</th></tr>
       {% for row in history %}

@@ -1,22 +1,146 @@
 .content {
-  padding: 28px 28px 40px;
+  padding: 30px 30px 42px;
+  background:
+    radial-gradient(circle at top right, rgba(249, 115, 22, .08), transparent 30rem),
+    linear-gradient(180deg, rgba(241, 245, 249, .82), rgba(248, 250, 252, .96) 18rem);
 }
 
 .dashboard-section {
   margin-bottom: 20px;
 }
 
-.dashboard-summary-strip,
-.dashboard-mini-metrics,
-.dashboard-action-grid,
-.dashboard-workgrid {
-  gap: 14px;
-}
-
 .dashboard-search-panel {
   padding: 18px 20px;
+  border-left: 4px solid var(--primary);
 }
 
 .dashboard-search {
-  max-width: 920px;
+  max-width: 980px;
+}
+
+.dashboard-summary-strip {
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+}
+
+.dashboard-status-strip {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.dashboard-summary-strip .summary-pill {
+  min-height: 98px;
+}
+
+.dashboard-summary-strip .summary-pill strong {
+  font-size: 34px;
+}
+
+.summary-pill-long-service {
+  border-top-color: var(--line);
+}
+
+.summary-pill-long-service.summary-pill-danger {
+  border-top-color: var(--red);
+  background: linear-gradient(180deg, rgba(254, 242, 242, .98), rgba(255,255,255,.98));
+}
+
+.summary-pill-long-service.summary-pill-danger span {
+  color: #991b1b;
+}
+
+.summary-pill-long-service.summary-pill-danger strong {
+  color: var(--red);
+}
+
+.dashboard-two-column {
+  gap: 18px;
+}
+
+.dashboard-card {
+  min-height: 100%;
+}
+
+.service-assets-grid,
+.compact-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.service-asset-card {
+  border-left: 4px solid var(--amber);
+}
+
+.pending-requests-button--active {
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  border-color: rgba(249, 115, 22, .38);
+}
+
+.pending-requests-badge {
+  color: #9a3412;
+}
+
+.long-service-button {
+  margin-left: 10px;
+}
+
+.long-service-button--active {
+  background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  border-color: rgba(249, 115, 22, .38);
+}
+
+.long-service-badge {
+  color: #9a3412;
+}
+
+.section-action-chip {
+  color: var(--text-soft);
+  border-color: var(--line-soft);
+  background: var(--panel);
+}
+
+.section-action-chip:hover {
+  color: var(--primary-dark);
+  border-color: rgba(249, 115, 22, .30);
+  background: var(--primary-soft);
+}
+
+html[data-theme="dark"] .content {
+  background:
+    radial-gradient(circle at top right, rgba(249, 115, 22, .12), transparent 30rem),
+    linear-gradient(180deg, #0b1220, #0f172a 18rem);
+}
+
+html[data-theme="dark"] .section-action-chip {
+  color: #cbd5e1;
+  border-color: #334155;
+  background: #111827;
+}
+
+html[data-theme="dark"] .section-action-chip:hover {
+  color: #fed7aa;
+  background: rgba(249, 115, 22, .10);
+  border-color: rgba(249, 115, 22, .28);
+}
+
+html[data-theme="dark"] .summary-pill-long-service.summary-pill-danger {
+  background: linear-gradient(180deg, rgba(127, 29, 29, .28), #111827);
+  border-top-color: var(--red);
+}
+
+html[data-theme="dark"] .summary-pill-long-service.summary-pill-danger span,
+html[data-theme="dark"] .summary-pill-long-service.summary-pill-danger strong {
+  color: #fecaca;
+}
+
+@media (max-width: 1180px) {
+  .dashboard-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-summary-strip,
+  .dashboard-two-column {
+    grid-template-columns: 1fr;
+  }
 }

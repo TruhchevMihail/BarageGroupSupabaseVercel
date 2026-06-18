@@ -11,19 +11,19 @@
     <a class="btn-secondary" href="{{ url_for('location_edit', location_id=location.id) }}">Редактирай</a>
     {% endif %}
     {% if can_archive_location %}
-    <form method="post" action="{{ url_for('location_archive', location_id=location.id) }}">
+    <form method="post" action="{{ url_for('location_archive', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary">Архивирай</button>
     </form>
     {% endif %}
     {% if can_unarchive_location %}
-    <form method="post" action="{{ url_for('location_unarchive', location_id=location.id) }}">
+    <form method="post" action="{{ url_for('location_unarchive', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary">Върни от архив</button>
     </form>
     {% endif %}
     {% if can_delete_location %}
-    <form method="post" action="{{ url_for('location_delete', location_id=location.id) }}" onsubmit="return confirm('Да изтрия ли този обект? Това действие е необратимо.');">
+    <form method="post" action="{{ url_for('location_delete', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary danger">Изтрий</button>
     </form>
