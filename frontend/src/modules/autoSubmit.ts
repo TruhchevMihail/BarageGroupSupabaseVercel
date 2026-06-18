@@ -1,5 +1,10 @@
 export function initAutoSubmit(): void {
   document.querySelectorAll<HTMLFormElement>('form[data-auto-submit]').forEach((form) => {
+    if (form.dataset.autoSubmitBound === 'true') {
+      return;
+    }
+    form.dataset.autoSubmitBound = 'true';
+
     let timerId: number | null = null;
     const submitSoon = (): void => {
       if (timerId !== null) {

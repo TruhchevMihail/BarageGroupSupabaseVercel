@@ -63,6 +63,11 @@ function initAssetUploadForms(csrfToken: string): void {
 
 function initAssetPreviewInputs(): void {
   document.querySelectorAll<HTMLInputElement>('[data-asset-images]').forEach((input) => {
+    if (input.dataset.assetImagesBound === 'true') {
+      return;
+    }
+    input.dataset.assetImagesBound = 'true';
+
     const preview = input.parentElement?.querySelector<HTMLElement>('[data-image-preview]');
     if (!preview) {
       return;

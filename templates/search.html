@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+<div data-ajax-page="search">
+<div data-ajax-container="search">
 <div class="page-head split">
   <div>
     <span class="eyebrow">Търсене</span>
@@ -14,7 +16,7 @@
 </div>
 
 <section class="panel">
-  <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get">
+  <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get" data-ajax-form>
     <input type="search" name="q" value="{{ query }}" placeholder="Търси по машина, обект или потребител" required data-main-search>
     <button type="submit" {% if not query %}disabled{% endif %}>Търси</button>
   </form>
@@ -88,4 +90,6 @@
 </section>
 {% endif %}
 {% endif %}
+</div>
+</div>
 {% endblock %}

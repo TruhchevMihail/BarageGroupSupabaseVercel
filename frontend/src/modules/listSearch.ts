@@ -4,6 +4,11 @@ function normalize(value: string | null | undefined): string {
 
 export function initListSearch(): void {
   document.querySelectorAll<HTMLFormElement>('form[data-list-search-form]').forEach((form) => {
+    if (form.dataset.listSearchBound === 'true' || form.closest('[data-ajax-page]')) {
+      return;
+    }
+    form.dataset.listSearchBound = 'true';
+
     const searchInput = form.querySelector<HTMLInputElement>('[data-list-search]');
     const scope = form.closest('main') || document;
     const items = Array.from(scope.querySelectorAll<HTMLElement>('[data-list-search-item]'));

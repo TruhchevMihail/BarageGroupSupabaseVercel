@@ -28,7 +28,36 @@
 }
 
 .users-table {
-  min-width: 980px;
+  width: 100%;
+  min-width: 1080px;
+}
+
+.users-table col.users-col-name {
+  width: 19%;
+}
+
+.users-table col.users-col-email {
+  width: 22%;
+}
+
+.users-table col.users-col-phone {
+  width: 12%;
+}
+
+.users-table col.users-col-role {
+  width: 12%;
+}
+
+.users-table col.users-col-location {
+  width: 23%;
+}
+
+.users-table col.users-col-status {
+  width: 8%;
+}
+
+.users-table col.users-col-actions {
+  width: 56px;
 }
 
 .requests-table {
@@ -43,18 +72,84 @@
 }
 
 .users-page .users-table th,
+.users-page .users-table td {
+  min-width: 0;
+}
+
+.users-page .users-table th,
 .requests-table th {
   background: #f1f5f9;
   font-weight: 900;
 }
 
-.users-page .users-table td:nth-child(2) a,
+.users-cell-name,
+.users-cell-email,
+.users-cell-phone,
+.users-cell-role,
+.users-cell-location,
+.users-cell-status,
+.users-cell-actions {
+  min-width: 0;
+}
+
+.users-cell-name {
+  font-weight: 700;
+}
+
+.users-cell-email,
+.users-cell-phone,
+.users-cell-status {
+  white-space: nowrap;
+}
+
+.users-cell-email,
 .requests-table td:nth-child(2) a {
-  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-name-plain,
+.user-email {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .users-page .chip-stack {
   gap: 6px;
+}
+
+.users-location-stack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.users-location-chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.users-location-chip-text {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.users-role-chip {
+  display: inline-flex;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-name-plain,
@@ -67,9 +162,22 @@
   color: var(--primary-dark);
 }
 
+.users-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.users-status-label {
+  white-space: nowrap;
+}
+
 .status-dot {
+  flex: 0 0 auto;
   width: 9px;
   height: 9px;
+  margin-right: 0;
   box-shadow: 0 0 0 3px rgba(100, 116, 139, .10);
 }
 
@@ -81,6 +189,32 @@
 .status-dot.off {
   background: var(--red);
   box-shadow: 0 0 0 3px rgba(220, 38, 38, .12);
+}
+
+.users-cell-actions {
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+  padding-left: 6px;
+  padding-right: 10px;
+  text-align: right;
+}
+
+.users-actions-wrap {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.users-action-button {
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  margin-left: auto;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
 }
 
 .requests-summary-strip {
@@ -125,5 +259,33 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
   .users-page .summary-strip,
   .requests-summary-strip {
     grid-template-columns: 1fr;
+  }
+
+  .users-table {
+    min-width: 980px;
+  }
+
+  .users-table col.users-col-name {
+    width: 190px;
+  }
+
+  .users-table col.users-col-email {
+    width: 220px;
+  }
+
+  .users-table col.users-col-phone {
+    width: 120px;
+  }
+
+  .users-table col.users-col-role {
+    width: 130px;
+  }
+
+  .users-table col.users-col-location {
+    width: 250px;
+  }
+
+  .users-table col.users-col-status {
+    width: 108px;
   }
 }

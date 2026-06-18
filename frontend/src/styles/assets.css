@@ -80,7 +80,7 @@
 }
 
 .asset-inventory-stack {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .copy-inline-button {
@@ -200,6 +200,20 @@
 .asset-detail-value {
   color: var(--text);
   font-weight: 850;
+}
+
+.asset-detail-value.copyable-value {
+  display: block;
+  width: 100%;
+  padding: 4px 6px;
+  margin: -4px -6px;
+}
+
+.asset-detail-value-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .asset-media-notes-grid {

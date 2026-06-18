@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="assets-page">
+<div class="assets-page" data-ajax-page="assets">
 <div class="page-head split">
   <div>
     <span class="eyebrow">Машини</span>
@@ -14,12 +14,13 @@
   </div>
 </div>
 
+<div data-ajax-container="assets">
 <div class="summary-strip">
-  <a class="summary-pill summary-pill-total" href="{{ url_for('assets') }}"><span>Всички</span><strong>{{ asset_summary.total }}</strong></a>
-  <a class="summary-pill summary-pill-warehouse" href="{{ url_for('assets', status='В склад') }}"><span>В склад</span><strong>{{ asset_summary.warehouse }}</strong></a>
-  <a class="summary-pill summary-pill-site" href="{{ url_for('assets', status='На обект') }}"><span>На обект</span><strong>{{ asset_summary.site }}</strong></a>
-  <a class="summary-pill summary-pill-service" href="{{ url_for('assets', status='В сервиз') }}"><span>В сервиз</span><strong>{{ asset_summary.service }}</strong></a>
-  <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}"><span>Брак</span><strong>{{ asset_summary.scrap }}</strong></a>
+  <a class="summary-pill summary-pill-total" href="{{ url_for('assets') }}" data-ajax-link><span>Всички</span><strong>{{ asset_summary.total }}</strong></a>
+  <a class="summary-pill summary-pill-warehouse" href="{{ url_for('assets', status='В склад') }}" data-ajax-link><span>В склад</span><strong>{{ asset_summary.warehouse }}</strong></a>
+  <a class="summary-pill summary-pill-site" href="{{ url_for('assets', status='На обект') }}" data-ajax-link><span>На обект</span><strong>{{ asset_summary.site }}</strong></a>
+  <a class="summary-pill summary-pill-service" href="{{ url_for('assets', status='В сервиз') }}" data-ajax-link><span>В сервиз</span><strong>{{ asset_summary.service }}</strong></a>
+  <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}" data-ajax-link><span>Брак</span><strong>{{ asset_summary.scrap }}</strong></a>
 </div>
 
 {% set has_active_filters = (
@@ -34,7 +35,7 @@
   or request.args.get('asset_type', '').strip()
   or request.args.get('page', '').strip()
 ) %}
-<form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form>
+<form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form data-ajax-form>
   <input type="text" name="q" class="assets-search-input" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
   <select name="location">
     <option value="">Всички локации</option>
@@ -47,6 +48,20 @@
   {% endif %}
   {% if filters.service_stay %}
   <input type="hidden" name="service_stay" value="{{ filters.service_stay }}">
+  {% endif %}
+  <input type="hidden" name="sort" value="{{ filters.sort }}">
+  <input type="hidden" name="direction" value="{{ filters.direction }}">
+  {% if request.args.get('category', '').strip() %}
+  <input type="hidden" name="category" value="{{ request.args.get('category', '').strip() }}">
+  {% endif %}
+  {% if request.args.get('asset_type', '').strip() %}
+  <input type="hidden" name="asset_type" value="{{ request.args.get('asset_type', '').strip() }}">
+  {% endif %}
+  {% if filters.condition %}
+  <input type="hidden" name="condition" value="{{ filters.condition }}">
+  {% endif %}
+  {% if filters.responsible_user_id %}
+  <input type="hidden" name="responsible_user_id" value="{{ filters.responsible_user_id }}">
   {% endif %}
   <div class="filter-actions">
     {% if filters.q %}
@@ -72,7 +87,7 @@
     <span class="chip chip-service-stay-filter">Дълъг престой в сервиз</span>
     {% endif %}
     {% if has_active_filters %}
-    <a href="{{ url_for('assets') }}" class="btn-secondary clear-filters-button assets-clear-filter">Изчисти всички</a>
+    <a href="{{ url_for('assets') }}" class="btn-secondary clear-filters-button assets-clear-filter" data-ajax-link>Изчисти всички</a>
     {% endif %}
   </div>
 </form>
@@ -93,17 +108,22 @@
     <thead>
       <tr>
         <th class="asset-inventory-cell">
-          <button type="button" class="table-sort" data-sort-key="inventory" title="Инвентарен №">
+          {% set inventory_direction = 'desc' if filters.sort == 'inventory' and filters.direction == 'asc' else 'asc' %}
+          <a class="table-sort" data-sort-key="inventory" title="Инвентарен №" href="{{ current_query_url('assets', sort='inventory', direction=inventory_direction, page=1) }}" data-ajax-link>
             <span class="asset-inventory-label">№</span>
             <span class="sort-arrow" aria-hidden="true"></span>
-          </button>
+          </a>
         </th>
-        <th class="asset-type-cell"><button type="button" class="table-sort" data-sort-key="type">Тип<span class="sort-arrow" aria-hidden="true"></span></button></th>
-        <th class="asset-alias-cell"><button type="button" class="table-sort" data-sort-key="alias">Още познат като <span class="sort-arrow" aria-hidden="true"></span></button></th>
-        <th class="asset-brand-cell"><button type="button" class="table-sort" data-sort-key="brand">Марка <span class="sort-arrow" aria-hidden="true"></span></button></th>
-        <th class="asset-model-cell"><button type="button" class="table-sort" data-sort-key="model">Модел <span class="sort-arrow" aria-hidden="true"></span></button></th>
-        <th class="asset-serial-cell"><button type="button" class="table-sort" data-sort-key="serial">Сериен № <span class="sort-arrow" aria-hidden="true"></span></button></th>
-        <th class="asset-location-cell"><button type="button" class="table-sort" data-sort-key="location">Обект <span class="sort-arrow" aria-hidden="true"></span></button></th>
+        {% set type_direction = 'desc' if filters.sort == 'type' and filters.direction == 'asc' else 'asc' %}
+        {% set brand_direction = 'desc' if filters.sort == 'brand' and filters.direction == 'asc' else 'asc' %}
+        {% set model_direction = 'desc' if filters.sort == 'model' and filters.direction == 'asc' else 'asc' %}
+        {% set serial_direction = 'desc' if filters.sort == 'serial' and filters.direction == 'asc' else 'asc' %}
+        <th class="asset-type-cell"><a class="table-sort" data-sort-key="type" href="{{ current_query_url('assets', sort='type', direction=type_direction, page=1) }}" data-ajax-link>Тип<span class="sort-arrow" aria-hidden="true"></span></a></th>
+        <th class="asset-alias-cell">Още познат като</th>
+        <th class="asset-brand-cell"><a class="table-sort" data-sort-key="brand" href="{{ current_query_url('assets', sort='brand', direction=brand_direction, page=1) }}" data-ajax-link>Марка <span class="sort-arrow" aria-hidden="true"></span></a></th>
+        <th class="asset-model-cell"><a class="table-sort" data-sort-key="model" href="{{ current_query_url('assets', sort='model', direction=model_direction, page=1) }}" data-ajax-link>Модел <span class="sort-arrow" aria-hidden="true"></span></a></th>
+        <th class="asset-serial-cell"><a class="table-sort" data-sort-key="serial" href="{{ current_query_url('assets', sort='serial', direction=serial_direction, page=1) }}" data-ajax-link>Сериен № <span class="sort-arrow" aria-hidden="true"></span></a></th>
+        <th class="asset-location-cell">Обект</th>
         <th class="asset-actions-cell"></th>
       </tr>
     </thead>
@@ -127,7 +147,6 @@
       <td class="asset-inventory-cell">
         <div class="asset-inventory-stack">
           <a class="asset-row-link nowrap" href="{{ url_for('asset_detail', asset_id=asset.id) }}"><strong>{{ asset.inventory_number }}</strong></a>
-          <button type="button" class="copy-inline-button" data-copy-text="{{ asset.inventory_number }}" aria-label="Копирай инвентарен номер {{ asset.inventory_number }}">Копирай №</button>
         </div>
       </td>
       <td class="asset-type-cell" title="{{ asset.name }}"><span class="asset-type-text">{{ asset.name }}</span></td>
@@ -168,7 +187,7 @@
   <nav class="pagination">
     {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
       {% if page %}
-      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ page_url(page) }}">{{ page }}</a>
+      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ page_url(page) }}" data-ajax-link>{{ page }}</a>
       {% else %}
       <span>...</span>
       {% endif %}
@@ -178,5 +197,6 @@
 </div>
 {% endif %}
 
+</div>
 </div>
 {% endblock %}

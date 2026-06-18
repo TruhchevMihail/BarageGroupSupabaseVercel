@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+<div data-ajax-page="locations">
 <div class="page-head split">
   <div>
     <span class="eyebrow">Обекти</span>
@@ -13,23 +14,26 @@
   </div>
 </div>
 
+<div data-ajax-container="locations">
 <div class="summary-strip">
-  <a class="summary-pill summary-pill-total" href="{{ url_for('locations_list') }}"><span>Всички</span><strong>{{ location_summary.total }}</strong></a>
-  <a class="summary-pill summary-pill-site" href="{{ url_for('locations_list', type='site') }}"><span>Обекти</span><strong>{{ location_summary.site }}</strong></a>
-  <a class="summary-pill summary-pill-warehouse" href="{{ url_for('locations_list', type='warehouse') }}"><span>Складове</span><strong>{{ location_summary.warehouse }}</strong></a>
-  <a class="summary-pill summary-pill-service" href="{{ url_for('locations_list', type='service') }}"><span>Сервизи</span><strong>{{ location_summary.service }}</strong></a>
-  <a class="summary-pill summary-pill-scrap" href="{{ url_for('locations_list', type='scrap') }}"><span>Брак</span><strong>{{ location_summary.scrap }}</strong></a>
+  <a class="summary-pill summary-pill-total" href="{{ url_for('locations_list') }}" data-ajax-link><span>Всички</span><strong>{{ location_summary.total }}</strong></a>
+  <a class="summary-pill summary-pill-site" href="{{ url_for('locations_list', type='site') }}" data-ajax-link><span>Обекти</span><strong>{{ location_summary.site }}</strong></a>
+  <a class="summary-pill summary-pill-warehouse" href="{{ url_for('locations_list', type='warehouse') }}" data-ajax-link><span>Складове</span><strong>{{ location_summary.warehouse }}</strong></a>
+  <a class="summary-pill summary-pill-service" href="{{ url_for('locations_list', type='service') }}" data-ajax-link><span>Сервизи</span><strong>{{ location_summary.service }}</strong></a>
+  <a class="summary-pill summary-pill-scrap" href="{{ url_for('locations_list', type='scrap') }}" data-ajax-link><span>Брак</span><strong>{{ location_summary.scrap }}</strong></a>
 </div>
 
 <div class="summary-strip">
   <div class="summary-pill users-search-pill locations-search-pill">
     <span>Търсене</span>
-    <form method="get" class="locations-search-form" data-list-search-form>
-      <input type="search" name="q" id="locations-search" class="users-search" placeholder="Търсене по всички критерии" value="{{ filters.q }}" autocomplete="off" data-list-search data-main-search>
+    <form method="get" action="{{ url_for('locations_list') }}" class="locations-search-form" data-ajax-form>
+      <input type="search" name="q" id="locations-search" class="users-search" placeholder="Търсене по всички критерии" value="{{ filters.q }}" autocomplete="off" data-main-search>
       <input type="hidden" name="type" value="{{ filters.type }}">
       <input type="hidden" name="sort" value="{{ filters.sort }}">
+      <input type="hidden" name="direction" value="{{ filters.direction }}">
+      <button type="submit" class="btn-small">Търси</button>
       {% if filters.q %}
-      <a class="btn-link secondary" href="{{ url_for('locations_list') }}">Изчисти</a>
+      <a class="btn-link secondary" href="{{ current_query_url('locations_list', q=None, page=1) }}" data-ajax-link>Изчисти</a>
       {% endif %}
     </form>
   </div>
@@ -101,7 +105,7 @@
   <nav class="pagination">
     {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
       {% if page %}
-      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('locations_list', q=filters.q, type=filters.type, sort=filters.sort, direction=filters.direction, page=page) }}">{{ page }}</a>
+      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('locations_list', q=filters.q, type=filters.type, sort=filters.sort, direction=filters.direction, page=page) }}" data-ajax-link>{{ page }}</a>
       {% else %}
       <span>...</span>
       {% endif %}
@@ -110,4 +114,6 @@
   {% endif %}
 </div>
 {% endif %}
+</div>
+</div>
 {% endblock %}

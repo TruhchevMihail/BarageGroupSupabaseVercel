@@ -1,5 +1,10 @@
 export function initCollapsibles(): void {
   document.querySelectorAll<HTMLElement>('[data-collapsible]').forEach((section, index) => {
+    if (section.dataset.collapsibleBound === 'true') {
+      return;
+    }
+    section.dataset.collapsibleBound = 'true';
+
     const heading = section.querySelector<HTMLElement>('[data-collapsible-title]');
     const body = section.querySelector<HTMLElement>('[data-collapsible-body]');
     if (!heading || !body) {

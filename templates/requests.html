@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% set default_request_status = {'label': 'Непознат', 'chip': 'chip-neutral'} %}
+<div data-ajax-page="requests">
 <div class="page-head split">
   <div>
     <span class="eyebrow">Заявки</span>
@@ -9,30 +10,28 @@
   {% include '_dashboard_back_button.html' %}
 </div>
 
+<div data-ajax-container="requests">
 <div class="summary-strip requests-summary-strip">
-  <a class="summary-pill requests-pill-total" href="{{ url_for('requests_list') }}"><span>Всички</span><strong>{{ request_summary.total }}</strong></a>
-  <a class="summary-pill requests-pill-pending" href="{{ url_for('requests_list', status='pending') }}"><span>Чакащи</span><strong>{{ request_summary.pending }}</strong></a>
-  <a class="summary-pill requests-pill-approved" href="{{ url_for('requests_list', status='approved') }}"><span>Одобрени</span><strong>{{ request_summary.approved }}</strong></a>
-  <a class="summary-pill requests-pill-rejected" href="{{ url_for('requests_list', status='rejected') }}"><span>Отказани</span><strong>{{ request_summary.rejected }}</strong></a>
-</div>
-
-<div class="summary-strip requests-search-row">
-  <div class="summary-pill users-search-pill">
-    <span>Търсене</span>
-    <input type="search" id="requests-search" class="users-search" placeholder="ID, машина, посока, статус, заявил..." autocomplete="off" data-main-search>
-  </div>
+  <a class="summary-pill requests-pill-total" href="{{ url_for('requests_list') }}" data-ajax-link><span>Всички</span><strong>{{ request_summary.total }}</strong></a>
+  <a class="summary-pill requests-pill-pending" href="{{ url_for('requests_list', status='pending') }}" data-ajax-link><span>Чакащи</span><strong>{{ request_summary.pending }}</strong></a>
+  <a class="summary-pill requests-pill-approved" href="{{ url_for('requests_list', status='approved') }}" data-ajax-link><span>Одобрени</span><strong>{{ request_summary.approved }}</strong></a>
+  <a class="summary-pill requests-pill-rejected" href="{{ url_for('requests_list', status='rejected') }}" data-ajax-link><span>Отказани</span><strong>{{ request_summary.rejected }}</strong></a>
 </div>
 
 <div class="table-wrap panel no-pad table-card requests-table-wrap">
 <table class="requests-table" id="requests-table">
   <tr>
-    <th><button type="button" class="table-sort" data-sort-key="id">ID <span class="sort-arrow" aria-hidden="true"></span></button></th>
-    <th><button type="button" class="table-sort" data-sort-key="asset">Машина <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    <th>ID</th>
+    <th>Машина</th>
     <th class="table-col-normal">Посока</th>
-    <th>Вид</th>
-    <th><button type="button" class="table-sort" data-sort-key="status">Статус <span class="sort-arrow" aria-hidden="true"></span></button></th>
-    <th><button type="button" class="table-sort" data-sort-key="requested_by">Заявил <span class="sort-arrow" aria-hidden="true"></span></button></th>
-    <th><button type="button" class="table-sort" data-sort-key="created_at">Дата <span class="sort-arrow" aria-hidden="true"></span></button></th>
+    {% set type_direction = 'desc' if filters.sort == 'type' and filters.direction == 'asc' else 'asc' %}
+    {% set status_direction = 'desc' if filters.sort == 'status' and filters.direction == 'asc' else 'asc' %}
+    {% set date_sort_key = filters.sort if filters.sort in ['newest', 'oldest'] else 'newest' %}
+    {% set next_date_sort = 'oldest' if filters.sort == 'newest' else 'newest' %}
+    <th><a class="table-sort" data-sort-key="type" href="{{ current_query_url('requests_list', sort='type', direction=type_direction, page=1) }}" data-ajax-link>Вид <span class="sort-arrow" aria-hidden="true"></span></a></th>
+    <th><a class="table-sort" data-sort-key="status" href="{{ current_query_url('requests_list', sort='status', direction=status_direction, page=1) }}" data-ajax-link>Статус <span class="sort-arrow" aria-hidden="true"></span></a></th>
+    <th>Заявил</th>
+    <th><a class="table-sort" data-sort-key="{{ date_sort_key }}" href="{{ current_query_url('requests_list', sort=next_date_sort, page=1) }}" data-ajax-link>Дата <span class="sort-arrow" aria-hidden="true"></span></a></th>
     {% if can_process_requests %}<th>Действие</th>{% endif %}
   </tr>
   {% for item in items %}
@@ -83,8 +82,8 @@
   {% if pagination.pages > 1 %}
   <nav class="pagination">
     {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
-      {% if page %}
-      <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('requests_list', status=filters.status, type=filters.type, sort=filters.sort, direction=filters.direction, page=page) }}">{{ page }}</a>
+          {% if page %}
+          <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('requests_list', status=filters.status, type=filters.type, sort=filters.sort, direction=filters.direction, page=page) }}" data-ajax-link>{{ page }}</a>
       {% else %}
       <span>...</span>
       {% endif %}
@@ -93,4 +92,6 @@
   {% endif %}
 </div>
 {% endif %}
+</div>
+</div>
 {% endblock %}

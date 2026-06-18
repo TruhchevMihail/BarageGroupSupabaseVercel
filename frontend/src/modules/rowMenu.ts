@@ -21,6 +21,11 @@ export function initRowMenu(): void {
   }
 
   menus.forEach((menu) => {
+    if (menu.dataset.rowMenuBound === 'true') {
+      return;
+    }
+    menu.dataset.rowMenuBound = 'true';
+
     const trigger = menu.querySelector<HTMLElement>('[data-row-menu-trigger]');
     const panel = menu.querySelector<HTMLElement>('[data-row-menu-panel]');
     if (!trigger || !panel) {
@@ -38,20 +43,26 @@ export function initRowMenu(): void {
     });
   });
 
-  document.addEventListener('click', (event) => {
-    const target = event.target as HTMLElement | null;
-    menus.forEach((menu) => {
-      if (target && menu.contains(target)) {
+  if (document.body.dataset.rowMenuGlobalBound !== 'true') {
+    document.body.dataset.rowMenuGlobalBound = 'true';
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      document.querySelectorAll<HTMLElement>('[data-row-menu]').forEach((menu) => {
+        if (target && menu.contains(target)) {
+          return;
+        }
+        closeMenu(menu.querySelector<HTMLElement>('[data-row-menu-panel]'));
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') {
         return;
       }
-      closeMenu(menu.querySelector<HTMLElement>('[data-row-menu-panel]'));
+      document
+        .querySelectorAll<HTMLElement>('[data-row-menu]')
+        .forEach((menu) => closeMenu(menu.querySelector<HTMLElement>('[data-row-menu-panel]')));
     });
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') {
-      return;
-    }
-    menus.forEach((menu) => closeMenu(menu.querySelector<HTMLElement>('[data-row-menu-panel]')));
-  });
+  }
 }

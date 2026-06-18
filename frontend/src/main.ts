@@ -1,6 +1,7 @@
 import './styles/main.css';
 
 import { initAssetImageUpload } from './modules/assetImageUpload';
+import { initAjaxListNavigation } from './modules/ajaxListNavigation';
 import { initAutoSubmit } from './modules/autoSubmit';
 import { initCollapsibles } from './modules/collapsible';
 import { initCommandPalette } from './modules/commandPalette';
@@ -15,13 +16,8 @@ import { initThemeToggle } from './modules/theme';
 import { initTableEnhancements } from './modules/tableEnhancements';
 import { initSearchForms } from './modules/searchForms';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const csrfToken = getCsrfToken();
-
-  initThemeToggle();
+function initDynamicUi(csrfToken: string): void {
   injectCsrfInputs(csrfToken);
-  initCommandPalette();
-  initKeyboardShortcuts();
   initConfirmActions();
   initCopyButtons();
   initAutoSubmit();
@@ -32,4 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initTableEnhancements();
   initSearchForms();
   initCollapsibles();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const csrfToken = getCsrfToken();
+
+  initThemeToggle();
+  initCommandPalette();
+  initKeyboardShortcuts();
+  initDynamicUi(csrfToken);
+  initAjaxListNavigation(() => initDynamicUi(csrfToken));
 });

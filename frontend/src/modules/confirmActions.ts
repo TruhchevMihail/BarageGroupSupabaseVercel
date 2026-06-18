@@ -1,5 +1,10 @@
 export function initConfirmActions(): void {
   document.querySelectorAll<HTMLFormElement>('form[data-confirm]').forEach((form) => {
+    if (form.dataset.confirmBound === 'true') {
+      return;
+    }
+    form.dataset.confirmBound = 'true';
+
     form.addEventListener('submit', (event) => {
       const message = form.dataset.confirm || 'Сигурни ли сте, че искате да продължите?';
       if (!window.confirm(message)) {
@@ -9,6 +14,11 @@ export function initConfirmActions(): void {
   });
 
   document.querySelectorAll<HTMLElement>('[data-confirm]:not(form)').forEach((control) => {
+    if (control.dataset.confirmBound === 'true') {
+      return;
+    }
+    control.dataset.confirmBound = 'true';
+
     control.addEventListener('click', (event) => {
       const message = control.dataset.confirm || 'Сигурни ли сте, че искате да продължите?';
       if (!window.confirm(message)) {

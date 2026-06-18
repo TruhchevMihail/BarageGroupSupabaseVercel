@@ -1,5 +1,8 @@
 import { showToast } from './toast';
 
+const COPY_SELECTOR = '[data-copyable], [data-copy], [data-copy-text], [data-copy-current-url]';
+const EMPTY_COPY_VALUES = new Set(['', '-', '—']);
+
 async function writeText(text: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -21,31 +24,68 @@ async function writeText(text: string): Promise<void> {
   }
 }
 
-export function initCopyButtons(): void {
-  document.querySelectorAll<HTMLElement>('[data-copy], [data-copy-text], [data-copy-current-url]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const targetSelector = button.getAttribute('data-copy-target');
-      const targetText = targetSelector ? document.querySelector<HTMLElement>(targetSelector)?.textContent?.trim() : '';
-      const text = button.getAttribute('data-copy-text')
-        || button.getAttribute('data-copy')
-        || targetText
-        || (button.hasAttribute('data-copy-current-url') ? window.location.href : '');
-      if (!text) {
-        return;
-      }
+function readCopyText(control: HTMLElement): string {
+  const targetSelector = control.getAttribute('data-copy-target');
+  const targetText = targetSelector ? document.querySelector<HTMLElement>(targetSelector)?.textContent?.trim() : '';
 
-      try {
-        await writeText(text);
-        const originalText = button.textContent;
-        button.textContent = 'Копирано';
-        showToast('Копирано');
-        window.setTimeout(() => {
-          button.textContent = originalText;
-        }, 1200);
-      } catch (error) {
-        console.error('Copy failed', error);
-        showToast('Неуспешно копиране', 'error');
-      }
-    });
+  return (
+    control.getAttribute('data-copy-value')
+    || control.getAttribute('data-copy-text')
+    || control.getAttribute('data-copy')
+    || targetText
+    || (control.hasAttribute('data-copy-current-url') ? window.location.href : '')
+    || control.textContent?.trim()
+    || ''
+  ).trim();
+}
+
+function shouldSkipCopy(control: HTMLElement, text: string): boolean {
+  if (!control.hasAttribute('data-copy-skip-empty')) {
+    return !text;
+  }
+
+  return EMPTY_COPY_VALUES.has(text);
+}
+
+function flashCopiedState(control: HTMLElement): void {
+  control.classList.add('copy-feedback-active');
+  window.setTimeout(() => control.classList.remove('copy-feedback-active'), 720);
+}
+
+async function handleCopy(control: HTMLElement): Promise<void> {
+  const text = readCopyText(control);
+  if (shouldSkipCopy(control, text)) {
+    return;
+  }
+
+  try {
+    await writeText(text);
+    flashCopiedState(control);
+    showToast('Копирано');
+  } catch (error) {
+    console.error('Copy failed', error);
+    showToast('Неуспешно копиране', 'error');
+  }
+}
+
+export function initCopyButtons(): void {
+  if (document.body.dataset.copyDelegationBound === 'true') {
+    return;
+  }
+  document.body.dataset.copyDelegationBound = 'true';
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement | null;
+    const control = target?.closest<HTMLElement>(COPY_SELECTOR);
+    if (!control) {
+      return;
+    }
+
+    if (control.matches('[data-copyable]')) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    void handleCopy(control);
   });
 }

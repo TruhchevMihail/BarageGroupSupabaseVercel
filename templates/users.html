@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="users-page">
+<div class="users-page" data-ajax-page="users">
 {% set default_role_meta = {'label': 'Непозната', 'chip': 'chip-neutral'} %}
 {% set default_location_meta = {'icon': '📍', 'label': 'Неизвестен', 'chip': 'chip-neutral'} %}
 <div class="page-head split">
@@ -16,53 +16,64 @@
   </div>
 </div>
 
-<div class="summary-strip">
-  <div class="summary-pill users-search-pill">
-    <span>Търсене</span>
-    <input type="search" id="users-search" class="users-search" placeholder="Име, имейл, телефон, роля, обект..." autocomplete="off" data-main-search>
-  </div>
-</div>
-
+<div data-ajax-container="users">
     <div class="table-wrap panel no-pad table-card users-table-wrap">
       <table class="users-table" id="users-table">
+        <colgroup>
+          <col class="users-col-name">
+          <col class="users-col-email">
+          <col class="users-col-phone">
+          <col class="users-col-role">
+          <col class="users-col-location">
+          <col class="users-col-status">
+          <col class="users-col-actions">
+        </colgroup>
         <tr>
-          <th><button type="button" class="table-sort" data-sort-key="name">Потребител <span class="sort-arrow" aria-hidden="true"></span></button></th>
-          <th class="table-col-normal">Имейл</th>
-          <th class="table-col-normal">Телефон</th>
-          <th><button type="button" class="table-sort" data-sort-key="role">Роля <span class="sort-arrow" aria-hidden="true"></span></button></th>
-          <th><button type="button" class="table-sort" data-sort-key="location">Обект <span class="sort-arrow" aria-hidden="true"></span></button></th>
-          <th><button type="button" class="table-sort" data-sort-key="status">Статус <span class="sort-arrow" aria-hidden="true"></span></button></th>
-          <th></th>
+          {% set name_direction = 'desc' if filters.sort == 'name' and filters.direction == 'asc' else 'asc' %}
+          {% set role_direction = 'desc' if filters.sort == 'role' and filters.direction == 'asc' else 'asc' %}
+          {% set location_direction = 'desc' if filters.sort == 'location' and filters.direction == 'asc' else 'asc' %}
+          {% set status_direction = 'desc' if filters.sort == 'status' and filters.direction == 'asc' else 'asc' %}
+          <th class="users-cell-name"><a class="table-sort" data-sort-key="name" href="{{ current_query_url('users_manage', sort='name', direction=name_direction, page=1) }}" data-ajax-link>Потребител <span class="sort-arrow" aria-hidden="true"></span></a></th>
+          <th class="users-cell-email table-col-normal">Имейл</th>
+          <th class="users-cell-phone table-col-normal">Телефон</th>
+          <th class="users-cell-role"><a class="table-sort" data-sort-key="role" href="{{ current_query_url('users_manage', sort='role', direction=role_direction, page=1) }}" data-ajax-link>Роля <span class="sort-arrow" aria-hidden="true"></span></a></th>
+          <th class="users-cell-location"><a class="table-sort" data-sort-key="location" href="{{ current_query_url('users_manage', sort='location', direction=location_direction, page=1) }}" data-ajax-link>Обект <span class="sort-arrow" aria-hidden="true"></span></a></th>
+          <th class="users-cell-status"><a class="table-sort" data-sort-key="status" href="{{ current_query_url('users_manage', sort='status', direction=status_direction, page=1) }}" data-ajax-link>Статус <span class="sort-arrow" aria-hidden="true"></span></a></th>
+          <th class="users-cell-actions"></th>
         </tr>
         {% for user in users %}
         <tr data-name="{{ user.full_name|lower }}" data-email="{{ user.email|lower }}" data-phone="{{ user.phone_number or '' }}" data-role="{{ role_meta.get(user.role, default_role_meta).label|lower }}" data-location="{% set user_locations_list = user_locations(user) %}{% if user_locations_list %}{{ user_locations_list[0].name|lower }}{% endif %}" data-status="{{ 'active' if user.is_active else 'inactive' }}">
-          <td>
+          <td class="users-cell-name">
             <a class="user-name user-name-plain" href="{{ url_for('user_profile', user_id=user.id) }}">{{ user.full_name }}</a>
           </td>
-          <td><a class="user-email" href="mailto:{{ user.email }}">{{ user.email }}</a></td>
-          <td>{{ user.phone_number or '-' }}</td>
+          <td class="users-cell-email"><a class="user-email" href="mailto:{{ user.email }}" title="{{ user.email }}">{{ user.email }}</a></td>
+          <td class="users-cell-phone">{{ user.phone_number or '-' }}</td>
           {% set role_info = role_meta.get(user.role, default_role_meta) %}
-          <td><span class="chip {{ role_info.chip }}">{{ role_info.label }}</span></td>
-          <td>
+          <td class="users-cell-role"><span class="chip users-role-chip {{ role_info.chip }}">{{ role_info.label }}</span></td>
+          <td class="users-cell-location">
             {% set user_locations_list = user_locations(user) %}
             {% if user_locations_list %}
-            <div class="chip-stack">
+            <div class="chip-stack users-location-stack">
               {% for location in user_locations_list %}
               {% set location_info = location_meta.get(location.type, default_location_meta) %}
-              <a class="mini-chip chip-link" href="{{ url_for('location_detail', location_id=location.id) }}">{{ location_info.icon }} {{ location.name }}</a>
+              <a class="mini-chip chip-link users-location-chip" href="{{ url_for('location_detail', location_id=location.id) }}" title="{{ location.name }}">{{ location_info.icon }} <span class="users-location-chip-text">{{ location.name }}</span></a>
               {% endfor %}
             </div>
             {% else %}
             -
             {% endif %}
           </td>
-          <td><span class="status-dot {{ 'ok' if user.is_active else 'off' }}"></span>{{ 'Активен' if user.is_active else 'Изключен' }}</td>
-           <td class="actions-cell">
+          <td class="users-cell-status"><span class="users-status"><span class="status-dot {{ 'ok' if user.is_active else 'off' }}"></span><span class="users-status-label">{{ 'Активен' if user.is_active else 'Изключен' }}</span></span></td>
+           <td class="actions-cell users-cell-actions">
             {% set permissions = user_permissions.get(user.id, {}) %}
-            {% if permissions.get('view') %}
-            <a class="btn-small btn-secondary icon-button" href="{{ url_for('user_profile', user_id=user.id) }}" title="Детайли">⋯</a>
+           {% if permissions.get('view') %}
+            <div class="users-actions-wrap">
+              <a class="btn-small btn-secondary icon-button users-action-button" href="{{ url_for('user_profile', user_id=user.id) }}" title="Детайли" aria-label="Детайли за {{ user.full_name }}">⋯</a>
+            </div>
             {% else %}
-            <span class="chip chip-neutral">-</span>
+            <div class="users-actions-wrap">
+              <span class="chip chip-neutral">-</span>
+            </div>
             {% endif %}
           </td>
         </tr>
@@ -78,7 +89,7 @@
       <nav class="pagination">
         {% for page in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
           {% if page %}
-          <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('users_manage', role=filters.role, status=filters.status, sort=filters.sort, direction=filters.direction, page=page) }}">{{ page }}</a>
+          <a class="{% if page == pagination.page %}active{% endif %}" href="{{ url_for('users_manage', role=filters.role, status=filters.status, sort=filters.sort, direction=filters.direction, page=page) }}" data-ajax-link>{{ page }}</a>
           {% else %}
           <span>...</span>
           {% endif %}
@@ -87,5 +98,6 @@
       {% endif %}
     </div>
     {% endif %}
+</div>
 </div>
 {% endblock %}

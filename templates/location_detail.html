@@ -3,7 +3,7 @@
 <div class="page-head split">
   <div>
     <span class="eyebrow">Детайли за обект</span>
-    <h1>{{ location.name }}</h1>
+    <h1 class="copyable-value location-detail-title" data-copyable data-copy-value="{{ location.name }}" title="Клик за копиране">{{ location.name }}</h1>
     {% set meta = location_meta.get(location.type, {'label': location.type, 'icon': '📍', 'chip': 'chip-neutral'}) %}
   </div>
   <div class="detail-actions">
@@ -28,6 +28,7 @@
       <button type="submit" class="btn-secondary danger">Изтрий</button>
     </form>
     {% endif %}
+    <button type="button" class="btn-secondary btn-small" data-copy-current-url>Копирай линк</button>
     <a class="btn-link" href="{{ url_for('locations_list') }}">Назад към обектите</a>
   </div>
 </div>
@@ -38,15 +39,15 @@
       <h2>Основна информация</h2>
     </div>
     <dl class="details-list">
-      <div><dt>Име</dt><dd>{{ location.name }}</dd></div>
+      <div><dt>Име</dt><dd class="copyable-value" data-copyable data-copy-value="{{ location.name }}" title="Клик за копиране">{{ location.name }}</dd></div>
       <div><dt>Тип</dt><dd>{{ meta.label }}</dd></div>
       {% if location.type not in location_minimal_types %}
-      <div><dt>Град</dt><dd>{{ location.city or '-' }}</dd></div>
-      <div><dt>Адрес</dt><dd>{{ location.address or '-' }}</dd></div>
-      <div><dt>GPS</dt><dd>{% if location.gps_location %}<a class="location-gps-link" href="{{ location.gps_location if location.gps_location.startswith('http') else 'https://www.google.com/maps?q=' ~ location.gps_location }}" target="_blank" rel="noopener">{{ location.gps_location }}</a>{% else %}-{% endif %}</dd></div>
-      <div><dt>Куриер</dt><dd>{{ location.courier_locations or '-' }}</dd></div>
+      <div><dt>Град</dt><dd class="copyable-value" data-copyable data-copy-value="{{ location.city or '' }}" data-copy-skip-empty="true" title="Клик за копиране">{{ location.city or '-' }}</dd></div>
+      <div><dt>Адрес</dt><dd class="copyable-value" data-copyable data-copy-value="{{ location.address or '' }}" data-copy-skip-empty="true" title="Клик за копиране">{{ location.address or '-' }}</dd></div>
+      <div><dt>GPS</dt><dd>{% if location.gps_location %}<span class="detail-inline-actions"><a class="location-gps-link" href="{{ location.gps_location if location.gps_location.startswith('http') else 'https://www.google.com/maps?q=' ~ location.gps_location }}" target="_blank" rel="noopener">{{ location.gps_location }}</a><button type="button" class="copy-detail-button" data-copy-text="{{ location.gps_location }}" aria-label="Копирай GPS {{ location.gps_location }}" title="Копирай GPS">Копирай</button></span>{% else %}-{% endif %}</dd></div>
+      <div><dt>Куриер</dt><dd class="copyable-value" data-copyable data-copy-value="{{ location.courier_locations or '' }}" data-copy-skip-empty="true" title="Клик за копиране">{{ location.courier_locations or '-' }}</dd></div>
       {% if location.type not in location_no_lead_types %}
-      <div><dt>Ръководител</dt><dd>{% if location.technical_lead %}<a class="user-link" href="{{ url_for('user_profile', user_id=location.technical_lead.id) }}">{{ location.technical_lead.full_name }}</a>{% else %}Без ръководител{% endif %}</dd></div>
+      <div><dt>Ръководител</dt><dd>{% if location.technical_lead %}<span class="detail-inline-actions"><a class="user-link" href="{{ url_for('user_profile', user_id=location.technical_lead.id) }}">{{ location.technical_lead.full_name }}</a><button type="button" class="copy-detail-button" data-copy-text="{{ location.technical_lead.full_name }}" aria-label="Копирай ръководител {{ location.technical_lead.full_name }}" title="Копирай ръководителя">Копирай</button></span>{% else %}Без ръководител{% endif %}</dd></div>
       {% endif %}
       {% endif %}
       <div><dt>Статус</dt><dd>{{ 'Активен' if location.is_active else 'Неактивен' }}</dd></div>

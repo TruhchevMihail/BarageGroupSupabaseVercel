@@ -138,6 +138,16 @@ def load_service_invoice_map():
         return {}
 
 
+def current_query_url(endpoint, **updates):
+    args = request.args.to_dict()
+    for key, value in updates.items():
+        if value is None or value == '':
+            args.pop(key, None)
+        else:
+            args[key] = value
+    return url_for(endpoint, **args)
+
+
 def save_service_invoice_map(data):
     with open(configured_service_invoice_map(), 'w', encoding='utf-8') as handle:
         json.dump(data, handle, ensure_ascii=False, indent=2)
@@ -599,6 +609,7 @@ def inject_helpers():
         'can_create_location': can_manage_location(g.user) if g.user else False,
         'can_create_user': can_create_user(g.user) if g.user else False,
         'asset_display_status': asset_display_status,
+        'current_query_url': current_query_url,
     }
 
 

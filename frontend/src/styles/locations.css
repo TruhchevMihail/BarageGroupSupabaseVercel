@@ -97,6 +97,19 @@
   font-weight: 700;
 }
 
+.location-detail-title.copyable-value {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: -2px -6px 0;
+}
+
+.details-list dd.copyable-value {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 6px;
+  margin: -3px -6px;
+}
+
 html[data-theme="dark"] .locations-list-wide .location-row-card {
   background: #111827;
   border-color: #263244;
