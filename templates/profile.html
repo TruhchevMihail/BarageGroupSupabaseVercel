@@ -37,10 +37,10 @@
   <div class="profile-layout profile-layout-single">
     <div class="profile-summary-block profile-info-card">
       <dl class="details-list profile-details">
-        <div><dt>Име</dt><dd>{{ user.full_name }}</dd></div>
+        <div><dt>Име</dt><dd class="copyable-value" data-copyable data-copy-value="{{ user.full_name }}" title="Клик за копиране">{{ user.full_name }}</dd></div>
         <div><dt>Роля</dt><dd><span class="chip {{ role_meta[user.role].chip }}">{{ user.role|role_label }}</span></dd></div>
-        <div><dt>Имейл</dt><dd>{{ user.email }}</dd></div>
-        <div><dt>Телефон</dt><dd>{{ user.phone_number or '-' }}</dd></div>
+        <div><dt>Имейл</dt><dd class="copyable-value" data-copyable data-copy-value="{{ user.email }}" title="Клик за копиране">{{ user.email }}</dd></div>
+        <div><dt>Телефон</dt><dd class="copyable-value" data-copyable data-copy-value="{{ user.phone_number or '' }}" data-copy-skip-empty="true" title="Клик за копиране">{{ user.phone_number or '-' }}</dd></div>
         <div class="user-profile-row assigned-locations-row">
           <dt>Назначени обекти</dt>
           <dd>

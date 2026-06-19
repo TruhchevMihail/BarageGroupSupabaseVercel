@@ -39,12 +39,8 @@ function readCopyText(control: HTMLElement): string {
   ).trim();
 }
 
-function shouldSkipCopy(control: HTMLElement, text: string): boolean {
-  if (!control.hasAttribute('data-copy-skip-empty')) {
-    return !text;
-  }
-
-  return EMPTY_COPY_VALUES.has(text);
+function shouldSkipCopy(_control: HTMLElement, text: string): boolean {
+  return !text || EMPTY_COPY_VALUES.has(text);
 }
 
 function flashCopiedState(control: HTMLElement): void {

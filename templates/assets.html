@@ -8,6 +8,10 @@
   </div>
   <div class="detail-actions">
     {% include '_dashboard_back_button.html' %}
+    <a href="{{ current_query_url('assets_export_csv') }}" class="btn-secondary">Експорт CSV</a>
+    {% if can_import_assets %}
+    <a href="{{ url_for('assets_import') }}" class="btn-secondary">Импорт CSV</a>
+    {% endif %}
     {% if can_create_asset %}
     <a href="{{ url_for('asset_new') }}" class="btn-primary">Добави актив</a>
     {% endif %}

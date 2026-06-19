@@ -25,8 +25,9 @@ th {
   background: #f1f5f9;
   color: #475569;
   border-bottom: 1px solid var(--line);
-  font-size: 11px;
-  letter-spacing: .055em;
+  font-size: 12px;
+  letter-spacing: .01em;
+  text-transform: none;
 }
 
 td {

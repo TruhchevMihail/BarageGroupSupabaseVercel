@@ -44,9 +44,24 @@
   gap: 9px;
 }
 
-.location-row-title strong {
+.location-row-title strong,
+.location-name-link {
   color: var(--text);
   font-size: 17px;
+  font-weight: 900;
+}
+
+.location-name-link {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-name-link:hover {
+  color: var(--primary-dark);
+  text-decoration: none;
 }
 
 .location-card-main-copy,
@@ -95,12 +110,6 @@
 .details-list dd {
   color: var(--text);
   font-weight: 700;
-}
-
-.location-detail-title.copyable-value {
-  display: inline-block;
-  padding: 2px 6px;
-  margin: -2px -6px 0;
 }
 
 .details-list dd.copyable-value {

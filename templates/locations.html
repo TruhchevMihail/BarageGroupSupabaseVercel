@@ -45,7 +45,7 @@
     <div class="list-card location-row-card location-type-{{ loc.type }} {% if loc.type == 'service' %}service-list-card{% endif %}" data-list-search-item data-search-text="{{ loc.name }} {{ loc.type }} {{ loc.city or '' }} {{ loc.address or '' }} {{ loc.gps_location or '' }} {{ loc.courier_locations or '' }} {{ loc.technical_lead.full_name if loc.technical_lead else '' }} {% for tech in loc.technicians %}{{ tech.full_name }} {% endfor %}">
       <div class="location-card-main">
         <div class="location-row-title">
-          <strong>{{ loc.name }}</strong>
+          <a class="location-name-link" href="{{ url_for('location_detail', location_id=loc.id) }}" data-ajax-link>{{ loc.name }}</a>
           <span class="chip {{ meta.chip }}">{{ meta.icon }}</span>
           {% if not loc.is_active %}
           <span class="chip chip-neutral">Архивиран</span>

@@ -9,7 +9,7 @@ import time
 from uuid import uuid4
 from urllib.parse import quote, unquote
 
-from flask import abort, current_app as app, flash, g, has_app_context, jsonify, redirect, render_template, request, session, url_for
+from flask import Response, abort, current_app as app, flash, g, has_app_context, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import Integer, and_, case, cast, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
@@ -52,6 +52,16 @@ from barage_app.config import (
 from barage_app.constants import *  # noqa: F403
 from barage_app.extensions import db
 from barage_app.models import Asset, AssetHistory, AssetImage, AssetServiceRecord, Location, TransferRequest, User
+from barage_app.services.assets_csv import (
+    build_asset_csv_template,
+    build_assets_query,
+    export_assets_csv,
+    order_assets_query,
+    parse_asset_csv_upload,
+    parse_asset_filter_args,
+    preview_from_payload,
+    apply_asset_csv_import,
+)
 from barage_app.services.service_stay import apply_long_service_stay_filter, enrich_assets_with_service_stay
 
 
@@ -1802,71 +1812,14 @@ def dashboard():
 @route('/assets')
 @login_required
 def assets():
-    q = request.args.get('q', '').strip()
-    status = normalize_asset_status_filter(request.args.get('status', '').strip())
-    location_id = request.args.get('location', type=int) or request.args.get('location_id', type=int)
-    category = request.args.get('category', '').strip()
-    asset_type = request.args.get('asset_type', '').strip()
-    condition = request.args.get('condition', '').strip()
-    responsible_user_id = request.args.get('responsible_user_id', type=int)
-    service_stay = request.args.get('service_stay', '').strip()
-    sort = request.args.get('sort', 'inventory').strip()
-    direction = request.args.get('direction', 'asc').lower().strip()
-    if direction not in ('asc', 'desc'):
-        direction = 'asc'
+    asset_filters = parse_asset_filter_args(request.args)
     page = max(request.args.get('page', 1, type=int) or 1, 1)
-    query = Asset.query.options(joinedload(Asset.current_location), joinedload(Asset.created_by),
-                                joinedload(Asset.responsible_user))
-    if q:
-        like = f'%{q}%'
-        query = query.filter(or_(
-            Asset.inventory_number.ilike(like),
-            Asset.name.ilike(like),
-            Asset.alias_name.ilike(like),
-            Asset.brand.ilike(like),
-            Asset.model.ilike(like),
-            Asset.serial_number.ilike(like),
-            Asset.company_name.ilike(like),
-            Asset.supplier_company.ilike(like),
-            Asset.invoice_number.ilike(like),
-            Asset.notes.ilike(like),
-            Asset.created_by.has(User.full_name.ilike(like)),
-            Asset.responsible_user.has(User.full_name.ilike(like)),
-            Asset.current_location.has(or_(
-                Location.name.ilike(like),
-                Location.city.ilike(like),
-                Location.address.ilike(like),
-            )),
-        ))
-    status_location_type = STATUS_TO_LOCATION_TYPE.get(status)
-    if status_location_type:
-        query = query.join(Location, Asset.current_location_id == Location.id).filter(Location.type == status_location_type)
-    if location_id:
-        query = query.filter_by(current_location_id=location_id)
-    if category:
-        query = query.filter(Asset.category == category)
-    if asset_type:
-        query = query.filter(Asset.asset_type == asset_type)
-    if condition:
-        query = query.filter_by(condition=condition)
-    if responsible_user_id:
-        query = query.filter_by(responsible_user_id=responsible_user_id)
-    if service_stay == 'long':
-        query = apply_long_service_stay_filter(query)
-
-    inventory_order = [cast(Asset.inventory_number, Integer), Asset.inventory_number]
-    sort_map = {
-        'inventory': inventory_order,
-        'type': [Asset.asset_type],
-        'brand': [Asset.brand],
-        'model': [Asset.model],
-        'serial': [Asset.serial_number],
-        'purchase_date': [Asset.purchase_date],
-        'created_at': [Asset.created_at],
-    }
-    columns = sort_map.get(sort, inventory_order)
-    order_by = tuple(col.desc() if direction == 'desc' else col.asc() for col in columns)
-    pagination = query.order_by(*order_by).paginate(page=page, per_page=15, error_out=False)
+    query = order_assets_query(
+        build_assets_query(asset_filters),
+        asset_filters['sort'],
+        asset_filters['direction'],
+    )
+    pagination = query.paginate(page=page, per_page=15, error_out=False)
     enrich_assets_with_service_stay(pagination.items)
     locations = Location.query.order_by(Location.name).all()
     categories = [
@@ -1892,19 +1845,78 @@ def assets():
         return url_for('assets', **args)
 
     filters = {
-        'q': q,
-        'status': status,
-        'location_id': location_id,
-        'condition': condition,
-        'responsible_user_id': responsible_user_id,
-        'service_stay': service_stay,
-        'sort': sort,
-        'direction': direction,
+        'q': asset_filters['q'],
+        'status': asset_filters['status'],
+        'location_id': asset_filters['location_id'],
+        'condition': asset_filters['condition'],
+        'responsible_user_id': asset_filters['responsible_user_id'],
+        'service_stay': asset_filters['service_stay'],
+        'sort': asset_filters['sort'],
+        'direction': asset_filters['direction'],
     }
     return render_template('assets.html', items=pagination.items, pagination=pagination, page_url=page_url,
                            filters=filters, locations=locations, categories=categories, asset_types=asset_types,
                            responsible_users=responsible_users, asset_summary=asset_summary,
-                           can_create_asset=can_create_asset(g.user))
+                           can_create_asset=can_create_asset(g.user),
+                           can_import_assets=(g.user.role == ROLE_SUPERUSER))
+
+
+@route('/assets/export.csv')
+@login_required
+def assets_export_csv():
+    csv_text = export_assets_csv(parse_asset_filter_args(request.args))
+    return Response(
+        csv_text,
+        mimetype='text/csv; charset=utf-8',
+        headers={'Content-Disposition': 'attachment; filename=assets.csv'},
+    )
+
+
+@route('/assets/import')
+@login_required
+@roles_required(ROLE_SUPERUSER)
+def assets_import():
+    return render_template('assets_import.html', preview=None)
+
+
+@route('/assets/import/preview', methods=['POST'])
+@login_required
+@roles_required(ROLE_SUPERUSER)
+def assets_import_preview():
+    preview = parse_asset_csv_upload(request.files.get('csv_file'))
+    return render_template('assets_import.html', preview=preview)
+
+
+@route('/assets/import/confirm', methods=['POST'])
+@login_required
+@roles_required(ROLE_SUPERUSER)
+def assets_import_confirm():
+    preview = preview_from_payload(request.form.get('preview_payload', ''))
+    if preview.errors or preview.error_rows:
+        flash('Импортът не е изпълнен, защото има грешки в данните.', 'error')
+        return render_template('assets_import.html', preview=preview)
+    if not preview.valid_rows:
+        flash('Няма валидни редове за импорт.', 'error')
+        return render_template('assets_import.html', preview=preview)
+    try:
+        result = apply_asset_csv_import(preview, g.user)
+    except IntegrityError:
+        db.session.rollback()
+        flash('Грешка при импорт. Проверете за дублирани инвентарни номера.', 'error')
+        return render_template('assets_import.html', preview=preview)
+    flash(f'Импортът е завършен. Създадени: {result["created"]}, обновени: {result["updated"]}.', 'success')
+    return redirect(url_for('assets'))
+
+
+@route('/assets/import/template.csv')
+@login_required
+@roles_required(ROLE_SUPERUSER)
+def assets_import_template_csv():
+    return Response(
+        build_asset_csv_template(),
+        mimetype='text/csv; charset=utf-8',
+        headers={'Content-Disposition': 'attachment; filename=assets-import-template.csv'},
+    )
 
 
 @route('/assets/new', methods=['GET', 'POST'])

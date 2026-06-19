@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="page-head split">
+  <div>
+    <span class="eyebrow">Машини</span>
+    <h1>Импорт CSV</h1>
+  </div>
+  <div class="detail-actions">
+    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
+    <a class="btn-secondary" href="{{ url_for('assets_import_template_csv') }}">Шаблон CSV</a>
+  </div>
+</div>
+
+<div class="panel form-sheet">
+  <p class="muted">Качете CSV файл с машини. Системата първо ще провери редовете и ще покаже грешки. Данните няма да бъдат записани, докато не потвърдите импорта.</p>
+  <p class="muted"><strong>Импортът е достъпен само за администратори.</strong></p>
+  <p class="form-hint">Поддържани колони: № или inventory_number, name, brand, model, category, asset_type, serial_number, current_location, purchase_date. Максимум 1000 реда и 1 MB.</p>
+</div>
+
+<form method="post" action="{{ url_for('assets_import_preview') }}" enctype="multipart/form-data" class="form-card compact panel form-sheet">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Качи CSV файл
+    <input type="file" name="csv_file" accept=".csv,text/csv" required>
+  </label>
+  <div class="form-actions">
+    <button type="submit">Преглед преди импорт</button>
+  </div>
+</form>
+
+{% if preview %}
+<div class="panel form-sheet">
+  <h2>Преглед преди импорт</h2>
+  {% if preview.errors %}
+  <div class="flash error">
+    {% for error in preview.errors %}
+    <div>{{ error }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="summary-strip">
+    <div class="summary-pill summary-pill-total"><span>Валидни редове</span><strong>{{ preview.valid_count }}</strong></div>
+    <div class="summary-pill summary-pill-scrap"><span>Редове с грешки</span><strong>{{ preview.error_count }}</strong></div>
+  </div>
+
+  {% if preview.error_rows %}
+  <div class="table-wrap no-pad table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Ред</th>
+          <th>Инвентарен №</th>
+          <th>Грешки</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview.error_rows %}
+        <tr>
+          <td>{{ row.row_number }}</td>
+          <td>{{ row.data.inventory_number or '-' }}</td>
+          <td>{{ row.errors|join('; ') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if preview.valid_rows %}
+  <div class="table-wrap no-pad table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Ред</th>
+          <th>Действие</th>
+          <th>№</th>
+          <th>Име</th>
+          <th>Марка</th>
+          <th>Модел</th>
+          <th>Локация</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview.valid_rows %}
+        <tr>
+          <td>{{ row.row_number }}</td>
+          <td>{{ 'Обновяване' if row.action == 'update' else 'Създаване' }}</td>
+          <td>{{ row.data.inventory_number }}</td>
+          <td>{{ row.data.name }}</td>
+          <td>{{ row.data.brand or '-' }}</td>
+          <td>{{ row.data.model or '-' }}</td>
+          <td>{{ row.data.current_location_name or row.data.current_location or '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if preview.valid_rows and not preview.errors and not preview.error_rows %}
+  <form method="post" action="{{ url_for('assets_import_confirm') }}" data-confirm="Потвърждавате ли CSV импорта?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="preview_payload" value="{{ preview.payload() }}">
+    <div class="form-actions">
+      <button type="submit">Потвърди импорт</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

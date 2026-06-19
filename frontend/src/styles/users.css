@@ -33,23 +33,23 @@
 }
 
 .users-table col.users-col-name {
-  width: 19%;
+  width: 20%;
 }
 
 .users-table col.users-col-email {
-  width: 22%;
+  width: 23%;
 }
 
 .users-table col.users-col-phone {
-  width: 12%;
+  width: 105px;
 }
 
 .users-table col.users-col-role {
-  width: 12%;
+  width: 14%;
 }
 
 .users-table col.users-col-location {
-  width: 23%;
+  width: auto;
 }
 
 .users-table col.users-col-status {
@@ -57,7 +57,7 @@
 }
 
 .users-table col.users-col-actions {
-  width: 56px;
+  width: 52px;
 }
 
 .requests-table {
@@ -94,6 +94,7 @@
 
 .users-cell-name {
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .users-cell-email,
@@ -148,8 +149,11 @@
 .users-role-chip {
   display: inline-flex;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  align-items: center;
+  justify-content: center;
+  white-space: normal;
+  line-height: 1.18;
+  text-align: center;
 }
 
 .user-name-plain,
@@ -192,11 +196,11 @@
 }
 
 .users-cell-actions {
-  width: 56px;
-  min-width: 56px;
-  max-width: 56px;
+  width: 52px;
+  min-width: 52px;
+  max-width: 52px;
   padding-left: 6px;
-  padding-right: 10px;
+  padding-right: 8px;
   text-align: right;
 }
 
@@ -274,7 +278,7 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
   }
 
   .users-table col.users-col-phone {
-    width: 120px;
+    width: 108px;
   }
 
   .users-table col.users-col-role {
@@ -287,5 +291,10 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
 
   .users-table col.users-col-status {
     width: 108px;
+  }
+
+  .users-location-stack {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

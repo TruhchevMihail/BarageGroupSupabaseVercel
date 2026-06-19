@@ -15,11 +15,10 @@
     {% if can_edit_asset or can_edit_asset_notes_and_images %}
     <a class="btn-link" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Редакция</a>
     {% endif %}
-    <button type="button" class="btn-secondary btn-small" data-copy-current-url>Копирай линк</button>
     {% if can_delete_asset %}
     <form method="post" action="{{ url_for('asset_delete', asset_id=asset.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този актив?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn-small danger">Изтрий</button>
+      <button type="submit" class="btn-secondary danger">Изтрий</button>
     </form>
     {% endif %}
   </div>
@@ -55,7 +54,7 @@
 
     <div class="asset-detail-field">
       <div class="asset-detail-label">Още познат като</div>
-      <div class="asset-detail-value">{{ asset.alias_name or '-' }}</div>
+      <div class="asset-detail-value copyable-value" data-copyable data-copy-value="{{ asset.alias_name or '' }}" data-copy-skip-empty="true" title="Клик за копиране">{{ asset.alias_name or '-' }}</div>
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Марка</div>
@@ -89,7 +88,7 @@
       <div class="asset-detail-value asset-detail-value-inline">
         {% if asset.current_location %}
         <a class="chip chip-link {{ location_meta[asset.current_location.type].chip }}" href="{{ url_for('location_detail', location_id=asset.current_location.id) }}">{{ location_meta[asset.current_location.type].icon }} {{ asset.current_location.name }}</a>
-        <button type="button" class="copy-detail-button" data-copy-text="{{ asset.current_location.name }}" aria-label="Копирай обект {{ asset.current_location.name }}" title="Копирай обекта">Копирай</button>
+        <span class="copyable-value copyable-inline-value" data-copyable data-copy-value="{{ asset.current_location.name }}" title="Клик за копиране">{{ asset.current_location.name }}</span>
         {% else %}
         <span class="chip chip-neutral">Без локация</span>
         {% endif %}

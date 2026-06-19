@@ -44,7 +44,7 @@
         {% for user in users %}
         <tr data-name="{{ user.full_name|lower }}" data-email="{{ user.email|lower }}" data-phone="{{ user.phone_number or '' }}" data-role="{{ role_meta.get(user.role, default_role_meta).label|lower }}" data-location="{% set user_locations_list = user_locations(user) %}{% if user_locations_list %}{{ user_locations_list[0].name|lower }}{% endif %}" data-status="{{ 'active' if user.is_active else 'inactive' }}">
           <td class="users-cell-name">
-            <a class="user-name user-name-plain" href="{{ url_for('user_profile', user_id=user.id) }}">{{ user.full_name }}</a>
+            <a class="user-name user-name-plain" href="{{ url_for('user_profile', user_id=user.id) }}" title="{{ user.full_name }}">{{ user.full_name }}</a>
           </td>
           <td class="users-cell-email"><a class="user-email" href="mailto:{{ user.email }}" title="{{ user.email }}">{{ user.email }}</a></td>
           <td class="users-cell-phone">{{ user.phone_number or '-' }}</td>
