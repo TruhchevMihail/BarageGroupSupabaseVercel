@@ -54,10 +54,12 @@ from barage_app.extensions import db
 from barage_app.models import Asset, AssetHistory, AssetImage, AssetServiceRecord, Location, TransferRequest, User
 from barage_app.services.assets_csv import (
     build_asset_csv_template,
+    build_asset_xlsx_template,
     build_assets_query,
     export_assets_csv,
+    export_assets_xlsx,
     order_assets_query,
-    parse_asset_csv_upload,
+    parse_asset_import_upload,
     parse_asset_filter_args,
     preview_from_payload,
     apply_asset_csv_import,
@@ -1864,11 +1866,22 @@ def assets():
 @route('/assets/export.csv')
 @login_required
 def assets_export_csv():
-    csv_text = export_assets_csv(parse_asset_filter_args(request.args))
+    csv_bytes = export_assets_csv(parse_asset_filter_args(request.args))
     return Response(
-        csv_text,
-        mimetype='text/csv; charset=utf-8',
-        headers={'Content-Disposition': 'attachment; filename=assets.csv'},
+        csv_bytes,
+        content_type='text/csv; charset=utf-8',
+        headers={'Content-Disposition': 'attachment; filename="assets_export.csv"'},
+    )
+
+
+@route('/assets/export.xlsx')
+@login_required
+def assets_export_xlsx():
+    xlsx_bytes = export_assets_xlsx(parse_asset_filter_args(request.args))
+    return Response(
+        xlsx_bytes,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="assets_export.xlsx"'},
     )
 
 
@@ -1883,7 +1896,7 @@ def assets_import():
 @login_required
 @roles_required(ROLE_SUPERUSER)
 def assets_import_preview():
-    preview = parse_asset_csv_upload(request.files.get('csv_file'))
+    preview = parse_asset_import_upload(request.files.get('csv_file'))
     return render_template('assets_import.html', preview=preview)
 
 
@@ -1914,8 +1927,19 @@ def assets_import_confirm():
 def assets_import_template_csv():
     return Response(
         build_asset_csv_template(),
-        mimetype='text/csv; charset=utf-8',
-        headers={'Content-Disposition': 'attachment; filename=assets-import-template.csv'},
+        content_type='text/csv; charset=utf-8',
+        headers={'Content-Disposition': 'attachment; filename="assets_import_template.csv"'},
+    )
+
+
+@route('/assets/import/template.xlsx')
+@login_required
+@roles_required(ROLE_SUPERUSER)
+def assets_import_template_xlsx():
+    return Response(
+        build_asset_xlsx_template(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        headers={'Content-Disposition': 'attachment; filename="assets_import_template.xlsx"'},
     )
 
 

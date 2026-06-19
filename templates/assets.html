@@ -8,9 +8,10 @@
   </div>
   <div class="detail-actions">
     {% include '_dashboard_back_button.html' %}
-    <a href="{{ current_query_url('assets_export_csv') }}" class="btn-secondary">Експорт CSV</a>
+    <a href="{{ current_query_url('assets_export_xlsx') }}" class="btn-secondary" title="Excel форматът е препоръчителен за Windows.">Експорт Excel</a>
+    <a href="{{ current_query_url('assets_export_csv') }}" class="btn-secondary" title="Файлът е съвместим с Excel на Windows и Numbers на macOS.">Експорт CSV</a>
     {% if can_import_assets %}
-    <a href="{{ url_for('assets_import') }}" class="btn-secondary">Импорт CSV</a>
+    <a href="{{ url_for('assets_import') }}" class="btn-secondary">Импорт CSV/Excel</a>
     {% endif %}
     {% if can_create_asset %}
     <a href="{{ url_for('asset_new') }}" class="btn-primary">Добави актив</a>
@@ -113,7 +114,7 @@
       <tr>
         <th class="asset-inventory-cell">
           {% set inventory_direction = 'desc' if filters.sort == 'inventory' and filters.direction == 'asc' else 'asc' %}
-          <a class="table-sort" data-sort-key="inventory" title="Инвентарен №" href="{{ current_query_url('assets', sort='inventory', direction=inventory_direction, page=1) }}" data-ajax-link>
+          <a class="table-sort" data-sort-key="inventory" title="№" href="{{ current_query_url('assets', sort='inventory', direction=inventory_direction, page=1) }}" data-ajax-link>
             <span class="asset-inventory-label">№</span>
             <span class="sort-arrow" aria-hidden="true"></span>
           </a>

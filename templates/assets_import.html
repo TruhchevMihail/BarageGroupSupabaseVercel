@@ -3,24 +3,25 @@
 <div class="page-head split">
   <div>
     <span class="eyebrow">Машини</span>
-    <h1>Импорт CSV</h1>
+    <h1>Импорт CSV/Excel</h1>
   </div>
   <div class="detail-actions">
     <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
+    <a class="btn-secondary" href="{{ url_for('assets_import_template_xlsx') }}">Шаблон Excel</a>
     <a class="btn-secondary" href="{{ url_for('assets_import_template_csv') }}">Шаблон CSV</a>
   </div>
 </div>
 
 <div class="panel form-sheet">
-  <p class="muted">Качете CSV файл с машини. Системата първо ще провери редовете и ще покаже грешки. Данните няма да бъдат записани, докато не потвърдите импорта.</p>
+  <p class="muted">Можете да качите CSV или Excel файл. За най-добра съвместимост с Windows използвайте Excel формат (.xlsx). Системата ще провери редовете преди запис.</p>
   <p class="muted"><strong>Импортът е достъпен само за администратори.</strong></p>
-  <p class="form-hint">Поддържани колони: № или inventory_number, name, brand, model, category, asset_type, serial_number, current_location, purchase_date. Максимум 1000 реда и 1 MB.</p>
+  <p class="form-hint">Поддържани колони: Инвентарен №, №, inventory_number, Име, name, Марка, brand, Модел, model, Категория, category, Вид актив, asset_type, Сериен №, serial_number, Текуща локация, Обект, current_location, Дата на закупуване, purchase_date. Максимум 1000 реда. CSV до 1 MB, Excel до 5 MB.</p>
 </div>
 
 <form method="post" action="{{ url_for('assets_import_preview') }}" enctype="multipart/form-data" class="form-card compact panel form-sheet">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <label>Качи CSV файл
-    <input type="file" name="csv_file" accept=".csv,text/csv" required>
+  <label>Качи CSV или Excel файл
+    <input type="file" name="csv_file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
   </label>
   <div class="form-actions">
     <button type="submit">Преглед преди импорт</button>
@@ -97,7 +98,7 @@
   {% endif %}
 
   {% if preview.valid_rows and not preview.errors and not preview.error_rows %}
-  <form method="post" action="{{ url_for('assets_import_confirm') }}" data-confirm="Потвърждавате ли CSV импорта?">
+  <form method="post" action="{{ url_for('assets_import_confirm') }}" data-confirm="Потвърждавате ли импорта?">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="preview_payload" value="{{ preview.payload() }}">
     <div class="form-actions">
