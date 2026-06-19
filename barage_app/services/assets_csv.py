@@ -29,21 +29,6 @@ ASSET_CSV_ENCODING = 'utf-8-sig'
 ASSET_CSV_DELIMITER = ';'
 ASSET_CSV_SEPARATOR_HINT = f'sep={ASSET_CSV_DELIMITER}'
 ASSET_CSV_REQUIRED_COLUMN_LABEL = 'Инвентарен №'
-ASSET_EXPORT_HEADERS = [
-    'Инвентарен №',
-    'Име',
-    'Марка',
-    'Модел',
-    'Категория',
-    'Вид актив',
-    'Сериен №',
-    'Текуща локация',
-    'Тип локация',
-    'Статус',
-    'Дни в сервиз',
-    'Последно преместване',
-    'Дата на създаване',
-]
 ASSET_CSV_TEMPLATE_HEADERS = ['Инвентарен №', 'Име', 'Марка', 'Модел', 'Категория', 'Вид актив', 'Сериен №', 'Текуща локация']
 ASSET_XLSX_SHEET_NAME = 'Машини'
 
@@ -372,27 +357,51 @@ def format_date(value):
     return value.strftime('%Y-%m-%d') if value else ''
 
 
+def format_export_datetime(value):
+    return value.strftime('%d.%m.%Y %H:%M') if value else ''
+
+
+def format_export_date(value):
+    return value.strftime('%d.%m.%Y') if value else ''
+
+
+def asset_location_type_label(asset):
+    location = asset.current_location
+    return LOCATION_META.get(location.type, {}).get('label', location.type) if location else ''
+
+
+def asset_export_object_name(asset):
+    return asset.current_location.name if asset.current_location else ''
+
+
+ASSET_EXPORT_COLUMNS = [
+    ('Инвентарен №', lambda asset: asset.inventory_number),
+    ('Тип / име', lambda asset: asset.name),
+    ('Дата на закупуване', lambda asset: format_export_date(asset.purchase_date)),
+    ('Фактура №', lambda asset: asset.invoice_number or ''),
+    ('Още познат като', lambda asset: asset.alias_name or ''),
+    ('Марка', lambda asset: asset.brand),
+    ('Доставчик / фирма', lambda asset: asset.supplier_company or asset.company_name or ''),
+    ('Гаранция', lambda asset: asset.warranty or ''),
+    ('Модел', lambda asset: asset.model),
+    ('Сериен №', lambda asset: asset.serial_number or ''),
+    ('Категория', lambda asset: asset.category or ''),
+    ('Вид актив', lambda asset: asset.asset_type or ''),
+    ('Дата на създаване', lambda asset: format_export_datetime(asset.created_at)),
+    ('Обект', asset_export_object_name),
+    ('Тип локация', asset_location_type_label),
+    ('Статус', asset_display_status),
+    ('Дни в сервиз', lambda asset: getattr(asset, 'service_stay_days', None) or ''),
+    ('Последно преместване', lambda asset: format_export_datetime(asset.last_moved_at)),
+    ('Забележки', lambda asset: asset.notes or ''),
+]
+ASSET_EXPORT_HEADERS = [header for header, _getter in ASSET_EXPORT_COLUMNS]
+
+
 def _asset_export_rows(assets):
     rows = []
     for asset in assets:
-        location = asset.current_location
-        location_label = LOCATION_META.get(location.type, {}).get('label', location.type) if location else ''
-        service_days = asset.service_stay_days if getattr(asset, 'service_stay_is_long', False) else ''
-        rows.append([
-            asset.inventory_number,
-            asset.name,
-            asset.brand,
-            asset.model,
-            asset.category or '',
-            asset.asset_type or '',
-            asset.serial_number or '',
-            location.name if location else '',
-            location_label,
-            asset_display_status(asset),
-            service_days,
-            format_datetime(asset.last_moved_at),
-            format_datetime(asset.created_at),
-        ])
+        rows.append([getter(asset) for _header, getter in ASSET_EXPORT_COLUMNS])
     return rows
 
 

@@ -66,6 +66,34 @@ def test_location_detail_shows_status_from_location_type(client, db, make_user, 
     assert 'На обект' in html
 
 
+def test_asset_detail_shows_single_location_badge_without_copyable_object(client, db, make_user, login):
+    location = app_module.Location(name='Обект Детайл', type=app_module.LOC_SITE, is_active=True)
+    db.session.add(location)
+    db.session.commit()
+
+    asset = app_module.Asset(
+        inventory_number='DET-1',
+        name='Машина',
+        brand='Brand',
+        model='Model',
+        current_location_id=location.id,
+        status=app_module.STATUS_SITE,
+    )
+    viewer = make_user(full_name='Asset Viewer', email='asset-viewer@example.com', role=app_module.ROLE_USER)
+    db.session.add(asset)
+    db.session.commit()
+
+    login(viewer)
+    response = client.get(f'/assets/{asset.id}')
+    html = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert f'href="/locations/{location.id}"' in html
+    assert 'Обект Детайл</a>' in html
+    assert 'data-copy-value="Обект Детайл"' not in html
+    assert html.count('Обект Детайл') == 1
+
+
 def test_upload_endpoint_requires_scope_and_csrf(client, db, make_user, login, default_csrf):
     location = app_module.Location(name='Обект Upload', type=app_module.LOC_SITE, is_active=True)
     foreign_location = app_module.Location(name='Друг Обект', type=app_module.LOC_SITE, is_active=True)
