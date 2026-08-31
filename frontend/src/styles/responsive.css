@@ -162,3 +162,19 @@
     max-width: 100%;
   }
 }
+
+@media (max-width: 1000px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 80;
+    padding: 12px 20px;
+    gap: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .sidebar {
+    padding: 10px 14px;
+  }
+}

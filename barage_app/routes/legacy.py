@@ -47,6 +47,7 @@ from barage_app.config import (
     SUPABASE_URL,
     UNSAFE_HTTP_METHODS,
     UPLOAD_FOLDER,
+    TRUST_PROXY_HEADERS,
     VERCEL_ENVIRONMENT,
 )
 from barage_app.constants import *  # noqa: F403
@@ -495,9 +496,13 @@ def delete_upload_if_unreferenced(file_url, excluding_asset_image_ids=None, excl
 
 
 def get_client_ip():
-    forwarded_for = request.headers.get('X-Forwarded-For', '')
-    if forwarded_for:
-        return forwarded_for.split(',')[0].strip()
+    if TRUST_PROXY_HEADERS:
+        forwarded_for = (
+            request.headers.get('X-Vercel-Forwarded-For', '')
+            or request.headers.get('X-Forwarded-For', '')
+        )
+        if forwarded_for:
+            return forwarded_for.split(',')[0].strip()
     return request.remote_addr or 'unknown'
 
 
@@ -587,6 +592,9 @@ def validate_csrf_token():
 def load_logged_in_user():
     user_id = session.get('user_id')
     g.user = db.session.get(User, user_id) if user_id else None
+    if g.user is not None and not g.user.is_active:
+        session.clear()
+        g.user = None
 
 
 @before_request
@@ -676,7 +684,7 @@ def roles_required(*roles):
 
 
 def can_view_users(user):
-    return bool(user and user.role == ROLE_SUPERUSER)
+    return bool(user)
 
 
 def can_create_user(user):
@@ -728,11 +736,7 @@ def asset_in_user_scope(user, asset):
 
 
 def can_view_user(current_user, target_user):
-    if not current_user or not target_user:
-        return False
-    if target_user.is_active:
-        return True
-    return current_user.role == ROLE_SUPERUSER or current_user.id == target_user.id
+    return bool(current_user and target_user)
 
 
 def can_manage_user(current_user, target_user):
@@ -893,21 +897,7 @@ def can_delete_service_record(current_user, record):
 def visible_users_query(current_user, query):
     if not current_user:
         return query.filter(User.id == -1)
-    if current_user.role == ROLE_SUPERUSER:
-        return query
-    if current_user.role == ROLE_USER_PLUS:
-        location_ids = user_scope_location_ids(current_user)
-        scope_filters = [User.manager_id == current_user.id]
-        if location_ids:
-            scope_filters.extend([
-                User.assigned_location_id.in_(location_ids),
-                User.managed_locations.any(Location.id.in_(location_ids)),
-            ])
-        return query.filter(or_(
-            User.id == current_user.id,
-            and_(User.role.in_(FIELD_ROLES), or_(*scope_filters)),
-        ))
-    return query.filter(User.id == current_user.id)
+    return query
 
 
 def apply_asset_scope(query, current_user):
@@ -1732,8 +1722,6 @@ def user_profile(user_id):
     )
     if not can_view_user(g.user, target):
         abort(403)
-    if not target.is_active and not is_superuser() and target.id != g.user.id:
-        abort(404)
     return render_template(
         'profile.html',
         user=target,
@@ -1742,7 +1730,7 @@ def user_profile(user_id):
         can_edit_user=can_manage_user(g.user, target),
         can_toggle_user=can_toggle_user(g.user, target),
         can_delete_user=can_delete_user(g.user, target),
-        show_users_back_link=g.user.role in {ROLE_SUPERUSER, ROLE_USER_PLUS},
+        show_users_back_link=True,
     )
 
 
@@ -2380,6 +2368,19 @@ def request_action(req_id, action):
         if not can_approve_request(g.user, req):
             abort(403)
         asset = req.asset
+        if not req.to_location.is_active or asset.current_location_id != req.from_location_id:
+            req.status = 'rejected'
+            req.approved_by_id = g.user.id
+            req.processed_at = datetime.utcnow()
+            add_history(
+                asset.id,
+                'request_rejected',
+                'Заявката е отказана автоматично, защото местоположението на машината вече е променено.',
+                g.user.id,
+            )
+            db.session.commit()
+            flash('Заявката вече не е актуална и беше отказана.', 'error')
+            return redirect(request.referrer or url_for('requests_list'))
         update_asset_status(asset, req.to_location)
         req.status = 'approved'
         req.approved_by_id = g.user.id
@@ -2410,7 +2411,6 @@ def admin_panel():
 
 @route('/users', methods=['GET'])
 @login_required
-@roles_required(ROLE_SUPERUSER)
 def users_manage():
     role_filter = request.args.get('role', '').strip()
     status_filter = request.args.get('status', '').strip()

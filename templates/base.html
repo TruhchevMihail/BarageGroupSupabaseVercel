@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>{{ title or 'Barage Machinery' }}</title>
+  <title>{% block title %}{{ title or 'Barage Machinery' }}{% endblock %}</title>
   <script>
     (function () {
       const stored = localStorage.getItem('theme');
@@ -14,21 +14,29 @@
       document.documentElement.style.colorScheme = theme;
     })();
   </script>
+  <link rel="icon" href="{{ url_for('static', filename='barage_logo.png') }}" type="image/png">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <div class="layout">
     {% if g.user %}
     <aside class="sidebar">
-      <a class="brand-block" href="{{ url_for('dashboard') }}">
-        <div class="brand-mark">
-          <img src="{{ url_for('static', filename='barage_logo.jpg') }}" alt="Barage Group" class="brand-logo-img">
-        </div>
-        <div>
-          <div class="brand-title">Barage Group</div>
-          <div class="brand-tagline">Обекти, машини и движение</div>
-        </div>
-      </a>
+      <div class="sidebar-top">
+        <a class="brand-block" href="{{ url_for('dashboard') }}">
+          <div class="brand-mark">
+            <img src="{{ url_for('static', filename='barage_logo.jpg') }}" alt="Barage Group" class="brand-logo-img">
+          </div>
+          <div>
+            <div class="brand-title">Barage Group</div>
+            <div class="brand-tagline">Обекти, машини и движение</div>
+          </div>
+        </a>
+        <button type="button" class="sidebar-toggle" data-sidebar-toggle aria-label="Отвори меню" aria-expanded="false" aria-controls="sidebar-content">
+          <span>Меню</span><span aria-hidden="true">☰</span>
+        </button>
+      </div>
+
+      <div class="sidebar-content" id="sidebar-content" data-sidebar-content>
 
       <nav class="sidebar-nav">
         <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span>Табло</span></a>
@@ -64,6 +72,7 @@
             </form>
           </div>
         </div>
+      </div>
       </div>
     </aside>
     {% endif %}

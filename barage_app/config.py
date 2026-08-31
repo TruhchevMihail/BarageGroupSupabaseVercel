@@ -65,6 +65,9 @@ LOGIN_RATE_LIMIT = (7, 300)
 SENSITIVE_RATE_LIMIT = (20, 300)
 RATE_LIMIT_BUCKETS = defaultdict(list)
 VERCEL_ENVIRONMENT = bool(os.environ.get('VERCEL'))
+TRUST_PROXY_HEADERS = VERCEL_ENVIRONMENT or os.environ.get('TRUST_PROXY_HEADERS', '').strip().lower() in {
+    '1', 'true', 'yes', 'on',
+}
 
 
 def configure_app(flask_app):
@@ -105,7 +108,7 @@ def configure_app(flask_app):
     flask_app.config['MAX_CONTENT_LENGTH'] = MAX_REQUEST_SIZE
     flask_app.config['SESSION_COOKIE_HTTPONLY'] = True
     flask_app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    flask_app.config['SESSION_COOKIE_SECURE'] = os.environ.get('APP_ENV') == 'production'
+    flask_app.config['SESSION_COOKIE_SECURE'] = VERCEL_ENVIRONMENT or os.environ.get('APP_ENV') == 'production'
     flask_app.config['PREFERRED_URL_SCHEME'] = os.environ.get('PREFERRED_URL_SCHEME', 'http')
     server_name = os.environ.get('SERVER_NAME')
     if server_name:

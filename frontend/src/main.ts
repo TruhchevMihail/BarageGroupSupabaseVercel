@@ -15,6 +15,7 @@ import { initTeamSearch } from './modules/teamSearch';
 import { initThemeToggle } from './modules/theme';
 import { initTableEnhancements } from './modules/tableEnhancements';
 import { initSearchForms } from './modules/searchForms';
+import { initSidebarToggle } from './modules/sidebar';
 
 function initDynamicUi(csrfToken: string): void {
   injectCsrfInputs(csrfToken);
@@ -34,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const csrfToken = getCsrfToken();
 
   initThemeToggle();
+  initSidebarToggle();
   initCommandPalette();
   initKeyboardShortcuts();
   initDynamicUi(csrfToken);

@@ -67,3 +67,47 @@ def test_request_action_missing_csrf_fails(client, db, make_user, login):
     login(admin)
     response = client.post(f'/requests/{req.id}/approve', data={}, follow_redirects=False)
     assert response.status_code == 400
+
+
+def test_stale_request_is_rejected_without_moving_asset(client, db, make_user, login, default_csrf):
+    original_location = app_module.Location(name='Първоначален обект', type=app_module.LOC_SITE, is_active=True)
+    current_location = app_module.Location(name='Текущ обект', type=app_module.LOC_SITE, is_active=True)
+    requested_location = app_module.Location(name='Заявен обект', type=app_module.LOC_SITE, is_active=True)
+    db.session.add_all([original_location, current_location, requested_location])
+    db.session.commit()
+
+    admin = make_user(full_name='Stale Approver', email='stale-approver@example.com', role=app_module.ROLE_SUPERUSER)
+    requester = make_user(full_name='Stale Requester', email='stale-requester@example.com', role=app_module.ROLE_USER)
+    asset = app_module.Asset(
+        inventory_number='REQ-STALE',
+        name='Машина',
+        brand='Brand',
+        model='Model',
+        current_location_id=current_location.id,
+        status=app_module.STATUS_SITE,
+    )
+    db.session.add(asset)
+    db.session.commit()
+
+    transfer_request = app_module.TransferRequest(
+        asset_id=asset.id,
+        from_location_id=original_location.id,
+        to_location_id=requested_location.id,
+        status='pending',
+        requested_by_id=requester.id,
+    )
+    db.session.add(transfer_request)
+    db.session.commit()
+
+    login(admin)
+    response = client.post(
+        f'/requests/{transfer_request.id}/approve',
+        data={'csrf_token': default_csrf},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 302
+    db.session.refresh(asset)
+    db.session.refresh(transfer_request)
+    assert asset.current_location_id == current_location.id
+    assert transfer_request.status == 'rejected'
