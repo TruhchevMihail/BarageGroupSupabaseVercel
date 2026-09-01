@@ -92,6 +92,6 @@ function initRowHighlight(): void {
 export function initTableEnhancements(): void {
   initAssetsTable();
   initBackendSortedTable('users-table', 'name', 'asc');
-  initBackendSortedTable('requests-table', 'newest', 'asc');
+  initBackendSortedTable('requests-table', 'newest', 'desc');
   initRowHighlight();
 }

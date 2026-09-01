@@ -5,7 +5,18 @@ from pathlib import Path
 
 import pytest
 
-os.environ.setdefault('SECRET_KEY', 'pytest-secret-key')
+os.environ.update({
+    'SECRET_KEY': 'pytest-secret-key',
+    'DATABASE_URL': '',
+    'SUPABASE_DB_URL': '',
+    'SUPABASE_URL': '',
+    'SUPABASE_SERVICE_ROLE_KEY': '',
+    'SUPABASE_STORAGE_BUCKET': '',
+    'DATABASE_PATH': str(Path(tempfile.gettempdir()) / 'barage-pytest-bootstrap.sqlite'),
+    'LOG_DIR': str(Path(tempfile.gettempdir()) / 'barage-pytest-logs'),
+    'UPLOAD_FOLDER': str(Path(tempfile.gettempdir()) / 'barage-pytest-uploads'),
+    'SERVICE_INVOICE_MAP_PATH': str(Path(tempfile.gettempdir()) / 'barage-pytest-service-map.json'),
+})
 
 import app as app_module  # noqa: E402
 

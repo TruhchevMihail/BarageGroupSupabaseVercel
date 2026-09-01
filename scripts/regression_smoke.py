@@ -3,7 +3,18 @@ import sys
 import tempfile
 from pathlib import Path
 
-os.environ.setdefault('SECRET_KEY', 'smoke-script-secret')
+os.environ.update({
+    'SECRET_KEY': 'smoke-script-secret',
+    'DATABASE_URL': '',
+    'SUPABASE_DB_URL': '',
+    'SUPABASE_URL': '',
+    'SUPABASE_SERVICE_ROLE_KEY': '',
+    'SUPABASE_STORAGE_BUCKET': '',
+    'DATABASE_PATH': os.path.join(tempfile.gettempdir(), 'barage-smoke-bootstrap.sqlite'),
+    'LOG_DIR': os.path.join(tempfile.gettempdir(), 'barage-smoke-logs'),
+    'UPLOAD_FOLDER': os.path.join(tempfile.gettempdir(), 'barage-smoke-uploads'),
+    'SERVICE_INVOICE_MAP_PATH': os.path.join(tempfile.gettempdir(), 'barage-smoke-service-map.json'),
+})
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

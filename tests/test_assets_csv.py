@@ -289,6 +289,22 @@ def test_export_service_returns_excel_workbook_with_cyrillic_and_filters(db):
     assert values[0][13] == 'Сервиз Excel'
 
 
+def test_exports_escape_spreadsheet_formula_prefixes(db):
+    warehouse = app_module.Location(name='Склад Формули', type=app_module.LOC_WAREHOUSE, is_active=True)
+    db.session.add(warehouse)
+    db.session.commit()
+    db.session.add(_asset('FORMULA-1', name='=HYPERLINK("https://attacker.example")', location=warehouse))
+    db.session.commit()
+
+    csv_rows = _csv_rows(export_assets_csv({'sort': 'inventory', 'direction': 'asc'}).decode('utf-8-sig'))
+    assert csv_rows[1][1].startswith("'=")
+
+    workbook = load_workbook(io.BytesIO(export_assets_xlsx({'sort': 'inventory', 'direction': 'asc'})))
+    name_cell = workbook.active['B2']
+    assert name_cell.value.startswith("'=")
+    assert name_cell.data_type != 'f'
+
+
 def test_asset_exports_include_basic_detail_fields_in_excel_and_csv(db):
     service = app_module.Location(name='Сервиз Пълен Експорт', type=app_module.LOC_SERVICE, is_active=True)
     db.session.add(service)

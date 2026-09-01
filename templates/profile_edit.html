@@ -43,7 +43,7 @@
 
         <div class="multi-select-shell" data-multi-select="assigned-locations">
           <div class="multi-select-row">
-            <select id="assigned-location-select">
+            <select id="assigned-location-select" aria-label="Добавяне на назначен обект">
               <option value="">Избери обект</option>
               {% for location in locations %}
               {% if location.id not in assigned_location_ids %}

@@ -1,5 +1,5 @@
 from functools import wraps
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 import hmac
 import json
 import os
@@ -7,7 +7,8 @@ import re
 import secrets
 import time
 from uuid import uuid4
-from urllib.parse import quote, unquote
+from urllib.parse import quote, unquote, urlsplit
+from zoneinfo import ZoneInfo
 
 from flask import Response, abort, current_app as app, flash, g, has_app_context, jsonify, redirect, render_template, request, session, url_for
 from sqlalchemy import Integer, and_, case, cast, func, or_
@@ -52,7 +53,16 @@ from barage_app.config import (
 )
 from barage_app.constants import *  # noqa: F403
 from barage_app.extensions import db
-from barage_app.models import Asset, AssetHistory, AssetImage, AssetServiceRecord, Location, TransferRequest, User
+from barage_app.models import (
+    Asset,
+    AssetHistory,
+    AssetImage,
+    AssetServiceRecord,
+    Location,
+    TransferRequest,
+    User,
+    location_technicians,
+)
 from barage_app.services.assets_csv import (
     build_asset_csv_template,
     build_asset_xlsx_template,
@@ -73,6 +83,7 @@ _BEFORE_REQUESTS = []
 _CONTEXT_PROCESSORS = []
 _TEMPLATE_FILTERS = []
 _ERROR_HANDLERS = []
+_SOFIA_TIMEZONE = ZoneInfo('Europe/Sofia')
 
 
 def route(*args, **kwargs):
@@ -159,6 +170,21 @@ def current_query_url(endpoint, **updates):
         else:
             args[key] = value
     return url_for(endpoint, **args)
+
+
+def safe_local_redirect(candidate, fallback_endpoint, **fallback_values):
+    """Redirect only to this application, even when a Referer is supplied."""
+    if candidate:
+        parsed = urlsplit(candidate)
+        same_host = not parsed.netloc or parsed.netloc == request.host
+        safe_scheme = not parsed.scheme or parsed.scheme in {'http', 'https'}
+        path = parsed.path or '/'
+        if same_host and safe_scheme and path.startswith('/') and not path.startswith('//') and '\\' not in path:
+            target = path
+            if parsed.query:
+                target = f'{target}?{parsed.query}'
+            return redirect(target)
+    return redirect(url_for(fallback_endpoint, **fallback_values))
 
 
 def save_service_invoice_map(data):
@@ -528,7 +554,7 @@ def rate_limit_response(message):
         return jsonify({'ok': False, 'error': message}), 429
     if request.method == 'POST':
         flash(message, 'error')
-        return redirect(request.referrer or url_for('dashboard'))
+        return safe_local_redirect(request.referrer, 'dashboard')
     abort(429)
 
 
@@ -1045,7 +1071,11 @@ def resolve_upload_fs_path(file_reference):
 
     uploads_root = os.path.normpath(os.path.abspath(configured_upload_folder()))
     fs_path = os.path.normpath(os.path.abspath(fs_path))
-    if fs_path.startswith(uploads_root):
+    try:
+        inside_uploads = os.path.commonpath([uploads_root, fs_path]) == uploads_root
+    except ValueError:
+        inside_uploads = False
+    if inside_uploads:
         return fs_path
     return None
 
@@ -1571,10 +1601,7 @@ def login():
             session.permanent = True
             session['user_id'] = user.id
             app.logger.info('login_success user_id=%s email=%s ip=%s', user.id, user.email, get_client_ip())
-            next_url = request.args.get('next', '')
-            if next_url.startswith('/') and not next_url.startswith('//'):
-                return redirect(next_url)
-            return redirect(url_for('dashboard'))
+            return safe_local_redirect(request.args.get('next', ''), 'dashboard')
         app.logger.warning('login_failure email=%s ip=%s', email, get_client_ip())
         flash('Грешен имейл, парола или неактивен потребител.', 'error')
     return render_template('login.html')
@@ -1730,6 +1757,7 @@ def user_profile(user_id):
         can_edit_user=can_manage_user(g.user, target),
         can_toggle_user=can_toggle_user(g.user, target),
         can_delete_user=can_delete_user(g.user, target),
+        can_reset_user_password=g.user.role == ROLE_SUPERUSER,
         show_users_back_link=True,
     )
 
@@ -2307,6 +2335,10 @@ def requests_list():
     direction = request.args.get('direction', 'asc').lower().strip()
     if direction not in ('asc', 'desc'):
         direction = 'asc'
+    if sort == 'newest':
+        direction = 'desc'
+    elif sort == 'oldest':
+        direction = 'asc'
     query = TransferRequest.query.options(
         joinedload(TransferRequest.asset),
         joinedload(TransferRequest.from_location),
@@ -2363,7 +2395,7 @@ def request_action(req_id, action):
     req = TransferRequest.query.get_or_404(req_id)
     if req.status != 'pending':
         flash('Тази заявка вече е обработена.', 'error')
-        return redirect(request.referrer or url_for('dashboard'))
+        return safe_local_redirect(request.referrer, 'requests_list')
     if action == 'approve':
         if not can_approve_request(g.user, req):
             abort(403)
@@ -2380,7 +2412,7 @@ def request_action(req_id, action):
             )
             db.session.commit()
             flash('Заявката вече не е актуална и беше отказана.', 'error')
-            return redirect(request.referrer or url_for('requests_list'))
+            return safe_local_redirect(request.referrer, 'requests_list')
         update_asset_status(asset, req.to_location)
         req.status = 'approved'
         req.approved_by_id = g.user.id
@@ -2399,7 +2431,7 @@ def request_action(req_id, action):
         db.session.commit()
         app.logger.info('request_rejected actor_id=%s request_id=%s asset_id=%s', g.user.id, req.id, req.asset_id)
         flash('Заявката е отказана.', 'success')
-    return redirect(request.referrer or url_for('admin_panel'))
+    return safe_local_redirect(request.referrer, 'requests_list')
 
 
 @route('/admin')
@@ -2412,9 +2444,10 @@ def admin_panel():
 @route('/users', methods=['GET'])
 @login_required
 def users_manage():
+    q = request.args.get('q', '').strip()
     role_filter = request.args.get('role', '').strip()
     status_filter = request.args.get('status', '').strip()
-    sort = request.args.get('sort', 'newest').strip()
+    sort = request.args.get('sort', 'name').strip()
     direction = request.args.get('direction', 'asc').lower().strip()
     if direction not in ('asc', 'desc'):
         direction = 'asc'
@@ -2424,6 +2457,16 @@ def users_manage():
         'active': users_query.filter_by(is_active=True).count(),
         'inactive': users_query.filter_by(is_active=False).count(),
     }
+    if q:
+        like = f'%{q}%'
+        users_query = users_query.filter(or_(
+            User.full_name.ilike(like),
+            User.email.ilike(like),
+            User.phone_number.ilike(like),
+            User.role.ilike(like),
+            User.assigned_location.has(Location.name.ilike(like)),
+            User.managed_locations.any(Location.name.ilike(like)),
+        ))
     if role_filter in ROLE_META:
         users_query = users_query.filter_by(role=role_filter)
     if status_filter == 'active':
@@ -2431,13 +2474,30 @@ def users_manage():
     elif status_filter == 'inactive':
         users_query = users_query.filter_by(is_active=False)
     page = max(request.args.get('page', 1, type=int) or 1, 1)
+    managed_location_sort = (
+        db.session.query(func.min(Location.name))
+        .join(location_technicians, Location.id == location_technicians.c.location_id)
+        .filter(location_technicians.c.user_id == User.id)
+        .correlate(User)
+        .scalar_subquery()
+    )
+    assigned_location_sort = (
+        db.session.query(Location.name)
+        .filter(Location.id == User.assigned_location_id)
+        .correlate(User)
+        .scalar_subquery()
+    )
+    location_sort = case(
+        (User.role.in_(MULTI_LOCATION_ROLES), managed_location_sort),
+        else_=assigned_location_sort,
+    )
     sort_map = {
         'newest': [User.is_active, User.id],
         'oldest': [User.is_active, User.id],
-        'name': [User.is_active, User.full_name],
-        'role': [User.is_active, User.role, User.full_name],
+        'name': [User.full_name],
+        'role': [User.role, User.full_name],
         'status': [User.is_active, User.role, User.full_name],
-        'location': [User.is_active, User.assigned_location_id, User.full_name],
+        'location': [location_sort, User.full_name],
     }
     columns = sort_map.get(sort, sort_map['name'])
     if sort == 'newest':
@@ -2466,7 +2526,7 @@ def users_manage():
         for user in users
     }
     return render_template('users.html', users=users, locations=locations, all_locations=all_locations,
-                           filters={'role': role_filter, 'status': status_filter, 'sort': sort, 'direction': direction}, user_summary=user_summary,
+                           filters={'q': q, 'role': role_filter, 'status': status_filter, 'sort': sort, 'direction': direction}, user_summary=user_summary,
                            pagination=pagination, user_permissions=user_permissions,
                            can_create_user=can_create_user(g.user))
 
@@ -2583,6 +2643,8 @@ def user_edit(user_id):
 
         new_password = request.form.get('password', '').strip()
         if new_password:
+            if g.user.role != ROLE_SUPERUSER:
+                abort(403)
             if len(new_password) < 8:
                 flash('Новата парола трябва да е поне 8 символа.', 'error')
                 return redirect(url_for('user_edit', user_id=target.id))
@@ -2751,7 +2813,7 @@ def location_archive(location_id):
         flash('Обектът е архивиран.', 'success')
     else:
         flash('Обектът вече е архивиран.', 'error')
-    return redirect(request.referrer or url_for('location_detail', location_id=location.id))
+    return safe_local_redirect(request.referrer, 'location_detail', location_id=location.id)
 
 
 @route('/locations/<int:location_id>/unarchive', methods=['POST'])
@@ -2767,7 +2829,7 @@ def location_unarchive(location_id):
         flash('Обектът е върнат от архив.', 'success')
     else:
         flash('Обектът вече е активен.', 'error')
-    return redirect(request.referrer or url_for('location_detail', location_id=location.id))
+    return safe_local_redirect(request.referrer, 'location_detail', location_id=location.id)
 
 
 @route('/locations/<int:location_id>/delete', methods=['POST'])
@@ -3192,19 +3254,25 @@ def update_user_password(target_user, password, actor_user, *, is_self_change):
 
 @route('/profile/password', methods=['GET', 'POST'])
 @login_required
+@sensitive_rate_limited
 def profile_password():
     if request.method == 'POST':
+        current_password = request.form.get('current_password', '')
+        if not current_password or not g.user.check_password(current_password):
+            flash('Текущата парола е грешна.', 'error')
+            return redirect(url_for('profile_password'))
         password, _, error = validate_password_change_form()
         if error:
             flash(error, 'error')
             return redirect(url_for('profile_password'))
         update_user_password(g.user, password, g.user, is_self_change=True)
         return redirect(url_for('profile'))
-    return render_template('password_form.html', back_url=url_for('profile'))
+    return render_template('password_form.html', back_url=url_for('profile'), require_current_password=True)
 
 
 @route('/users/<int:user_id>/password', methods=['GET', 'POST'])
 @login_required
+@sensitive_rate_limited
 def user_password(user_id):
     if g.user.role != ROLE_SUPERUSER:
         app.logger.warning(
@@ -3224,14 +3292,23 @@ def user_password(user_id):
             return redirect(url_for('user_password', user_id=target_user.id))
         update_user_password(target_user, password, g.user, is_self_change=False)
         return redirect(url_for('user_profile', user_id=target_user.id))
-    return render_template('password_form.html', back_url=url_for('user_profile', user_id=target_user.id))
+    return render_template(
+        'password_form.html',
+        back_url=url_for('user_profile', user_id=target_user.id),
+        require_current_password=False,
+    )
 
 
 @template_filter('dt')
 def format_dt(value):
     if not value:
         return '-'
-    return value.strftime('%d.%m.%Y %H:%M')
+    # Database timestamps are stored in UTC. SQLAlchemy returns naive values
+    # for the existing DateTime columns, so make that UTC origin explicit
+    # before displaying them in the application's Bulgarian local time.
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(_SOFIA_TIMEZONE).strftime('%d.%m.%Y %H:%M')
 
 
 @template_filter('eur')
@@ -3310,4 +3387,4 @@ def handle_request_entity_too_large(error):
     if request.endpoint == 'upload_asset_image' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({'ok': False, 'error': f'Заявката е твърде голяма. Максимум {max_request_size // (1024 * 1024)} MB.'}), 413
     flash(f'Файлът или заявката са твърде големи. Максимум {max_request_size // (1024 * 1024)} MB.', 'error')
-    return redirect(request.referrer or url_for('dashboard'))
+    return safe_local_redirect(request.referrer, 'dashboard')

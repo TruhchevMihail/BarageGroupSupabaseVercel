@@ -20,6 +20,7 @@
 
 <div class="table-wrap panel no-pad table-card requests-table-wrap">
 <table class="requests-table" id="requests-table">
+  <thead>
   <tr>
     <th>ID</th>
     <th>Машина</th>
@@ -28,21 +29,24 @@
     {% set status_direction = 'desc' if filters.sort == 'status' and filters.direction == 'asc' else 'asc' %}
     {% set date_sort_key = filters.sort if filters.sort in ['newest', 'oldest'] else 'newest' %}
     {% set next_date_sort = 'oldest' if filters.sort == 'newest' else 'newest' %}
+    {% set next_date_direction = 'asc' if next_date_sort == 'oldest' else 'desc' %}
     <th><a class="table-sort" data-sort-key="type" href="{{ current_query_url('requests_list', sort='type', direction=type_direction, page=1) }}" data-ajax-link>Вид <span class="sort-arrow" aria-hidden="true"></span></a></th>
     <th><a class="table-sort" data-sort-key="status" href="{{ current_query_url('requests_list', sort='status', direction=status_direction, page=1) }}" data-ajax-link>Статус <span class="sort-arrow" aria-hidden="true"></span></a></th>
     <th>Заявил</th>
-    <th><a class="table-sort" data-sort-key="{{ date_sort_key }}" href="{{ current_query_url('requests_list', sort=next_date_sort, page=1) }}" data-ajax-link>Дата <span class="sort-arrow" aria-hidden="true"></span></a></th>
+    <th><a class="table-sort" data-sort-key="{{ date_sort_key }}" href="{{ current_query_url('requests_list', sort=next_date_sort, direction=next_date_direction, page=1) }}" data-ajax-link>Дата <span class="sort-arrow" aria-hidden="true"></span></a></th>
     {% if can_process_requests %}<th>Действие</th>{% endif %}
   </tr>
+  </thead>
+  <tbody>
   {% for item in items %}
   {% set request_status = request_status_meta.get(item.status, default_request_status) %}
   {% set request_kind = 'direct' if item.status == 'approved' and item.approved_by_id == item.requested_by_id else 'pending' if item.status == 'pending' else 'processed' %}
   {% set request_kind_label = 'Директна' if request_kind == 'direct' else 'Чака одобрение' if request_kind == 'pending' else 'Обработена' %}
   <tr data-id="{{ item.id }}" data-asset="{{ item.asset.inventory_number|lower }} {{ item.asset.name|lower }}" data-location="{{ item.from_location.name|lower }} {{ item.to_location.name|lower }}" data-status="{{ request_status.label|lower }}" data-request-kind="{{ request_kind_label|lower }}" data-requested-by="{{ item.requested_by.full_name|lower }}" data-created-at="{{ item.created_at.isoformat() }}">
-    <td>#{{ item.id }}</td>
-    <td><a href="{{ url_for('asset_detail', asset_id=item.asset.id) }}"><strong>{{ item.asset.inventory_number }}</strong><br><small>{{ item.asset.name }}</small></a></td>
-    <td>{{ item.from_location.name }} → {{ item.to_location.name }}</td>
-    <td>
+    <td data-label="ID">#{{ item.id }}</td>
+    <td data-label="Машина"><a href="{{ url_for('asset_detail', asset_id=item.asset.id) }}"><strong>{{ item.asset.inventory_number }}</strong><br><small>{{ item.asset.name }}</small></a></td>
+    <td data-label="Посока">{{ item.from_location.name }} → {{ item.to_location.name }}</td>
+    <td data-label="Вид">
       {% if request_kind == 'direct' %}
       <span class="chip chip-approved">Директна</span>
       {% elif request_kind == 'pending' %}
@@ -51,11 +55,11 @@
       <span class="chip chip-neutral">Обработена</span>
       {% endif %}
     </td>
-    <td><span class="chip {{ request_status.chip }}">{{ request_status.label }}</span></td>
-    <td><a class="user-link" href="{{ url_for('user_profile', user_id=item.requested_by.id) }}">{{ item.requested_by.full_name }}</a></td>
-    <td>{{ item.created_at|dt }}</td>
+    <td data-label="Статус"><span class="chip {{ request_status.chip }}">{{ request_status.label }}</span></td>
+    <td data-label="Заявил"><a class="user-link" href="{{ url_for('user_profile', user_id=item.requested_by.id) }}">{{ item.requested_by.full_name }}</a></td>
+    <td data-label="Дата">{{ item.created_at|dt }}</td>
     {% if can_process_requests %}
-    <td class="actions-cell">
+    <td class="actions-cell" data-label="Действие">
       {% set permissions = request_permissions.get(item.id, {}) %}
       {% if permissions.get('approve') or permissions.get('reject') %}
       <div class="form-actions">
@@ -73,6 +77,7 @@
   {% else %}
   <tr><td colspan="{{ 8 if can_process_requests else 7 }}" class="empty">Няма заявки.</td></tr>
   {% endfor %}
+  </tbody>
 </table>
 </div>
 

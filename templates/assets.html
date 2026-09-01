@@ -41,8 +41,8 @@
   or request.args.get('page', '').strip()
 ) %}
 <form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form data-ajax-form>
-  <input type="text" name="q" class="assets-search-input" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
-  <select name="location">
+  <input type="text" name="q" class="assets-search-input" aria-label="Търсене на машина" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
+  <select name="location" aria-label="Филтър по локация">
     <option value="">Всички локации</option>
     {% for location in locations %}
     <option value="{{ location.id }}" {% if filters.location_id == location.id %}selected{% endif %}>{{ location_meta[location.type].icon }} {{ location.name }}</option>
@@ -149,17 +149,17 @@
         data-status="{{ 'В склад' if asset.current_location and asset.current_location.type == 'warehouse' else 'На обект' if asset.current_location and asset.current_location.type == 'site' else 'В сервиз' if asset.current_location and asset.current_location.type == 'service' else 'Брак' if asset.current_location and asset.current_location.type == 'scrap' else '' }}"
         data-responsible-user-id="{{ asset.responsible_user.id if asset.responsible_user else '' }}"
         data-search-text="{{ asset.inventory_number }} {{ asset.name }} {{ asset.alias_name or '' }} {{ asset.brand }} {{ asset.model }} {{ asset.serial_number or '' }} {{ asset.invoice_number or '' }} {{ asset.supplier_company or asset.company_name or '' }} {{ asset.notes or '' }}">
-      <td class="asset-inventory-cell">
+      <td class="asset-inventory-cell" data-label="№">
         <div class="asset-inventory-stack">
           <a class="asset-row-link nowrap" href="{{ url_for('asset_detail', asset_id=asset.id) }}"><strong>{{ asset.inventory_number }}</strong></a>
         </div>
       </td>
-      <td class="asset-type-cell" title="{{ asset.name }}"><span class="asset-type-text">{{ asset.name }}</span></td>
-      <td class="asset-alias-cell" title="{{ asset.alias_name or '' }}"><span class="asset-cell-text">{{ asset.alias_name or '-' }}</span></td>
-      <td class="asset-brand-cell" title="{{ asset.brand }}"><span class="asset-cell-text">{{ asset.brand }}</span></td>
-      <td class="asset-model-cell" title="{{ asset.model }}"><span class="asset-cell-text">{{ asset.model }}</span></td>
-      <td class="asset-serial-cell" title="{{ asset.serial_number or '' }}"><span class="asset-cell-text">{{ asset.serial_number or '-' }}</span></td>
-      <td class="asset-location-cell">
+      <td class="asset-type-cell" data-label="Тип / име" title="{{ asset.name }}"><span class="asset-type-text">{{ asset.name }}</span></td>
+      <td class="asset-alias-cell" data-label="Още познат като" title="{{ asset.alias_name or '' }}"><span class="asset-cell-text">{{ asset.alias_name or '-' }}</span></td>
+      <td class="asset-brand-cell" data-label="Марка" title="{{ asset.brand }}"><span class="asset-cell-text">{{ asset.brand }}</span></td>
+      <td class="asset-model-cell" data-label="Модел" title="{{ asset.model }}"><span class="asset-cell-text">{{ asset.model }}</span></td>
+      <td class="asset-serial-cell" data-label="Сериен №" title="{{ asset.serial_number or '' }}"><span class="asset-cell-text">{{ asset.serial_number or '-' }}</span></td>
+      <td class="asset-location-cell" data-label="Обект">
         {% if asset.current_location %}
         <a class="chip chip-link asset-location-chip {{ location_meta[asset.current_location.type].chip }}" title="{{ asset.current_location.name }}" href="{{ url_for('location_detail', location_id=asset.current_location.id) }}">
           <span class="asset-location-chip-text">{{ location_meta[asset.current_location.type].icon }} {{ asset.current_location.name }}</span>
@@ -171,7 +171,7 @@
         -
         {% endif %}
       </td>
-      <td class="asset-actions-cell actions-cell">
+      <td class="asset-actions-cell actions-cell" data-label="Действия">
         <div class="inline-actions">
           <a class="btn-secondary btn-small icon-button asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}" aria-label="Детайли" title="Детайли">⋯</a>
         </div>

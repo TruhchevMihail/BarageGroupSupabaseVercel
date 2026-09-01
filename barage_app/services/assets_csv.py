@@ -31,6 +31,7 @@ ASSET_CSV_SEPARATOR_HINT = f'sep={ASSET_CSV_DELIMITER}'
 ASSET_CSV_REQUIRED_COLUMN_LABEL = 'Инвентарен №'
 ASSET_CSV_TEMPLATE_HEADERS = ['Инвентарен №', 'Име', 'Марка', 'Модел', 'Категория', 'Вид актив', 'Сериен №', 'Текуща локация']
 ASSET_XLSX_SHEET_NAME = 'Машини'
+SPREADSHEET_FORMULA_PREFIXES = ('=', '+', '-', '@')
 
 HEADER_ALIASES = {
     '№': 'inventory_number',
@@ -337,7 +338,7 @@ def order_assets_query(query, sort, direction):
     inventory_order = [cast(Asset.inventory_number, Integer), Asset.inventory_number]
     sort_map = {
         'inventory': inventory_order,
-        'type': [Asset.asset_type],
+        'type': [Asset.name],
         'brand': [Asset.brand],
         'model': [Asset.model],
         'serial': [Asset.serial_number],
@@ -401,8 +402,18 @@ ASSET_EXPORT_HEADERS = [header for header, _getter in ASSET_EXPORT_COLUMNS]
 def _asset_export_rows(assets):
     rows = []
     for asset in assets:
-        rows.append([getter(asset) for _header, getter in ASSET_EXPORT_COLUMNS])
+        values = [getter(asset) for _header, getter in ASSET_EXPORT_COLUMNS]
+        rows.append([safe_spreadsheet_value(value) for value in values])
     return rows
+
+
+def safe_spreadsheet_value(value):
+    """Prevent exported user data from being evaluated as a spreadsheet formula."""
+    if not isinstance(value, str):
+        return value
+    if value.lstrip().startswith(SPREADSHEET_FORMULA_PREFIXES):
+        return f"'{value}"
+    return value
 
 
 def export_assets_csv(filters):

@@ -47,7 +47,7 @@
       <span>Оперативен екип към обекта</span>
     </div>
     <div class="team-search">
-      <select id="team-member-select" data-team-member-select>
+      <select id="team-member-select" data-team-member-select aria-label="Добавяне на член към екипа">
         <option value="">Избери човек</option>
         {% for user in field_users %}
         {% if not location or user.id not in selected_technician_ids %}

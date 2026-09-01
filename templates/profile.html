@@ -27,6 +27,8 @@
     {% endif %}
     {% if can_edit_user %}
     <a class="btn-secondary" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
+    {% endif %}
+    {% if can_reset_user_password %}
     <a class="btn-secondary" href="{{ url_for('user_password', user_id=user.id) }}">Нова парола</a>
     {% endif %}
     {% endif %}

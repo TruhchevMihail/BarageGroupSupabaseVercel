@@ -3,7 +3,7 @@ function getThemeLabel(theme: string): string {
 }
 
 function getThemeAriaLabel(theme: string): string {
-  return theme === 'dark' ? 'Светла тема' : 'Черна тема';
+  return theme === 'dark' ? 'Светла тема' : 'Тъмна тема';
 }
 
 function setTheme(theme: string, buttons: HTMLButtonElement[]): void {

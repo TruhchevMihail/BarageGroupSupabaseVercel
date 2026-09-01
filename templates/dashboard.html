@@ -6,7 +6,6 @@
     <h1>Общ преглед</h1>
   </div>
   <div class="detail-actions">
-    {% if g.user.role == 'superuser' %}
     <a
       class="btn-primary pending-requests-button{% if stats.pending_requests %} pending-requests-button--active{% endif %}"
       href="{{ url_for('requests_list', status='pending') }}"
@@ -29,13 +28,12 @@
       <span class="long-service-badge"><strong>{{ stats.long_service_stay_total }}</strong></span>
     </a>
     {% endif %}
-    {% endif %}
   </div>
 </div>
 
 <section class="panel dashboard-section dashboard-search-panel">
   <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get">
-    <input type="search" name="q" placeholder="Бързо търсене по инвентарен №, име, марка, модел или сериен №" required data-main-search>
+    <input type="search" name="q" aria-label="Глобално търсене" placeholder="Бързо търсене по инвентарен №, име, марка, модел или сериен №" required data-main-search>
     <button type="submit" disabled>Търси</button>
   </form>
 </section>
@@ -52,9 +50,6 @@
     <a class="summary-pill summary-pill-scrap" href="{{ url_for('assets', status='Брак') }}"><span>Брак</span><strong>{{ stats.scrap_total }}</strong></a>
   </div>
 </section>
-
-{% if g.user.role == 'superuser' %}
-{% endif %}
 
 {% if not location_counts and stats.assets_total == 0 %}
 <div class="empty-state panel">

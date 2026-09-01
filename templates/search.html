@@ -17,7 +17,7 @@
 
 <section class="panel">
   <form class="dashboard-search" action="{{ url_for('global_search') }}" method="get" data-ajax-form>
-    <input type="search" name="q" value="{{ query }}" placeholder="Търси по машина, обект или потребител" required data-main-search>
+    <input type="search" name="q" value="{{ query }}" aria-label="Глобално търсене" placeholder="Търси по машина, обект или потребител" required data-main-search>
     <button type="submit" {% if not query %}disabled{% endif %}>Търси</button>
   </form>
 </section>
@@ -27,7 +27,7 @@
 {% set has_locations = results.locations|length > 0 %}
 {% set has_users = results.users|length > 0 %}
 
-{% if has_assets or has_locations %}
+{% if has_assets or has_locations or has_users %}
 <div class="grid-2">
   {% if has_assets %}
   <section class="panel">

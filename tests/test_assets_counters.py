@@ -1,3 +1,5 @@
+import re
+
 import app as app_module
 
 
@@ -24,3 +26,28 @@ def test_asset_type_counters_are_based_on_current_location_type(db):
     assert counts['site'] == 1
     assert counts['service'] == 1
     assert counts['scrap'] == 1
+
+
+def test_asset_type_sort_uses_displayed_name_across_pagination(client, db, make_user, login):
+    warehouse = app_module.Location(name='Склад сорт', type=app_module.LOC_WAREHOUSE, is_active=True)
+    db.session.add(warehouse)
+    db.session.commit()
+    for index in range(17):
+        db.session.add(app_module.Asset(
+            inventory_number=str(100 - index),
+            name=f'Тип {16 - index:02d}',
+            asset_type='Машина',
+            brand='B',
+            model='M',
+            current_location_id=warehouse.id,
+            status=app_module.STATUS_WAREHOUSE,
+        ))
+    db.session.commit()
+
+    viewer = make_user(full_name='Sort Viewer', email='sort-viewer@example.com', role=app_module.ROLE_USER)
+    login(viewer)
+    response = client.get('/assets?sort=type&direction=asc&page=1')
+    displayed_names = re.findall(r'data-type="([^"]+)"', response.get_data(as_text=True))
+
+    assert response.status_code == 200
+    assert displayed_names == [f'тип {index:02d}' for index in range(15)]

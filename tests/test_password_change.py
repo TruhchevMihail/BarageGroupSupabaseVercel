@@ -10,6 +10,7 @@ def test_self_password_change_success(client, db, make_user, login, default_csrf
         '/profile/password',
         data={
             'csrf_token': default_csrf,
+            'current_password': 'oldpassword1',
             'password': 'newpassword1',
             'password_confirm': 'newpassword1',
         },
@@ -31,6 +32,7 @@ def test_self_password_mismatch(client, db, make_user, login, default_csrf):
         '/profile/password',
         data={
             'csrf_token': default_csrf,
+            'current_password': 'oldpassword1',
             'password': 'newpassword1',
             'password_confirm': 'differentpassword',
         },
@@ -49,8 +51,28 @@ def test_self_password_too_short(client, db, make_user, login, default_csrf):
         '/profile/password',
         data={
             'csrf_token': default_csrf,
+            'current_password': 'oldpassword1',
             'password': 'short',
             'password_confirm': 'short',
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 302
+    db.session.refresh(user)
+    assert check_password_hash(user.password_hash, 'oldpassword1')
+
+
+def test_self_password_change_rejects_wrong_current_password(client, db, make_user, login, default_csrf):
+    user = make_user(full_name='Self User', email='self4@example.com', role=app_module.ROLE_USER, password='oldpassword1')
+    login(user)
+
+    response = client.post(
+        '/profile/password',
+        data={
+            'csrf_token': default_csrf,
+            'current_password': 'wrong-password',
+            'password': 'newpassword1',
+            'password_confirm': 'newpassword1',
         },
         follow_redirects=False,
     )
