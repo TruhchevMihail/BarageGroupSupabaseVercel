@@ -52,7 +52,7 @@
   table-layout: fixed;
 }
 
-.assets-page .assets-table col.asset-col-inventory { width: 56px; }
+.assets-page .assets-table col.asset-col-inventory { width: 76px; }
 .assets-page .assets-table col.asset-col-type { width: 26%; }
 .assets-page .assets-table col.asset-col-alias { width: 150px; }
 .assets-page .assets-table col.asset-col-brand { width: 132px; }
@@ -67,9 +67,9 @@
 }
 
 .assets-page .asset-inventory-cell {
-  width: 56px;
-  min-width: 56px;
-  max-width: 56px;
+  width: 76px;
+  min-width: 76px;
+  max-width: 76px;
   padding-left: 8px;
   padding-right: 6px;
   text-align: left;
@@ -80,6 +80,12 @@
   color: var(--text);
   font-size: 13px;
   font-weight: 900;
+  white-space: nowrap;
+}
+
+.assets-page .assets-table td.asset-inventory-cell,
+.assets-page .asset-inventory-stack {
+  white-space: nowrap;
 }
 
 .asset-inventory-stack,

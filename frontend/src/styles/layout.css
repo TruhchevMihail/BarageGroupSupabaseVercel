@@ -2615,13 +2615,14 @@ html[data-theme="dark"] .pagination-row .pagination a {
 }
 
 html[data-theme="dark"] .pagination-row .pagination a:hover {
-  border-color: rgba(122,167,196,.30);
+  border-color: rgba(148, 163, 184, .42);
   box-shadow: 0 16px 30px rgba(0,0,0,.34);
 }
 
 html[data-theme="dark"] .pagination-row .pagination a.active {
-  background: linear-gradient(180deg, var(--primary), #5e90af);
-  color: #fff;
+  background: linear-gradient(180deg, #475569, #334155);
+  border-color: #64748b;
+  color: #f8fafc;
 }
 
 @media (max-width: 860px) {
@@ -3312,7 +3313,7 @@ html[data-theme="dark"] .location-row-sub a {
 }
 
 html[data-theme="dark"] .assets-table-scroll {
-  scrollbar-color: var(--primary) var(--panel-muted);
+  scrollbar-color: #64748b #1e293b;
 }
 
 .assets-table-scroll::-webkit-scrollbar {
@@ -3331,7 +3332,7 @@ html[data-theme="dark"] .assets-table-scroll {
 }
 
 html[data-theme="dark"] .assets-table-scroll::-webkit-scrollbar-thumb {
-  background: rgba(122, 167, 196, 0.5);
+  background: rgba(100, 116, 139, .78);
   border: 3px solid transparent;
   background-clip: padding-box;
 }

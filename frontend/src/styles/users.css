@@ -1,11 +1,19 @@
 .users-page {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .users-page .summary-strip,
 .requests-search-row {
   margin-bottom: 0;
+}
+
+.users-page [data-ajax-container="users"] {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
 }
 
 .users-page .users-summary-strip {
@@ -45,6 +53,12 @@
 .users-table-wrap,
 .requests-table-wrap {
   overflow-x: auto;
+}
+
+.users-table-wrap {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .users-table {
