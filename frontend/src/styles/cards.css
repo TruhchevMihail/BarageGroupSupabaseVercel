@@ -103,7 +103,7 @@
   color: var(--text);
 }
 
-.list-card span,
+.list-card span:not(.chip),
 .mini-asset span,
 .mini-asset small {
   color: var(--muted);

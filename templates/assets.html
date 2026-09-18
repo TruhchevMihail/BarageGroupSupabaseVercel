@@ -41,7 +41,8 @@
   or request.args.get('page', '').strip()
 ) %}
 <form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form data-ajax-form>
-  <input type="text" name="q" class="assets-search-input" aria-label="Търсене на машина" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
+  <input type="text" name="q" class="assets-search-input" aria-label="Търсене на машина" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-main-search>
+  <button type="submit" class="btn-primary assets-search-button">Търси</button>
   <select name="location" aria-label="Филтър по локация">
     <option value="">Всички локации</option>
     {% for location in locations %}

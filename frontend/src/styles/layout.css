@@ -758,7 +758,7 @@ html[data-theme="dark"] .location-row-sub,
 html[data-theme="dark"] .meta-pill,
 html[data-theme="dark"] .mini-asset span,
 html[data-theme="dark"] .mini-asset small,
-html[data-theme="dark"] .list-card span,
+html[data-theme="dark"] .list-card span:not(.chip),
 html[data-theme="dark"] .team-option small,
 html[data-theme="dark"] .form-hint,
 html[data-theme="dark"] .hint,
@@ -775,7 +775,7 @@ html[data-theme="dark"] .stat-card span,
 html[data-theme="dark"] .location-row-sub,
 html[data-theme="dark"] .mini-asset small,
 html[data-theme="dark"] .mini-asset span,
-html[data-theme="dark"] .list-card span,
+html[data-theme="dark"] .list-card span:not(.chip),
 html[data-theme="dark"] .team-option small,
 html[data-theme="dark"] .meta-pill {
   color: var(--muted);
@@ -1343,8 +1343,8 @@ html[data-theme="dark"] .flash.error {
 .location-row, .list-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--line-soft); border-radius: 12px; background: #ffffff; }
 .list-card { color: var(--text); }
 .list-card, .location-card-link { text-decoration: none; }
-.list-card span, .location-row small { color: var(--muted); }
-html[data-theme="dark"] .list-card span,
+.list-card span:not(.chip), .location-row small { color: var(--muted); }
+html[data-theme="dark"] .list-card span:not(.chip),
 html[data-theme="dark"] .location-row small {
   color: var(--muted);
 }

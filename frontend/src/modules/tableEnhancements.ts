@@ -39,21 +39,7 @@ function initAssetsTable(): void {
   }
   table.dataset.tableEnhancementsBound = 'true';
 
-  const searchInput = form?.querySelector<HTMLInputElement>('[data-list-search]');
   const locationSelect = form?.querySelector<HTMLSelectElement>('select[name="location"]');
-  let submitTimer: number | null = null;
-
-  const scheduleSubmit = (): void => {
-    if (!form) {
-      return;
-    }
-    if (submitTimer !== null) {
-      window.clearTimeout(submitTimer);
-    }
-    submitTimer = window.setTimeout(() => requestSubmit(form), 250);
-  };
-
-  searchInput?.addEventListener('input', scheduleSubmit);
   locationSelect?.addEventListener('change', () => {
     if (form) {
       requestSubmit(form);

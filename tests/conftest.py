@@ -1,9 +1,11 @@
+import hashlib
 import os
 import re
 import tempfile
 from pathlib import Path
 
 import pytest
+from werkzeug.security import generate_password_hash
 
 os.environ.update({
     'SECRET_KEY': 'pytest-secret-key',
@@ -19,6 +21,13 @@ os.environ.update({
 })
 
 import app as app_module  # noqa: E402
+
+
+if not hasattr(hashlib, 'scrypt'):
+    def _set_password_without_scrypt(self, raw_password):
+        self.password_hash = generate_password_hash(raw_password, method='pbkdf2:sha256')
+
+    app_module.User.set_password = _set_password_without_scrypt
 
 
 @pytest.fixture()

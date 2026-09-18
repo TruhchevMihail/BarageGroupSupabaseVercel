@@ -32,6 +32,10 @@
   min-width: 240px;
 }
 
+.assets-page .assets-search-button {
+  flex: 0 0 auto;
+}
+
 .assets-page .filter-actions {
   margin-left: auto;
 }
@@ -366,6 +370,10 @@ html[data-theme="dark"] .service-stay-detail-warning {
   .assets-page .filter-row select[name="location"] {
     flex-basis: 100%;
     min-width: 0;
+  }
+
+  .assets-page .assets-search-button {
+    width: 100%;
   }
 
   .assets-page .filter-actions,

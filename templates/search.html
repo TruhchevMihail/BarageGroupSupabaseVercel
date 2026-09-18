@@ -35,12 +35,19 @@
     <div class="stack-list">
       {% for asset in results.assets %}
       {% set display_status = asset_display_status(asset) %}
+      {% if asset.current_location %}
+        {% set asset_badge_label = asset.current_location.name %}
+        {% set asset_badge_meta = location_meta.get(asset.current_location.type, status_meta.get(display_status, {'chip': 'chip-neutral'})) %}
+      {% else %}
+        {% set asset_badge_label = display_status or 'Без локация' %}
+        {% set asset_badge_meta = status_meta.get(display_status, {'chip': 'chip-neutral'}) %}
+      {% endif %}
       <a class="list-card" href="{{ url_for('asset_detail', asset_id=asset.id) }}">
         <div>
           <strong>{{ asset.inventory_number }} · {{ asset.name }}</strong>
           <span>{{ asset.brand }} {{ asset.model }}</span>
         </div>
-        <span class="chip {{ status_meta.get(display_status, {'chip': 'chip-neutral'}).chip }}">{{ display_status }}</span>
+        <span class="chip {{ asset_badge_meta.chip }}">{{ asset_badge_label }}</span>
       </a>
       {% else %}
       <p class="muted">Няма резултати.</p>
