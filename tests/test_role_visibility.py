@@ -297,6 +297,7 @@ def test_user_search_and_user_only_global_search_are_server_rendered(client, log
     assert search_response.status_code == 200
     assert '<h2>Потребители</h2>' in search_html
     assert target.full_name in search_html
+    assert '<span class="chip chip-role-lead">Проектов ръководител</span>' in search_html
 
 
 def test_inactive_user_session_is_invalidated(client, role_world):

@@ -66,6 +66,29 @@ def test_location_detail_shows_status_from_location_type(client, db, make_user, 
     assert 'На обект' in html
 
 
+def test_global_search_asset_badge_shows_exact_location_and_location_color(client, db, make_user, login):
+    location = app_module.Location(name='Аико - Герман', type=app_module.LOC_SITE, is_active=True)
+    db.session.add(location)
+    db.session.commit()
+    asset = app_module.Asset(
+        inventory_number='SEARCH-LOCATION-1',
+        name='Търсена машина',
+        brand='Brand',
+        model='Model',
+        current_location_id=location.id,
+        status=app_module.STATUS_SITE,
+    )
+    viewer = make_user(full_name='Search Viewer', email='search-viewer@example.com', role=app_module.ROLE_USER)
+    db.session.add(asset)
+    db.session.commit()
+
+    login(viewer)
+    html = client.get('/search?q=SEARCH-LOCATION-1').get_data(as_text=True)
+
+    assert '<span class="chip chip-site">Аико - Герман</span>' in html
+    assert '>На обект</span>' not in html
+
+
 def test_asset_detail_shows_single_location_badge_without_copyable_object(client, db, make_user, login):
     location = app_module.Location(name='Обект Детайл', type=app_module.LOC_SITE, is_active=True)
     db.session.add(location)
