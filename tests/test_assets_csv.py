@@ -108,6 +108,47 @@ def test_authenticated_user_can_export_assets_xlsx_with_filters(client, db, make
     assert rows[0][15] == 'В сервиз'
 
 
+def test_asset_exports_use_all_active_filters_and_ignore_pagination(client, db, make_user, login):
+    selected_location = app_module.Location(name='Аико - Герман', type=app_module.LOC_SITE, is_active=True)
+    other_location = app_module.Location(name='Друг обект', type=app_module.LOC_SITE, is_active=True)
+    db.session.add_all([selected_location, other_location])
+    db.session.commit()
+
+    matching_assets = [
+        _asset(
+            f'AIKO-{index:02d}',
+            name='Филтрирана машина',
+            brand='Търсена марка',
+            location=selected_location,
+            status=app_module.STATUS_SITE,
+        )
+        for index in range(1, 18)
+    ]
+    db.session.add_all([
+        *matching_assets,
+        _asset('AIKO-OTHER', name='Филтрирана машина', brand='Търсена марка', location=other_location),
+        _asset('AIKO-NO-MATCH', name='Друга машина', brand='Друга марка', location=selected_location),
+    ])
+    db.session.commit()
+
+    user = make_user(full_name='Filtered Export User', email='filtered-export@example.com', role=app_module.ROLE_USER)
+    login(user)
+    query = f'location={selected_location.id}&q=Търсена марка&page=2&sort=inventory&direction=asc'
+
+    assets_page = client.get(f'/assets?{query}').get_data(as_text=True)
+    assert f'/assets/export.csv?location={selected_location.id}' in assets_page
+    assert f'/assets/export.xlsx?location={selected_location.id}' in assets_page
+
+    csv_rows = _csv_rows(client.get(f'/assets/export.csv?{query}').get_data().decode('utf-8-sig'))
+    assert len(csv_rows[1:]) == 17
+    assert {row[0] for row in csv_rows[1:]} == {asset.inventory_number for asset in matching_assets}
+
+    workbook = load_workbook(io.BytesIO(client.get(f'/assets/export.xlsx?{query}').get_data()))
+    xlsx_rows = list(workbook.active.iter_rows(min_row=2, values_only=True))
+    assert len(xlsx_rows) == 17
+    assert {row[0] for row in xlsx_rows} == {asset.inventory_number for asset in matching_assets}
+
+
 def test_unauthenticated_user_cannot_export_assets_csv(client):
     response = client.get('/assets/export.csv')
     assert response.status_code == 302

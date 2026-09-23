@@ -34,13 +34,14 @@
     <div class="section-head"><h2>Машини</h2><span class="chip chip-neutral">{{ results.assets|length }}</span></div>
     <div class="stack-list">
       {% for asset in results.assets %}
-      {% set display_status = asset_display_status(asset) %}
+      {% set asset_location = asset.current_location %}
+      {% set asset_location_info = location_meta.get(asset_location.type, {'chip': 'chip-neutral'}) if asset_location else {'chip': 'chip-neutral'} %}
       <a class="list-card" href="{{ url_for('asset_detail', asset_id=asset.id) }}">
         <div>
           <strong>{{ asset.inventory_number }} · {{ asset.name }}</strong>
           <span>{{ asset.brand }} {{ asset.model }}</span>
         </div>
-        <span class="chip {{ status_meta.get(display_status, {'chip': 'chip-neutral'}).chip }}">{{ display_status }}</span>
+        <span class="chip {{ asset_location_info.chip }}">{{ asset_location.name if asset_location else 'Без локация' }}</span>
       </a>
       {% else %}
       <p class="muted">Няма резултати.</p>
@@ -73,12 +74,13 @@
     <div class="section-head"><h2>Потребители</h2><span class="chip chip-neutral">{{ results.users|length }}</span></div>
     <div class="stack-list">
       {% for user in results.users %}
+      {% set user_role_info = role_meta.get(user.role, {'label': user.role, 'chip': 'chip-neutral'}) %}
       <a class="list-card" href="{{ url_for('user_profile', user_id=user.id) }}">
         <div>
           <strong>{{ user.full_name }}</strong>
           <span>{{ user.email }}{% if user.assigned_location %} · {{ user.assigned_location.name }}{% endif %}</span>
         </div>
-        <span class="chip {{ role_meta[user.role].chip }}">{{ user.role|role_label }}</span>
+        <span class="chip {{ user_role_info.chip }}">{{ user_role_info.label }}</span>
       </a>
       {% endfor %}
     </div>

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="assets-page" data-ajax-page="assets">
+<div data-ajax-container="assets">
 <div class="page-head split">
   <div>
     <span class="eyebrow">Машини</span>
@@ -19,7 +20,6 @@
   </div>
 </div>
 
-<div data-ajax-container="assets">
 <div class="summary-strip">
   <a class="summary-pill summary-pill-total" href="{{ url_for('assets') }}" data-ajax-link><span>Всички</span><strong>{{ asset_summary.total }}</strong></a>
   <a class="summary-pill summary-pill-warehouse" href="{{ url_for('assets', status='В склад') }}" data-ajax-link><span>В склад</span><strong>{{ asset_summary.warehouse }}</strong></a>
@@ -42,6 +42,7 @@
 ) %}
 <form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form data-ajax-form>
   <input type="text" name="q" class="assets-search-input" aria-label="Търсене на машина" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
+  <button type="submit" class="btn-primary">Търси</button>
   <select name="location" aria-label="Филтър по локация">
     <option value="">Всички локации</option>
     {% for location in locations %}
