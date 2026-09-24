@@ -113,3 +113,26 @@ def test_asset_form_and_detail_keep_explicit_actions(client, login, make_user, d
     for action in ('Премести / заявка', 'Добави сервизен запис', 'Редакция'):
         assert action in detail_html
     assert 'data-copyable' in detail_html
+
+
+def test_locations_use_semantic_types_and_explicit_actions(client, login, make_user, db):
+    admin = _admin(make_user)
+    db.session.add_all([
+        app_module.Location(name='Обект Изток', type='site'),
+        app_module.Location(name='Склад Запад', type='warehouse'),
+        app_module.Location(name='Сервиз Север', type='service'),
+        app_module.Location(name='Брак Юг', type='scrap'),
+    ])
+    db.session.commit()
+    login(admin)
+
+    html = client.get('/locations').get_data(as_text=True)
+    for class_name in (
+        'location-type-site',
+        'location-type-warehouse',
+        'location-type-service',
+        'location-type-scrap',
+    ):
+        assert class_name in html
+    assert 'Виж детайли' in html
+    assert 'data-ajax-link' in html

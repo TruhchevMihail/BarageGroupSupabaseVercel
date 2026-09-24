@@ -154,3 +154,59 @@ html[data-theme="dark"] .location-meta-row {
     width: 100%;
   }
 }
+
+/* Indigo Redline operational location containers */
+.locations-list-wide { gap: 10px; }
+
+.location-type-site { --location-accent: var(--site); }
+.location-type-warehouse { --location-accent: var(--warehouse); }
+.location-type-service { --location-accent: var(--service); }
+.location-type-scrap { --location-accent: var(--scrap); }
+
+.locations-list-wide .location-row-card {
+  grid-template-columns: minmax(0, 1.35fr) minmax(210px, .75fr) minmax(118px, auto);
+  gap: 14px;
+  padding: 13px 15px;
+  border: 1px solid var(--line-soft);
+  border-top: 3px solid var(--location-accent, var(--line));
+  border-left-width: 1px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.locations-list-wide .location-type-site,
+.locations-list-wide .location-type-warehouse,
+.locations-list-wide .location-type-service,
+.locations-list-wide .location-type-scrap { border-left-color: var(--line-soft); }
+
+.location-row-title { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.location-name-link { max-width: 100%; color: var(--text-strong); font-size: 15px; }
+.location-card-main-copy,
+.location-manager,
+.location-meta-row { color: var(--muted); font-size: 12px; }
+
+.location-card-main-copy { display: grid; gap: 3px; margin-top: 5px; }
+.location-meta-row { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 5px; }
+.location-card-actions { align-items: stretch; gap: 5px; }
+.location-card-actions a { min-width: 112px; text-align: center; }
+.location-card-actions .btn-text { justify-content: center; }
+
+.locations-search-form { grid-template-columns: minmax(240px, 1fr) auto auto; gap: 8px; }
+
+html[data-theme="dark"] .locations-list-wide .location-row-card {
+  background: var(--surface);
+  border-color: var(--line-soft);
+  border-top-color: var(--location-accent, var(--line));
+  box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 1000px) {
+  .locations-list-wide .location-row-card { grid-template-columns: 1fr; }
+  .location-card-actions { flex-direction: row; align-items: center; }
+}
+
+@media (max-width: 700px) {
+  .locations-search-form { grid-template-columns: 1fr; }
+  .location-card-actions { flex-direction: column; }
+}

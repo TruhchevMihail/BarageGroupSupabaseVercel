@@ -4,6 +4,8 @@
   <div>
     <span class="eyebrow">Детайли за обект</span>
     {% set meta = location_meta.get(location.type, {'label': location.type, 'icon': '📍', 'chip': 'chip-neutral'}) %}
+    <h1>{{ location.name }}</h1>
+    <p><span class="chip {{ meta.chip }}">{{ meta.icon }} {{ meta.label }}</span></p>
   </div>
   <div class="detail-actions">
     {% if can_edit_location %}

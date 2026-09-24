@@ -45,8 +45,8 @@
     <div class="list-card location-row-card location-type-{{ loc.type }} {% if loc.type == 'service' %}service-list-card{% endif %}" data-list-search-item data-search-text="{{ loc.name }} {{ loc.type }} {{ loc.city or '' }} {{ loc.address or '' }} {{ loc.gps_location or '' }} {{ loc.courier_locations or '' }} {{ loc.technical_lead.full_name if loc.technical_lead else '' }} {% for tech in loc.technicians %}{{ tech.full_name }} {% endfor %}">
       <div class="location-card-main">
         <div class="location-row-title">
-          <a class="location-name-link" href="{{ url_for('location_detail', location_id=loc.id) }}" data-ajax-link>{{ loc.name }}</a>
-          <span class="chip {{ meta.chip }}">{{ meta.icon }}</span>
+          <a class="location-name-link" href="{{ url_for('location_detail', location_id=loc.id) }}" title="{{ loc.name }}" data-ajax-link>{{ loc.name }}</a>
+          <span class="chip {{ meta.chip }}">{{ meta.icon }} {{ meta.label }}</span>
           {% if not loc.is_active %}
           <span class="chip chip-neutral">Архивиран</span>
           {% endif %}
@@ -84,7 +84,7 @@
       </div>
       {% endif %}
       <div class="location-card-actions">
-        <a class="btn-small btn-secondary" href="{{ url_for('location_detail', location_id=loc.id) }}">Детайли</a>
+        <a class="btn-small btn-text" href="{{ url_for('location_detail', location_id=loc.id) }}">Виж детайли</a>
         {% if can_edit_location %}
         <a class="btn-small btn-secondary" href="{{ url_for('location_edit', location_id=loc.id) }}">Редакция</a>
         {% endif %}
