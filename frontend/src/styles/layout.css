@@ -117,6 +117,14 @@ a:hover { color: var(--primary-dark); }
 }
 .content-full { max-width: none; padding: 0; }
 
+.page-head--compact {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.page-head--compact h1 { font-size: clamp(26px, 2.8vw, 36px); }
+.page-actions { flex-wrap: wrap; justify-content: flex-end; }
+
 table,
 .summary-pill strong,
 .asset-detail-value {

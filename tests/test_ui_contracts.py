@@ -59,3 +59,25 @@ def test_assets_use_compact_table_and_explicit_action(client, login, make_user, 
     assert 'table-row-action' in html
     assert 'Виж детайли' in html
     assert 'title="Детайли">⋯</a>' not in html
+
+
+def test_dashboard_keeps_operational_sections(client, login, make_user):
+    admin = _admin(make_user)
+    login(admin)
+    html = client.get('/dashboard').get_data(as_text=True)
+    for label in (
+        'Общ преглед',
+        'Статус на машините',
+        'В сервиз',
+        'Последно добавени машини',
+        'Последни заявки',
+    ):
+        assert label in html
+    assert 'data-main-search' in html
+
+
+def test_login_keeps_only_explicit_access_fields(client):
+    html = client.get('/login').get_data(as_text=True)
+    assert 'name="email"' in html
+    assert 'name="password"' in html
+    assert '>Вход<' in html
