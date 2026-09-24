@@ -1,1 +1,76 @@
-/* Design tokens are still sourced from layout.css during the first Vite migration. */
+:root {
+  --canvas: #f7f7fb;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-subtle: #f0f0f7;
+  --text-strong: #20243c;
+  --text: #2d3149;
+  --text-soft: #51566d;
+  --muted: #70758a;
+  --line: #d8dae5;
+  --line-soft: #e7e8ef;
+  --primary: #dc252e;
+  --primary-dark: #a9161d;
+  --primary-soft: #ffebed;
+  --ink: #151723;
+  --ink-2: #20243c;
+  --site: #16835b;
+  --warehouse: #4f58cf;
+  --service: #b76a0b;
+  --scrap: #73798a;
+  --focus-ring: rgba(220, 37, 46, .30);
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 15px;
+  --shadow: 0 16px 42px rgba(24, 34, 48, .09);
+  --shadow-soft: 0 6px 20px rgba(24, 34, 48, .06);
+
+  --bg: var(--canvas);
+  --bg-strong: var(--surface-subtle);
+  --panel: var(--surface);
+  --panel-muted: var(--surface-subtle);
+  --green: var(--site);
+  --blue: var(--warehouse);
+  --amber: var(--service);
+  --red: var(--primary);
+  --radius: var(--radius-lg);
+  --card: var(--surface);
+  --border: var(--line-soft);
+  --border-muted: var(--line-soft);
+  --accent: var(--primary);
+  --surface-hover: color-mix(in srgb, var(--warehouse) 8%, var(--surface));
+  --text-primary: var(--text);
+  --location-card-bg: var(--surface);
+  --location-card-border: var(--line-soft);
+  --location-card-shadow: var(--shadow-soft);
+  --location-card-hover-shadow: 0 10px 26px rgba(24, 34, 48, .10);
+  --section-action-border: var(--line);
+  --section-action-bg-hover: var(--primary-soft);
+  --section-action-text: var(--text-soft);
+}
+
+html[data-theme="dark"] {
+  --canvas: #11111b;
+  --surface: #1a1a26;
+  --surface-raised: #20202e;
+  --surface-subtle: #242432;
+  --text-strong: #f4f4f8;
+  --text: #e6e6ee;
+  --text-soft: #c3c3d0;
+  --muted: #9c9bad;
+  --line: #373744;
+  --line-soft: #30303d;
+  --primary: #ef4650;
+  --primary-dark: #ff6b73;
+  --primary-soft: #3b1921;
+  --ink: #09090f;
+  --ink-2: #11111b;
+  --site: #54c99a;
+  --warehouse: #8d92ff;
+  --service: #f0b35b;
+  --scrap: #a7a9b3;
+  --focus-ring: rgba(239, 70, 80, .42);
+  --shadow: 0 20px 54px rgba(0, 0, 0, .36);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, .24);
+  --location-card-hover-shadow: 0 12px 30px rgba(0, 0, 0, .32);
+}
