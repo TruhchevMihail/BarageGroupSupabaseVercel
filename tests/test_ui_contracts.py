@@ -46,6 +46,8 @@ def test_authenticated_shell_uses_explicit_navigation_labels(client, login, make
     ):
         assert label in html
     assert 'data-theme-toggle' in html
+    assert 'class="theme-toggle-label"' in html
+    assert 'aria-expanded="false"' in html
 
 
 def test_assets_use_compact_table_and_explicit_action(client, login, make_user, db):

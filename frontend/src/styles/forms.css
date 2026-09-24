@@ -165,3 +165,64 @@ html[data-theme="dark"] .note-box {
     grid-template-columns: 1fr;
   }
 }
+
+/* Indigo Redline form primitives */
+label { gap: 6px; color: var(--text-soft); font-size: 12px; font-weight: 800; }
+
+input,
+select,
+textarea {
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 650;
+  box-shadow: none;
+}
+
+input:hover,
+select:hover,
+textarea:hover { border-color: var(--text-soft); }
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary);
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.form-sheet { padding: 18px; }
+.form-card,
+.uef-left .form-card,
+.uef-section,
+.asset-form-grid { gap: 13px; }
+
+.uef-section,
+.asset-edit-summary,
+.rule-box,
+.info-box,
+.note-box {
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border-color: var(--line-soft);
+  box-shadow: none;
+}
+
+.form-actions { gap: 8px; padding-top: 14px; }
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] .uef-section,
+html[data-theme="dark"] .asset-edit-summary,
+html[data-theme="dark"] .rule-box,
+html[data-theme="dark"] .info-box,
+html[data-theme="dark"] .note-box {
+  background: var(--surface-raised);
+  color: var(--text);
+  border-color: var(--line);
+}

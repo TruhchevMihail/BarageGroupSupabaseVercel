@@ -381,3 +381,62 @@ html[data-theme="dark"] .login-hero {
     linear-gradient(135deg, rgba(2, 6, 23, .96), rgba(15, 23, 42, .94)),
     repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 36px);
 }
+
+/* Indigo Redline surfaces and status chips */
+.panel,
+.card {
+  border-radius: var(--radius-md);
+  border-color: var(--line-soft);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.page-head { margin-bottom: 16px; }
+.page-head h1 { color: var(--text-strong); letter-spacing: -.025em; }
+.eyebrow { color: var(--primary-dark); letter-spacing: .09em; }
+
+.summary-pill {
+  min-height: 80px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border-color: var(--line-soft);
+  box-shadow: var(--shadow-soft);
+}
+
+.summary-pill:hover,
+.list-card:hover,
+.mini-asset:hover,
+.location-row-card:hover { transform: none; box-shadow: var(--shadow-soft); border-color: var(--line); }
+
+.summary-pill strong { color: var(--text-strong); font-size: 27px; }
+.summary-pill-total { border-top-color: var(--scrap); }
+.summary-pill-warehouse { border-top-color: var(--warehouse); }
+.summary-pill-site { border-top-color: var(--site); }
+.summary-pill-service { border-top-color: var(--service); }
+.summary-pill-scrap { border-top-color: var(--scrap); }
+
+.list-card,
+.location-row,
+.mini-asset { background: var(--surface); border-color: var(--line-soft); box-shadow: none; }
+
+.chip-warehouse,
+.chip-pending { background: color-mix(in srgb, var(--warehouse) 12%, var(--surface)); color: var(--warehouse); border-color: color-mix(in srgb, var(--warehouse) 22%, var(--surface)); }
+.chip-site,
+.chip-approved { background: color-mix(in srgb, var(--site) 12%, var(--surface)); color: var(--site); border-color: color-mix(in srgb, var(--site) 22%, var(--surface)); }
+.chip-service,
+.chip-repair,
+.chip-service-red { background: color-mix(in srgb, var(--service) 13%, var(--surface)); color: var(--service); border-color: color-mix(in srgb, var(--service) 24%, var(--surface)); }
+.chip-scrap,
+.chip-rejected,
+.chip-super,
+.chip-role-admin { background: color-mix(in srgb, var(--primary) 10%, var(--surface)); color: var(--primary-dark); border-color: color-mix(in srgb, var(--primary) 20%, var(--surface)); }
+.chip-neutral,
+.mini-chip { background: var(--surface-subtle); color: var(--text-soft); border-color: var(--line-soft); }
+
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .summary-pill,
+html[data-theme="dark"] .list-card,
+html[data-theme="dark"] .location-row,
+html[data-theme="dark"] .mini-asset { background: var(--surface); border-color: var(--line-soft); box-shadow: var(--shadow-soft); }

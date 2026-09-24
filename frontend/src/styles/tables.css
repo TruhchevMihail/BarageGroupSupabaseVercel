@@ -169,3 +169,54 @@ html[data-theme="dark"] .requests-table .table-sort,
 html[data-theme="dark"] .assets-table .table-sort {
   color: #cbd5e1;
 }
+
+/* Indigo Redline table primitives */
+.table-wrap,
+.assets-table-card { overflow: hidden; }
+
+.table-card {
+  border-color: var(--line-soft);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+th {
+  padding: 9px 10px;
+  background: var(--surface-subtle);
+  color: var(--text-soft);
+  border-bottom-color: var(--line);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .035em;
+  text-transform: uppercase;
+}
+
+td { padding: 9px 10px; border-bottom-color: var(--line-soft); }
+tbody tr:hover td { background: color-mix(in srgb, var(--warehouse) 5%, var(--surface)); }
+
+[data-density="compact"] th { height: 36px; padding: 8px 9px; }
+[data-density="compact"] td { height: 46px; padding: 8px 9px; }
+.truncate-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.users-table .table-sort,
+.requests-table .table-sort,
+.assets-table .table-sort { color: var(--text-soft); }
+
+.pagination-row .pagination a.active {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.pagination-row .pagination a:hover { border-color: var(--primary); box-shadow: none; }
+
+tr.row-highlighted td,
+tr.row-highlighted:hover td {
+  background: var(--primary-soft);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+html[data-theme="dark"] .table-card { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] th { background: var(--surface-subtle); color: var(--text-soft); border-bottom-color: var(--line); }
+html[data-theme="dark"] td { border-bottom-color: var(--line-soft); }
+html[data-theme="dark"] tbody tr:hover td { background: color-mix(in srgb, var(--warehouse) 8%, var(--surface)); }
