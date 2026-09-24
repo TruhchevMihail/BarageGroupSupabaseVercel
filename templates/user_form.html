@@ -10,14 +10,15 @@
   <a href="{{ url_for('users_manage') }}" class="btn-secondary">Назад</a>
 </div>
 
-<form method="post" class="panel form-sheet user-edit-form" action="{{ form_action }}">
+<form method="post" class="panel form-sheet user-edit-form operational-form form-section" action="{{ form_action }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <p class="form-hint" style="margin-top:-8px; margin-bottom:18px;">Полетата с * са задължителни.</p>
 
   <div class="uef-grid">
     <!-- Лява колона: лични данни + роля -->
     <div class="uef-left uef-equal">
-      <div class="form-card">
+      <div class="form-card form-section">
+        <div class="section-head"><h2>Лични данни и роля</h2></div>
         <label>
           <span class="field-label-row"><span class="field-label-text">Име и фамилия</span><span class="required-mark">*</span></span>
           <input name="full_name" {% if is_new %}required{% endif %} minlength="3" maxlength="120" value="{{ user.full_name if user else '' }}" placeholder="Име и фамилия">
@@ -106,7 +107,7 @@
     </div><!-- /uef-right -->
   </div><!-- /uef-grid -->
 
-  <div class="form-actions" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line-soft);">
+  <div class="form-actions sticky-page-actions">
     <button type="submit">{{ 'Създай' if is_new else 'Запази' }}</button>
     <a href="{{ url_for('users_manage') }}" class="btn-secondary">Отказ</a>
   </div>

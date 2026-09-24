@@ -8,7 +8,7 @@
   <a href="{{ url_for('profile') }}" class="btn-secondary">Назад</a>
 </div>
 
-<form method="post" class="panel form-sheet user-edit-form">
+<form method="post" class="panel form-sheet user-edit-form operational-form form-section">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <div class="rule-box" style="margin-top:0; margin-bottom:22px;">
     <strong>Редакция на профил</strong>
@@ -16,7 +16,8 @@
 
   <div class="uef-grid">
     <div class="uef-left">
-      <div class="form-card">
+      <div class="form-card form-section">
+        <div class="section-head"><h2>Лични данни</h2></div>
         <label>Име и фамилия
           <input name="full_name" required minlength="3" maxlength="120" value="{{ user.full_name }}" placeholder="Име и фамилия">
         </label>
@@ -81,7 +82,7 @@
     </div>
   </div>
 
-  <div class="form-actions" style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line-soft);">
+  <div class="form-actions sticky-page-actions">
     <button type="submit">Запази</button>
     <a href="{{ url_for('profile') }}" class="btn-secondary">Отказ</a>
   </div>

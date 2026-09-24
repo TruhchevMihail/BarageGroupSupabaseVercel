@@ -8,7 +8,7 @@
   <a href="{{ url_for('locations_list') }}" class="btn-secondary">Назад</a>
 </div>
 
-<form method="post" class="form-card wide panel form-sheet" data-location-form>
+<form method="post" class="form-card wide panel form-sheet form-section operational-form two-column-form" data-location-form>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% set is_minimal_location = location and location.type in location_minimal_types or not location and false %}
   <label>Име на обекта / локацията
@@ -86,7 +86,7 @@
   {% if not field_users %}
   <div class="info-box full">Все още няма активни потребители.</div>
   {% endif %}
-  <div class="form-actions full">
+  <div class="form-actions full sticky-page-actions">
     <button type="submit">Запиши</button>
     <a href="{{ url_for('locations_list') }}" class="btn-secondary">Отказ</a>
   </div>

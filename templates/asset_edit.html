@@ -17,8 +17,10 @@
   <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
 </div>
 
-<form method="post" enctype="multipart/form-data" class="form-card wide panel form-sheet asset-form">
+<form method="post" enctype="multipart/form-data" class="form-card wide panel form-sheet asset-form operational-form">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <section class="form-section">
+    <div class="section-head"><h2>Данни за машината</h2></div>
   <div class="asset-form-grid">
     {% if not notes_images_only %}
     <label><span class="label-inline">Инвентарен № <span class="required-mark">*</span></span><input name="inventory_number" value="{{ asset.inventory_number }}" required></label>
@@ -83,8 +85,9 @@
 
     <label class="full">Забележки<textarea name="notes">{{ asset.notes or '' }}</textarea></label>
   </div>
+  </section>
 
-  <div class="form-actions full">
+  <div class="form-actions full sticky-page-actions">
     <button type="submit">Запази</button>
     <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Отказ</a>
   </div>

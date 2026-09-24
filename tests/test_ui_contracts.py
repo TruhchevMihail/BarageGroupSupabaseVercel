@@ -97,3 +97,19 @@ def test_login_keeps_only_explicit_access_fields(client):
     assert 'name="email"' in html
     assert 'name="password"' in html
     assert '>Вход<' in html
+
+
+def test_asset_form_and_detail_keep_explicit_actions(client, login, make_user, db):
+    admin = _admin(make_user)
+    asset = _asset(db, admin)
+    login(admin)
+
+    form_html = client.get('/assets/new').get_data(as_text=True)
+    assert 'Инвентарен №' in form_html
+    assert '>Запиши<' in form_html
+    assert '>Отказ<' in form_html
+
+    detail_html = client.get(f'/assets/{asset.id}').get_data(as_text=True)
+    for action in ('Премести / заявка', 'Добави сервизен запис', 'Редакция'):
+        assert action in detail_html
+    assert 'data-copyable' in detail_html

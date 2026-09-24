@@ -5,7 +5,7 @@
     <span class="eyebrow">Сервизен запис</span>
     <h1>{{ asset.inventory_number }} · {{ asset.name }}</h1>
   </div>
-  <div class="detail-actions asset-header-actions">
+  <div class="detail-actions asset-header-actions sticky-page-actions">
     <a class="btn-secondary" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Назад към актива</a>
     {% if can_edit_service_record %}
     <a class="btn-link" href="{{ url_for('asset_service_edit', asset_id=asset.id, record_id=record.id) }}">Редакция</a>
@@ -21,7 +21,7 @@
 
 <section class="panel asset-detail-panel asset-summary asset-main-card asset-detail-section asset-service-detail">
   <div class="section-head"><h2>Основни данни</h2></div>
-  <div class="asset-main-fields-grid">
+  <div class="asset-main-fields-grid detail-field-grid">
     <div class="asset-detail-field">
       <div class="asset-detail-label">Дата</div>
       <div class="asset-detail-value">{{ record.service_date.strftime('%d.%m.%Y') if record.service_date else '-' }}</div>

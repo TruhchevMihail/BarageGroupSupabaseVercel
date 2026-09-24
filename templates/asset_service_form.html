@@ -8,8 +8,9 @@
   <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
 </div>
 
-<section class="panel">
-  <form method="post" enctype="multipart/form-data" class="form-card compact">
+<section class="panel form-section">
+  <div class="section-head"><h2>Сервизни данни</h2></div>
+  <form method="post" enctype="multipart/form-data" class="form-card compact operational-form service-form-grid">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label>Дата
       <input type="date" name="service_date" value="{{ record.service_date.strftime('%Y-%m-%d') if record and record.service_date else today }}">
@@ -32,7 +33,7 @@
     <label>Забележки
       <textarea name="notes">{{ strip_service_invoice_marker(record.notes) if record and record.notes else '' }}</textarea>
     </label>
-    <button type="submit">{{ 'Запази' if not is_new else 'Добави' }}</button>
+    <div class="form-actions full sticky-page-actions"><button type="submit">{{ 'Запази' if not is_new else 'Добави' }}</button></div>
   </form>
 </section>
 {% endblock %}

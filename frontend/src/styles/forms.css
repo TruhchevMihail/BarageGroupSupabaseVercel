@@ -158,6 +158,50 @@ html[data-theme="dark"] .note-box {
   border-color: #263244;
 }
 
+/* Reusable operational form composition */
+.operational-form { display: grid; gap: 14px; }
+.form-section { min-width: 0; }
+.form-section > .section-head { margin-bottom: 13px; }
+.form-section > .section-head h2 { font-size: 15px; }
+
+.two-column-form,
+.service-form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.two-column-form > .full,
+.service-form-grid > .full,
+.two-column-form > [data-location-team-section],
+.two-column-form > [data-location-hidden-fields] { grid-column: 1 / -1; }
+
+.sticky-page-actions {
+  z-index: 20;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+}
+
+.operational-form > .sticky-page-actions {
+  margin-top: 2px;
+  padding: 12px 0 0;
+}
+
+@media (min-width: 761px) {
+  .operational-form > .sticky-page-actions {
+    position: sticky;
+    bottom: 0;
+    margin-inline: -4px;
+    padding: 11px 4px;
+    border-top: 1px solid var(--line-soft);
+    backdrop-filter: blur(10px);
+  }
+}
+
+@media (max-width: 760px) {
+  .two-column-form,
+  .service-form-grid { grid-template-columns: 1fr; }
+  .sticky-page-actions { position: static; backdrop-filter: none; }
+}
+
 @media (max-width: 760px) {
   .multi-select-shell .multi-select-row,
   .team-search,

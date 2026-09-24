@@ -8,7 +8,7 @@
   <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
 </div>
 
-<section class="panel asset-detail-panel">
+<section class="panel asset-detail-panel form-section">
   <div class="section-head"><h2>{{ asset.inventory_number }} · {{ asset.name }}</h2></div>
   <form method="post" action="{{ url_for('transfer_asset', asset_id=asset.id) }}" class="form-card compact">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -20,7 +20,7 @@
       </select>
     </label>
     <label>Причина<textarea name="reason"></textarea></label>
-    <button type="submit">Изпрати</button>
+    <div class="form-actions sticky-page-actions"><button type="submit">Изпрати</button></div>
   </form>
 </section>
 {% endblock %}
