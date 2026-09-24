@@ -24,6 +24,7 @@ static/uploads/
 # OS/editor
 .DS_Store
 .idea/
+.superpowers/
 .vscode/
 
 .vercel

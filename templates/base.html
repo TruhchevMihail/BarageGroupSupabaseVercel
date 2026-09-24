@@ -39,10 +39,10 @@
       <div class="sidebar-content" id="sidebar-content" data-sidebar-content>
 
       <nav class="sidebar-nav">
-        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span>Табло</span></a>
-        <a href="{{ url_for('assets') }}" class="{% if request.endpoint in ['assets', 'asset_detail', 'asset_edit', 'asset_new'] %}active{% endif %}"><span>Машини</span></a>
+        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span>Общ преглед</span></a>
+        <a href="{{ url_for('assets') }}" class="{% if request.endpoint in ['assets', 'asset_detail', 'asset_edit', 'asset_new'] %}active{% endif %}"><span>Машини и инструменти</span></a>
         <a href="{{ url_for('requests_list') }}" class="{% if request.endpoint == 'requests_list' %}active{% endif %}"><span>Заявки</span></a>
-        <a href="{{ url_for('locations_list') }}" class="{% if request.endpoint in ['locations_list', 'location_detail', 'location_new', 'location_edit'] %}active{% endif %}"><span>Обекти</span></a>
+        <a href="{{ url_for('locations_list') }}" class="{% if request.endpoint in ['locations_list', 'location_detail', 'location_new', 'location_edit'] %}active{% endif %}"><span>Обекти и локации</span></a>
         {% if can_view_users %}
         <a href="{{ url_for('users_manage') }}" class="{% if request.endpoint in ['users_manage', 'user_profile', 'users_new', 'user_edit'] %}active{% endif %}"><span>Потребители</span></a>
         {% endif %}
@@ -63,7 +63,10 @@
           </small>
         </div>
         <div class="userbox-footer">
-          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Превключи тема">☾</button>
+          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Тъмна тема - смени">
+            <span class="theme-toggle-indicator" aria-hidden="true">◐</span>
+            <span class="theme-toggle-label">Тъмна тема</span>
+          </button>
           <div class="user-actions">
             <a href="{{ url_for('profile') }}">Профил</a>
             <form method="post" action="{{ url_for('logout') }}" class="logout-form">

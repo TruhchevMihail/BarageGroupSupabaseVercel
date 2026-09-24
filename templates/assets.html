@@ -97,7 +97,7 @@
   </div>
 </form>
 
-<div class="table-wrap panel no-pad table-card assets-table-card assets-page-table-card">
+<div class="table-wrap panel no-pad table-card assets-table-card assets-page-table-card" data-density="compact">
   <div class="assets-table-scroll">
     <table class="assets-table" id="assets-table" data-list-search-scope>
     <colgroup>
@@ -173,7 +173,7 @@
       </td>
       <td class="asset-actions-cell actions-cell" data-label="Действия">
         <div class="inline-actions">
-          <a class="btn-secondary btn-small icon-button asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}" aria-label="Детайли" title="Детайли">⋯</a>
+          <a class="btn-secondary btn-small table-row-action asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Виж детайли</a>
         </div>
       </td>
     </tr>

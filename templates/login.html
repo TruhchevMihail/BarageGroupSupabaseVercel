@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
-<button type="button" class="theme-toggle login-theme-toggle" data-theme-toggle aria-label="Превключи тема">☾</button>
+<button type="button" class="theme-toggle login-theme-toggle" data-theme-toggle aria-label="Тъмна тема - смени">
+  <span class="theme-toggle-indicator" aria-hidden="true">◐</span>
+  <span class="theme-toggle-label">Тъмна тема</span>
+</button>
 <div class="login-shell clean-login">
   <section class="login-hero">
     <span class="eyebrow">Barage Group</span>

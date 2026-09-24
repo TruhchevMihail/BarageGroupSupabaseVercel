@@ -1,21 +1,14 @@
-function getThemeLabel(theme: string): string {
-  return theme === 'dark' ? '☀' : '☾';
-}
-
-function getThemeAriaLabel(theme: string): string {
-  return theme === 'dark' ? 'Светла тема' : 'Тъмна тема';
-}
-
 function setTheme(theme: string, buttons: HTMLButtonElement[]): void {
-  const root = document.documentElement;
   const nextTheme = theme === 'dark' ? 'dark' : 'light';
-  root.dataset.theme = nextTheme;
-  root.style.colorScheme = nextTheme;
+  document.documentElement.dataset.theme = nextTheme;
+  document.documentElement.style.colorScheme = nextTheme;
   window.localStorage.setItem('theme', nextTheme);
 
   buttons.forEach((button) => {
-    button.textContent = getThemeLabel(nextTheme);
-    button.setAttribute('aria-label', `${getThemeAriaLabel(nextTheme)} - смени`);
+    const label = button.querySelector<HTMLElement>('.theme-toggle-label');
+    const nextLabel = nextTheme === 'dark' ? 'Светла тема' : 'Тъмна тема';
+    if (label) label.textContent = nextLabel;
+    button.setAttribute('aria-label', `${nextLabel} - смени`);
   });
 }
 
