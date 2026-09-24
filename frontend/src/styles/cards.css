@@ -440,3 +440,20 @@ html[data-theme="dark"] .summary-pill,
 html[data-theme="dark"] .list-card,
 html[data-theme="dark"] .location-row,
 html[data-theme="dark"] .mini-asset { background: var(--surface); border-color: var(--line-soft); box-shadow: var(--shadow-soft); }
+
+.empty-state {
+  min-height: 190px;
+  place-content: center;
+  text-align: center;
+  border-style: dashed;
+  background: var(--surface);
+}
+
+.empty-state h2 { margin: 0; color: var(--text-strong); }
+.empty-state p { max-width: 520px; margin: 0; }
+.error-state { min-height: min(460px, 70vh); }
+.error-state .page-head { margin: 0; text-align: center; }
+.error-state .detail-actions { justify-content: center; }
+
+.profile-panel { max-width: none; }
+.profile-info-card { border: 0; background: var(--surface-subtle); border-radius: var(--radius-md); box-shadow: none; }

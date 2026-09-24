@@ -85,8 +85,10 @@
   </section>
   {% endif %}
 {% else %}
-<section class="panel">
-  <p class="muted">Няма намерени резултати.</p>
+<section class="empty-state panel">
+  <h2>Няма намерени резултати</h2>
+  <p class="muted">Промени търсенето или изчисти активната заявка.</p>
+  <a class="btn-secondary" href="{{ url_for('global_search') }}">Изчисти търсенето</a>
 </section>
 {% endif %}
 {% endif %}

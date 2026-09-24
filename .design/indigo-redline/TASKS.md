@@ -7,5 +7,5 @@
 - [x] 5. Build the fixed compact assets table.
 - [x] 6. Redesign asset details and data-entry flows.
 - [x] 7. Redesign locations and related asset groups.
-- [ ] 8. Redesign users, requests, search, profile, and error states.
+- [x] 8. Redesign users, requests, search, profile, and error states.
 - [ ] 9. Verify the full experience and publish a Vercel preview.

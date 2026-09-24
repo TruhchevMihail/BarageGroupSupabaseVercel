@@ -136,3 +136,28 @@ def test_locations_use_semantic_types_and_explicit_actions(client, login, make_u
         assert class_name in html
     assert 'Виж детайли' in html
     assert 'data-ajax-link' in html
+
+
+def test_users_truncate_long_identity_and_use_explicit_profile_action(
+    client, login, make_user, db
+):
+    admin = _admin(make_user)
+    location = app_module.Location(
+        name='Изключително дълго име на оперативен строителен обект София',
+        type='site',
+    )
+    db.session.add(location)
+    db.session.commit()
+    user = make_user(
+        full_name='Александър Константинов Димитров с дълго служебно име',
+        email='alexander.konstantinov.dimitrov.long@example.test',
+        role=app_module.ROLE_USER,
+        assigned_location=location,
+    )
+    login(admin)
+
+    users_html = client.get('/users').get_data(as_text=True)
+    assert 'class="user-name user-name-plain truncate-cell"' in users_html
+    assert f'title="{user.full_name}"' in users_html
+    assert f'title="{user.email}"' in users_html
+    assert 'Виж профил' in users_html

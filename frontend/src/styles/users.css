@@ -385,3 +385,85 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
     background: #111827;
   }
 }
+
+/* Indigo Redline fixed users and requests tables */
+.users-table-wrap,
+.requests-table-wrap { overflow-x: clip; }
+
+.users-table,
+.requests-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.users-table col.users-col-name { width: 18%; }
+.users-table col.users-col-email { width: 22%; }
+.users-table col.users-col-phone { width: 11%; }
+.users-table col.users-col-role { width: 14%; }
+.users-table col.users-col-location { width: 19%; }
+.users-table col.users-col-status { width: 8%; }
+.users-table col.users-col-actions { width: 8%; }
+
+.users-page .users-table th,
+.users-page .users-table td,
+.requests-table th,
+.requests-table td { min-width: 0; overflow: hidden; padding: 8px 9px; }
+
+.users-page .users-table th,
+.requests-table th { background: var(--surface-subtle); }
+
+.users-cell-name,
+.users-cell-email,
+.users-cell-phone,
+.users-cell-status { white-space: nowrap; }
+
+.users-cell-actions {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding-inline: 5px;
+  text-align: left;
+}
+
+.users-actions-wrap { justify-content: flex-start; }
+.users-action-button {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  min-height: 30px;
+  margin-left: 0;
+  display: inline-flex;
+  padding: 5px 6px;
+  white-space: nowrap;
+}
+
+.requests-table th:nth-child(1), .requests-table td:nth-child(1) { width: 6%; }
+.requests-table th:nth-child(2), .requests-table td:nth-child(2) { width: 17%; }
+.requests-table th:nth-child(3), .requests-table td:nth-child(3) { width: 21%; }
+.requests-table th:nth-child(4), .requests-table td:nth-child(4) { width: 11%; }
+.requests-table th:nth-child(5), .requests-table td:nth-child(5) { width: 11%; }
+.requests-table th:nth-child(6), .requests-table td:nth-child(6) { width: 13%; }
+.requests-table th:nth-child(7), .requests-table td:nth-child(7) { width: 11%; }
+.requests-table th:nth-child(8), .requests-table td:nth-child(8) { width: 10%; }
+
+.requests-table td { text-overflow: ellipsis; }
+.requests-table .form-actions { flex-wrap: wrap; }
+
+html[data-theme="dark"] .users-page .users-table th,
+html[data-theme="dark"] .requests-table th { background: var(--surface-subtle); }
+
+@media (min-width: 761px) and (max-width: 1279px) {
+  .users-col-phone,
+  .users-cell-phone { display: none; }
+  .requests-table .table-col-normal { display: none; }
+}
+
+@media (max-width: 760px) {
+  .users-table-wrap,
+  .requests-table-wrap { overflow: visible; }
+  .users-table,
+  .requests-table { display: block; table-layout: auto; }
+  .users-page .users-table tbody td,
+  .requests-table tbody td { overflow: visible; }
+}

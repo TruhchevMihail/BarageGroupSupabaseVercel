@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--compact">
   <div>
     <span class="eyebrow">Профил</span>
-    <h1>Профил на потребител</h1>
+    <h1>{{ user.full_name }}</h1>
   </div>
   <div class="detail-actions profile-actions">
     {% if show_users_back_link %}
