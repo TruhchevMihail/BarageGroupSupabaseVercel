@@ -4,7 +4,7 @@
 - [x] 2. Establish tokens and global foundations.
 - [x] 3. Redesign shell, buttons, forms, panels, and responsive tables.
 - [x] 4. Redesign login and dashboard.
-- [ ] 5. Build the fixed compact assets table.
+- [x] 5. Build the fixed compact assets table.
 - [ ] 6. Redesign asset details and data-entry flows.
 - [ ] 7. Redesign locations and related asset groups.
 - [ ] 8. Redesign users, requests, search, profile, and error states.

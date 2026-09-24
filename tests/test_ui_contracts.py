@@ -15,9 +15,10 @@ def _asset(db, admin):
     db.session.flush()
     asset = app_module.Asset(
         inventory_number='UI-001',
-        name='Мини багер',
+        name='Телескопичен товарач с много дълго оперативно име',
         brand='Barage',
         model='Compact X',
+        serial_number='SERIAL-VERY-LONG-0123456789',
         current_location_id=warehouse.id,
         created_by_id=admin.id,
     )
@@ -59,6 +60,21 @@ def test_assets_use_compact_table_and_explicit_action(client, login, make_user, 
     assert 'table-row-action' in html
     assert 'Виж детайли' in html
     assert 'title="Детайли">⋯</a>' not in html
+    assert 'class="asset-cell-text truncate-cell"' in html
+    assert 'title="Телескопичен товарач с много дълго оперативно име"' in html
+    assert 'title="SERIAL-VERY-LONG-0123456789"' in html
+    for heading in (
+        '№',
+        'Тип / име',
+        'Още познат като',
+        'Марка',
+        'Модел',
+        'Сериен №',
+        'Локация',
+        'Статус',
+        'Действия',
+    ):
+        assert heading in html
 
 
 def test_dashboard_keeps_operational_sections(client, login, make_user):
