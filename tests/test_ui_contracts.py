@@ -51,9 +51,11 @@ def test_authenticated_shell_uses_explicit_navigation_labels(client, login, make
     assert 'aria-expanded="false"' in html
 
 
-def test_assets_use_compact_table_and_explicit_action(client, login, make_user, db):
+def test_assets_use_compact_eight_column_table_without_redundant_status(
+    client, login, make_user, db
+):
     admin = _admin(make_user)
-    _asset(db, admin)
+    asset = _asset(db, admin)
     login(admin)
     html = client.get('/assets').get_data(as_text=True)
     assert 'data-density="compact"' in html
@@ -71,10 +73,16 @@ def test_assets_use_compact_table_and_explicit_action(client, login, make_user, 
         'Модел',
         'Сериен №',
         'Локация',
-        'Статус',
         'Действия',
     ):
         assert heading in html
+    assert 'class="asset-status-cell"' not in html
+    assert '<col class="asset-col-status">' not in html
+
+    db.session.delete(asset)
+    db.session.commit()
+    empty_html = client.get('/assets').get_data(as_text=True)
+    assert '<td colspan="8" class="empty">' in empty_html
 
 
 def test_dashboard_keeps_operational_sections(client, login, make_user):

@@ -502,14 +502,13 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
   table-layout: fixed;
 }
 
-.assets-page .assets-table col.asset-col-inventory { width: 7.5%; }
-.assets-page .assets-table col.asset-col-type { width: 17%; }
+.assets-page .assets-table col.asset-col-inventory { width: 6.5%; }
+.assets-page .assets-table col.asset-col-type { width: 27%; }
 .assets-page .assets-table col.asset-col-alias { width: 10%; }
 .assets-page .assets-table col.asset-col-brand { width: 8.5%; }
 .assets-page .assets-table col.asset-col-model { width: 9.5%; }
 .assets-page .assets-table col.asset-col-serial { width: 11%; }
 .assets-page .assets-table col.asset-col-location { width: 16%; }
-.assets-page .assets-table col.asset-col-status { width: 9%; }
 .assets-page .assets-table col.asset-col-actions { width: 11.5%; }
 
 .assets-page .assets-table th,
@@ -530,15 +529,13 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
 .assets-page .asset-brand-cell,
 .assets-page .asset-model-cell,
 .assets-page .asset-serial-cell,
-.assets-page .asset-location-cell,
-.assets-page .asset-status-cell { overflow: hidden; }
+.assets-page .asset-location-cell { overflow: hidden; }
 
 .assets-page .asset-type-cell { padding-left: 9px; }
 .assets-page .asset-cell-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .assets-page .asset-type-cell .asset-cell-text { color: var(--text-strong); font-weight: 800; }
 
-.assets-page .asset-location-chip,
-.assets-page .asset-status-cell .chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assets-page .asset-location-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .assets-page .asset-actions-cell {
   width: auto;
@@ -573,5 +570,4 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
   .assets-page-table-card .assets-table-scroll { overflow: visible; }
   .assets-page .assets-table tbody td { min-height: 42px; }
   .assets-page .asset-actions-button { padding: 7px 9px; }
-  .assets-page .asset-status-cell .chip { width: max-content; }
 }

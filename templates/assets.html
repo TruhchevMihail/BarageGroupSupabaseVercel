@@ -108,7 +108,6 @@
       <col class="asset-col-model">
       <col class="asset-col-serial">
       <col class="asset-col-location">
-      <col class="asset-col-status">
       <col class="asset-col-actions">
     </colgroup>
     <thead>
@@ -130,15 +129,12 @@
         <th class="asset-model-cell"><a class="table-sort" data-sort-key="model" href="{{ current_query_url('assets', sort='model', direction=model_direction, page=1) }}" data-ajax-link>Модел <span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-serial-cell"><a class="table-sort" data-sort-key="serial" href="{{ current_query_url('assets', sort='serial', direction=serial_direction, page=1) }}" data-ajax-link>Сериен № <span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-location-cell">Локация</th>
-        <th class="asset-status-cell">Статус</th>
         <th class="asset-actions-cell">Действия</th>
       </tr>
     </thead>
     <tbody>
     {% for asset in items %}
     {% set loc_meta = location_meta.get(asset.current_location.type, {'chip': 'chip-neutral', 'icon': '📍', 'label': asset.current_location.type}) if asset.current_location else None %}
-    {% set display_status = asset_display_status(asset) %}
-    {% set asset_state = status_meta.get(display_status, {'chip': 'chip-neutral', 'label': display_status}) %}
     <tr data-list-search-item
         data-highlight-id="{{ asset.id }}"
         data-name="{{ asset.name|lower }}"
@@ -175,9 +171,6 @@
         -
         {% endif %}
       </td>
-      <td class="asset-status-cell" data-label="Статус">
-        <span class="chip {{ asset_state.chip }}">{{ display_status }}</span>
-      </td>
       <td class="asset-actions-cell actions-cell" data-label="Действия">
         <div class="inline-actions">
           <a class="btn-secondary btn-small table-row-action asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Виж детайли</a>
@@ -185,7 +178,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="9" class="empty">Няма намерени активи.</td></tr>
+    <tr><td colspan="8" class="empty">Няма намерени активи.</td></tr>
     {% endfor %}
     </tbody>
     </table>
