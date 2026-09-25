@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a href="{{ url_for('profile') }}" class="btn-secondary page-back">Назад</a>
   <div>
     <span class="eyebrow">Профил</span>
     <h1>Редакция на профил</h1>
   </div>
-  <a href="{{ url_for('profile') }}" class="btn-secondary">Назад</a>
 </div>
 
 <form method="post" class="panel form-sheet user-edit-form operational-form form-section">

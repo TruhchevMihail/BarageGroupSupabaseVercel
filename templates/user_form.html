@@ -2,12 +2,12 @@
 {% block content %}
 {% set is_new = is_new if is_new is defined else false %}
 {% set form_action = url_for('users_new') if is_new else url_for('user_edit', user_id=user.id) %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a href="{{ url_for('users_manage') if is_new else url_for('user_profile', user_id=user.id) }}" class="btn-secondary page-back">Назад</a>
   <div>
     <span class="eyebrow">Потребители</span>
     <h1>{{ 'Създаване на потребител' if is_new else 'Редакция на потребител' }}</h1>
   </div>
-  <a href="{{ url_for('users_manage') }}" class="btn-secondary">Назад</a>
 </div>
 
 <form method="post" class="panel form-sheet user-edit-form operational-form form-section" action="{{ form_action }}">

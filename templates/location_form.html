@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a href="{{ url_for('location_detail', location_id=location.id) if location else url_for('locations_list') }}" class="btn-secondary page-back">Назад</a>
   <div>
     <span class="eyebrow">{{ 'Редакция' if location else 'Нов обект' }}</span>
     <h1>{{ 'Редакция на обект' if location else 'Добавяне на обект' }}</h1>
   </div>
-  <a href="{{ url_for('locations_list') }}" class="btn-secondary">Назад</a>
 </div>
 
 <form method="post" class="form-card wide panel form-sheet form-section operational-form two-column-form" data-location-form>

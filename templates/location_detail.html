@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a class="btn-secondary page-back" href="{{ url_for('locations_list') }}">Назад</a>
   <div>
     <span class="eyebrow">Детайли за обект</span>
     {% set meta = location_meta.get(location.type, {'label': location.type, 'icon': '📍', 'chip': 'chip-neutral'}) %}
@@ -8,10 +9,6 @@
     <p><span class="chip {{ meta.chip }}">{{ meta.icon }} {{ meta.label }}</span></p>
   </div>
   <div class="detail-actions detail-header-actions sticky-page-actions">
-    <a class="btn-secondary" href="{{ url_for('locations_list') }}">Назад към обектите</a>
-    {% if can_edit_location %}
-    <a class="btn-link" href="{{ url_for('location_edit', location_id=location.id) }}">Редактирай</a>
-    {% endif %}
     {% if can_archive_location %}
     <form method="post" action="{{ url_for('location_archive', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -23,6 +20,9 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary">Върни от архив</button>
     </form>
+    {% endif %}
+    {% if can_edit_location %}
+    <a class="btn-link" href="{{ url_for('location_edit', location_id=location.id) }}">Редактирай</a>
     {% endif %}
   </div>
 </div>
