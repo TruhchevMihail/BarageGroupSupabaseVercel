@@ -59,7 +59,7 @@ def test_authenticated_user_can_export_assets_csv_with_filters(client, db, make_
     assert body.splitlines()[0] == 'sep=;'
     assert response.headers['Content-Type'] == 'text/csv; charset=utf-8'
     assert 'attachment; filename="assets_export.csv"' in response.headers['Content-Disposition']
-    assert 'Инвентарен №' in body
+    assert body.splitlines()[1].startswith('№;Тип / име;')
     assert 'Сервиз CSV' in body
     assert 'CSV-2' in body
     assert 'CSV-1' not in body
@@ -67,8 +67,7 @@ def test_authenticated_user_can_export_assets_csv_with_filters(client, db, make_
     assert rows[0] == ASSET_EXPORT_HEADERS
     assert rows[1][0] == 'CSV-2'
     assert rows[1][1] == 'Дрелка'
-    assert rows[1][13] == 'Сервиз CSV'
-    assert rows[1][14] == 'Сервиз'
+    assert rows[1][10] == 'Сервиз CSV'
 
 
 def test_authenticated_user_can_export_assets_xlsx_with_filters(client, db, make_user, login):
@@ -100,12 +99,9 @@ def test_authenticated_user_can_export_assets_xlsx_with_filters(client, db, make
     assert len(rows) == 1
     assert rows[0][0] == 'XLSX-2'
     assert rows[0][1] == 'Дрелка'
-    assert rows[0][5] == 'Brand'
-    assert rows[0][8] == 'Model'
-    assert rows[0][11] == 'Машина'
-    assert rows[0][13] == 'Сервиз XLSX'
-    assert rows[0][14] == 'Сервиз'
-    assert rows[0][15] == 'В сервиз'
+    assert rows[0][3] == 'Brand'
+    assert rows[0][4] == 'Model'
+    assert rows[0][10] == 'Сервиз XLSX'
 
 
 def test_unauthenticated_user_cannot_export_assets_csv(client):
@@ -258,7 +254,7 @@ def test_export_service_returns_excel_friendly_bytes_with_cyrillic_and_semicolon
 
     assert payload.startswith(b'\xef\xbb\xbf')
     assert lines[0] == 'sep=;'
-    assert lines[1].startswith('Инвентарен №;Тип / име;Дата на закупуване;')
+    assert lines[1].startswith('№;Тип / име;Още познат като;Марка;Модел;')
     assert 'CSV-EX-1;"Машина ""Тест""";' in text
     assert '"База; Централна"' in text
 
@@ -286,7 +282,7 @@ def test_export_service_returns_excel_workbook_with_cyrillic_and_filters(db):
     assert len(values) == 1
     assert values[0][0] == 'EXCEL-2'
     assert values[0][1] == 'Сервизна'
-    assert values[0][13] == 'Сервиз Excel'
+    assert values[0][10] == 'Сервиз Excel'
 
 
 def test_exports_escape_spreadsheet_formula_prefixes(db):
@@ -336,51 +332,68 @@ def test_asset_exports_include_basic_detail_fields_in_excel_and_csv(db):
     csv_payload = export_assets_csv({'sort': 'inventory', 'direction': 'asc'})
     csv_text = csv_payload.decode('utf-8-sig')
     csv_rows = _csv_rows(csv_text)
-    assert csv_rows[0] == ASSET_EXPORT_HEADERS
-    assert csv_rows[1][0] == 'FULL-1'
-    assert csv_rows[1][1] == 'Багер'
-    assert csv_rows[1][2] == '04.05.2026'
-    assert csv_rows[1][3] == 'INV-2026-001'
-    assert csv_rows[1][4] == 'Жълтият'
-    assert csv_rows[1][5] == 'Caterpillar'
-    assert csv_rows[1][6] == 'Доставчик АД'
-    assert csv_rows[1][7] == '24 месеца'
-    assert csv_rows[1][8] == '320D'
-    assert csv_rows[1][9] == 'SER-320'
-    assert csv_rows[1][10] == 'Тежка техника'
-    assert csv_rows[1][11] == 'Машина'
-    assert csv_rows[1][12] == '01.06.2026 08:30'
-    assert csv_rows[1][13] == 'Сервиз Пълен Експорт'
-    assert csv_rows[1][14] == 'Сервиз'
-    assert csv_rows[1][15] == 'В сервиз'
-    assert csv_rows[1][16] == '12'
-    assert csv_rows[1][17]
-    assert csv_rows[1][18] == 'Тестова забележка'
+    expected_headers = [
+        '№',
+        'Тип / име',
+        'Още познат като',
+        'Марка',
+        'Модел',
+        'Сериен №',
+        'Доставчик',
+        'Фактура №',
+        'Гаранция',
+        'Дата на закупуване',
+        'Обект',
+        'Забележки',
+        'Дата на създаване',
+        'Последно преместен',
+        'Дни в сервиз',
+    ]
+    assert ASSET_EXPORT_HEADERS == expected_headers
+    assert csv_rows[0] == expected_headers
+    assert csv_rows[1][:13] == [
+        'FULL-1',
+        'Багер',
+        'Жълтият',
+        'Caterpillar',
+        '320D',
+        'SER-320',
+        'Доставчик АД',
+        'INV-2026-001',
+        '24 месеца',
+        '04.05.2026',
+        'Сервиз Пълен Експорт',
+        'Тестова забележка',
+        '01.06.2026 08:30',
+    ]
+    assert csv_rows[1][13]
+    assert csv_rows[1][14] == '12'
+    assert len(csv_rows[1]) == 15
 
     workbook = load_workbook(io.BytesIO(export_assets_xlsx({'sort': 'inventory', 'direction': 'asc'})))
     sheet = workbook.active
-    assert [cell.value for cell in sheet[1]] == ASSET_EXPORT_HEADERS
+    assert [cell.value for cell in sheet[1]] == expected_headers
     values = list(sheet.iter_rows(min_row=2, values_only=True))
-    assert values[0][:16] == (
+    assert values[0][:13] == (
         'FULL-1',
         'Багер',
-        '04.05.2026',
-        'INV-2026-001',
         'Жълтият',
         'Caterpillar',
-        'Доставчик АД',
-        '24 месеца',
         '320D',
         'SER-320',
-        'Тежка техника',
-        'Машина',
-        '01.06.2026 08:30',
+        'Доставчик АД',
+        'INV-2026-001',
+        '24 месеца',
+        '04.05.2026',
         'Сервиз Пълен Експорт',
-        'Сервиз',
-        'В сервиз',
+        'Тестова забележка',
+        '01.06.2026 08:30',
     )
-    assert values[0][16] == 12
-    assert values[0][18] == 'Тестова забележка'
+    assert values[0][13]
+    assert values[0][14] == 12
+    assert len(values[0]) == 15
+    assert sheet['A1'].alignment.horizontal == 'center'
+    assert sheet['A2'].alignment.horizontal == 'center'
 
 
 def test_import_parser_accepts_exported_excel_friendly_csv(db):

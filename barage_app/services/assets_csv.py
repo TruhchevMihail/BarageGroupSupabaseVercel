@@ -5,14 +5,13 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font
+from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
 from sqlalchemy import Integer, cast, or_
 from sqlalchemy.orm import joinedload
 
 from barage_app.constants import (
     ASSET_TYPE_OPTIONS,
-    LOCATION_META,
     LOCATION_TYPE_TO_STATUS,
     STATUS_TO_LOCATION_TYPE,
     STATUS_WAREHOUSE,
@@ -121,7 +120,7 @@ def _autosize_worksheet(worksheet):
         worksheet.column_dimensions[letter].width = min(max(max_length + 2, 12), 32)
 
 
-def _build_xlsx_bytes(sheet_name, header_row, data_rows):
+def _build_xlsx_bytes(sheet_name, header_row, data_rows, centered_columns=()):
     workbook = Workbook()
     worksheet = workbook.active
     worksheet.title = sheet_name
@@ -132,6 +131,10 @@ def _build_xlsx_bytes(sheet_name, header_row, data_rows):
     header_font = Font(bold=True)
     for cell in worksheet[1]:
         cell.font = header_font
+
+    for column_index in centered_columns:
+        for row_index in range(1, worksheet.max_row + 1):
+            worksheet.cell(row=row_index, column=column_index).alignment = Alignment(horizontal='center')
 
     worksheet.freeze_panes = 'A2'
     worksheet.auto_filter.ref = worksheet.dimensions
@@ -366,35 +369,26 @@ def format_export_date(value):
     return value.strftime('%d.%m.%Y') if value else ''
 
 
-def asset_location_type_label(asset):
-    location = asset.current_location
-    return LOCATION_META.get(location.type, {}).get('label', location.type) if location else ''
-
-
 def asset_export_object_name(asset):
     return asset.current_location.name if asset.current_location else ''
 
 
 ASSET_EXPORT_COLUMNS = [
-    ('Инвентарен №', lambda asset: asset.inventory_number),
+    ('№', lambda asset: asset.inventory_number),
     ('Тип / име', lambda asset: asset.name),
-    ('Дата на закупуване', lambda asset: format_export_date(asset.purchase_date)),
-    ('Фактура №', lambda asset: asset.invoice_number or ''),
     ('Още познат като', lambda asset: asset.alias_name or ''),
     ('Марка', lambda asset: asset.brand),
-    ('Доставчик / фирма', lambda asset: asset.supplier_company or asset.company_name or ''),
-    ('Гаранция', lambda asset: asset.warranty or ''),
     ('Модел', lambda asset: asset.model),
     ('Сериен №', lambda asset: asset.serial_number or ''),
-    ('Категория', lambda asset: asset.category or ''),
-    ('Вид актив', lambda asset: asset.asset_type or ''),
-    ('Дата на създаване', lambda asset: format_export_datetime(asset.created_at)),
+    ('Доставчик', lambda asset: asset.supplier_company or asset.company_name or ''),
+    ('Фактура №', lambda asset: asset.invoice_number or ''),
+    ('Гаранция', lambda asset: asset.warranty or ''),
+    ('Дата на закупуване', lambda asset: format_export_date(asset.purchase_date)),
     ('Обект', asset_export_object_name),
-    ('Тип локация', asset_location_type_label),
-    ('Статус', asset_display_status),
-    ('Дни в сервиз', lambda asset: getattr(asset, 'service_stay_days', None) or ''),
-    ('Последно преместване', lambda asset: format_export_datetime(asset.last_moved_at)),
     ('Забележки', lambda asset: asset.notes or ''),
+    ('Дата на създаване', lambda asset: format_export_datetime(asset.created_at)),
+    ('Последно преместен', lambda asset: format_export_datetime(asset.last_moved_at)),
+    ('Дни в сервиз', lambda asset: getattr(asset, 'service_stay_days', None) or ''),
 ]
 ASSET_EXPORT_HEADERS = [header for header, _getter in ASSET_EXPORT_COLUMNS]
 
@@ -427,7 +421,12 @@ def export_assets_xlsx(filters):
     query = order_assets_query(build_assets_query(filters), filters.get('sort'), filters.get('direction'))
     assets = query.all()
     enrich_assets_with_service_stay(assets)
-    return _build_xlsx_bytes(ASSET_XLSX_SHEET_NAME, ASSET_EXPORT_HEADERS, _asset_export_rows(assets))
+    return _build_xlsx_bytes(
+        ASSET_XLSX_SHEET_NAME,
+        ASSET_EXPORT_HEADERS,
+        _asset_export_rows(assets),
+        centered_columns=(1,),
+    )
 
 
 def build_asset_csv_template():
