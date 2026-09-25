@@ -116,21 +116,25 @@ def test_unauthenticated_user_cannot_export_assets_xlsx(client):
     assert '/login' in response.headers['Location']
 
 
-def test_assets_page_shows_import_only_to_admin(client, db, make_user, login):
+def test_assets_page_keeps_exports_and_import_out_of_top_actions(client, db, make_user, login):
     user = make_user(full_name='Regular User', email='regular-assets@example.com', role=app_module.ROLE_USER)
     admin = make_user(full_name='Admin User', email='admin-assets@example.com', role=app_module.ROLE_SUPERUSER)
 
     login(user)
     user_page = client.get('/assets')
     assert user_page.status_code == 200
-    assert 'Експорт Excel' in user_page.get_data(as_text=True)
-    assert 'Експорт CSV' in user_page.get_data(as_text=True)
-    assert 'Импорт CSV/Excel' not in user_page.get_data(as_text=True)
+    user_html = user_page.get_data(as_text=True)
+    assert 'aria-label="Експорт в Excel"' in user_html
+    assert 'Експорт CSV' not in user_html
+    assert 'Импорт CSV/Excel' not in user_html
 
     login(admin)
     admin_page = client.get('/assets')
     assert admin_page.status_code == 200
-    assert 'Импорт CSV/Excel' in admin_page.get_data(as_text=True)
+    admin_html = admin_page.get_data(as_text=True)
+    assert 'aria-label="Експорт в Excel"' in admin_html
+    assert 'Експорт CSV' not in admin_html
+    assert 'Импорт CSV/Excel' not in admin_html
 
 
 def test_non_admin_cannot_access_asset_import(client, db, make_user, login):

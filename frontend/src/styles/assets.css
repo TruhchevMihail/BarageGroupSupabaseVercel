@@ -27,9 +27,71 @@
   min-width: 300px;
 }
 
-.assets-page .filter-row select[name="location"] {
-  flex: 0 0 280px;
-  min-width: 240px;
+.assets-page .assets-location-filter,
+.assets-page .assets-filter-icon-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.assets-page .assets-location-filter svg,
+.assets-page .assets-filter-icon-button svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.assets-page .assets-location-filter svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.assets-page .assets-location-filter:hover,
+.assets-page .assets-filter-icon-button:hover {
+  background: var(--panel-muted);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.assets-page .assets-location-filter:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--primary) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.assets-page .assets-location-filter.is-active {
+  background: color-mix(in srgb, var(--primary) 12%, var(--panel));
+  border-color: color-mix(in srgb, var(--primary) 55%, var(--line));
+  color: var(--primary);
+}
+
+.assets-page .assets-location-filter select[name="location"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .assets-page .assets-filter-submit {
@@ -366,8 +428,7 @@ html[data-theme="dark"] .service-stay-detail-warning {
 }
 
 @media (max-width: 760px) {
-  .assets-page .assets-search-input,
-  .assets-page .filter-row select[name="location"] {
+  .assets-page .assets-search-input {
     flex-basis: 100%;
     min-width: 0;
   }

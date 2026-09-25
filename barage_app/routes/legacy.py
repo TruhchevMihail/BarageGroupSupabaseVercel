@@ -1839,7 +1839,18 @@ def assets():
     )
     pagination = query.paginate(page=page, per_page=15, error_out=False)
     enrich_assets_with_service_stay(pagination.items)
-    locations = Location.query.order_by(Location.name).all()
+    location_type_order = case(
+        (Location.type == LOC_SITE, 0),
+        (Location.type == LOC_WAREHOUSE, 1),
+        (Location.type == LOC_SERVICE, 2),
+        (Location.type == LOC_SCRAP, 3),
+        else_=4,
+    )
+    locations = Location.query.order_by(
+        location_type_order,
+        func.lower(Location.name),
+        Location.id,
+    ).all()
     categories = [
         row[0] for row in db.session.query(Asset.category)
         .filter(Asset.category.isnot(None), Asset.category != '')

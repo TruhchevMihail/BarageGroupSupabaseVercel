@@ -8,11 +8,6 @@
   </div>
   <div class="detail-actions">
     {% include '_dashboard_back_button.html' %}
-    <a href="{{ current_query_url('assets_export_xlsx') }}" class="btn-secondary" title="Excel форматът е препоръчителен за Windows." data-assets-export>Експорт Excel</a>
-    <a href="{{ current_query_url('assets_export_csv') }}" class="btn-secondary" title="Файлът е съвместим с Excel на Windows и Numbers на macOS." data-assets-export>Експорт CSV</a>
-    {% if can_import_assets %}
-    <a href="{{ url_for('assets_import') }}" class="btn-secondary">Импорт CSV/Excel</a>
-    {% endif %}
     {% if can_create_asset %}
     <a href="{{ url_for('asset_new') }}" class="btn-primary">Добави актив</a>
     {% endif %}
@@ -42,12 +37,22 @@
 ) %}
 <form method="get" action="{{ url_for('assets') }}" class="filter-row panel" data-assets-filter-form data-ajax-form>
   <input type="text" name="q" class="assets-search-input" aria-label="Търсене на машина" placeholder="Търсене по всички данни за актива" value="{{ filters.q }}" data-list-search data-main-search>
-  <select name="location" aria-label="Филтър по локация">
-    <option value="">Всички локации</option>
-    {% for location in locations %}
-    <option value="{{ location.id }}" {% if filters.location_id == location.id %}selected{% endif %}>{{ location_meta[location.type].icon }} {{ location.name }}</option>
-    {% endfor %}
-  </select>
+  <label class="assets-location-filter{% if filters.location_id %} is-active{% endif %}" title="Филтър по локация">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M4 5h16l-6.25 7.1v5.15l-3.5 1.75v-6.9L4 5Z"></path>
+    </svg>
+    <select name="location" aria-label="Филтър по локация">
+      <option value="">Всички локации</option>
+      {% for location in locations %}
+      <option value="{{ location.id }}" {% if filters.location_id == location.id %}selected{% endif %}>{{ location_meta[location.type].icon }} {{ location.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <a href="{{ current_query_url('assets_export_xlsx') }}" class="btn-secondary assets-filter-icon-button assets-export-button" aria-label="Експорт в Excel" title="Експорт в Excel" data-assets-export>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 3v11m0 0 4-4m-4 4-4-4M5 15v4h14v-4"></path>
+    </svg>
+  </a>
   <button type="submit" class="btn-primary assets-filter-submit">Търси</button>
   {% if filters.status %}
   <input type="hidden" name="status" value="{{ filters.status }}">

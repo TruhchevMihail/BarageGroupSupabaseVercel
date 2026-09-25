@@ -223,17 +223,16 @@ def test_import_and_action_visibility_matches_role(client, login, role_world, ro
     locations_html = client.get('/locations').get_data(as_text=True)
     requests_html = client.get('/requests').get_data(as_text=True)
 
-    assert 'Експорт Excel' in assets_html
-    assert 'Експорт CSV' in assets_html
+    assert 'aria-label="Експорт в Excel"' in assets_html
+    assert 'Експорт CSV' not in assets_html
+    assert 'Импорт CSV/Excel' not in assets_html
     if role == app_module.ROLE_SUPERUSER:
-        assert 'Импорт CSV/Excel' in assets_html
         assert 'Добави актив' in assets_html
         assert 'Добави обект' in locations_html
         assert 'Одобри' in requests_html
         assert 'Откажи' in requests_html
         assert client.get('/assets/import').status_code == 200
     else:
-        assert 'Импорт CSV/Excel' not in assets_html
         assert 'Добави актив' not in assets_html
         assert 'Добави обект' not in locations_html
         assert 'Одобри' not in requests_html

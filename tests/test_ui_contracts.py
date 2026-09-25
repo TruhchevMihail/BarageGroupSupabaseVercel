@@ -89,6 +89,54 @@ def test_assets_use_compact_seven_column_table_without_status_or_serial(
     assert '<td colspan="7" class="empty">' in empty_html
 
 
+def test_assets_keep_primary_actions_together_and_put_compact_export_in_filters(
+    client, login, make_user
+):
+    admin = _admin(make_user)
+    login(admin)
+
+    html = client.get('/assets').get_data(as_text=True)
+
+    page_actions = html[html.index('<div class="detail-actions">'):html.index('</div>', html.index('<div class="detail-actions">'))]
+    assert page_actions.index('Към таблото') < page_actions.index('Добави актив')
+    assert 'export.xlsx' not in page_actions
+    assert 'export.csv' not in page_actions
+    assert 'Импорт CSV/Excel' not in page_actions
+
+    filter_row = html[html.index('<form method="get"'):html.index('</form>', html.index('<form method="get"'))]
+    location_index = filter_row.index('class="assets-location-filter')
+    export_index = filter_row.index('aria-label="Експорт в Excel"')
+    search_index = filter_row.index('>Търси</button>')
+    assert location_index < export_index < search_index
+    assert 'data-assets-export' in filter_row
+    assert 'aria-hidden="true"' in filter_row
+    assert '>Export<' not in filter_row
+
+
+def test_assets_order_location_filter_by_operational_type_then_name(
+    client, login, make_user, db
+):
+    admin = _admin(make_user)
+    locations = [
+        app_module.Location(name='ZZ Обект', type='site'),
+        app_module.Location(name='AA Обект', type='site'),
+        app_module.Location(name='AA Склад', type='warehouse'),
+        app_module.Location(name='AA Сервиз', type='service'),
+        app_module.Location(name='AA Брак', type='scrap'),
+    ]
+    db.session.add_all(locations)
+    db.session.commit()
+    login(admin)
+
+    html = client.get('/assets').get_data(as_text=True)
+
+    positions = {location.name: html.index(location.name) for location in locations}
+    assert positions['AA Обект'] < positions['ZZ Обект']
+    assert positions['ZZ Обект'] < positions['AA Склад']
+    assert positions['AA Склад'] < positions['AA Сервиз']
+    assert positions['AA Сервиз'] < positions['AA Брак']
+
+
 def test_dashboard_keeps_operational_sections(client, login, make_user):
     admin = _admin(make_user)
     login(admin)
