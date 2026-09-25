@@ -1,4 +1,7 @@
+import { showToast } from './toast';
+
 type ReinitializeCallback = () => void;
+type AjaxNavigationResult = 'success' | 'fallback' | 'network-error';
 
 interface AjaxPageElements {
   page: HTMLElement;
@@ -76,10 +79,10 @@ function focusUpdatedContainer(container: HTMLElement, previousActiveElement: El
   }
 }
 
-async function fetchAndReplace(url: URL, pushHistory: boolean): Promise<boolean> {
+async function fetchAndReplace(url: URL, pushHistory: boolean): Promise<AjaxNavigationResult> {
   const current = getCurrentPage();
   if (!current || !isSameOriginUrl(url)) {
-    return false;
+    return 'fallback';
   }
 
   abortController?.abort();
@@ -99,7 +102,7 @@ async function fetchAndReplace(url: URL, pushHistory: boolean): Promise<boolean>
     });
 
     if (!response.ok) {
-      return false;
+      return 'fallback';
     }
 
     const html = await response.text();
@@ -107,7 +110,7 @@ async function fetchAndReplace(url: URL, pushHistory: boolean): Promise<boolean>
     const incomingContainer = findIncomingContainer(doc, current.pageId, current.containerId);
 
     if (!incomingContainer) {
-      return false;
+      return 'fallback';
     }
 
     current.container.replaceWith(incomingContainer);
@@ -122,13 +125,13 @@ async function fetchAndReplace(url: URL, pushHistory: boolean): Promise<boolean>
 
     focusUpdatedContainer(incomingContainer, previousActiveElement);
     reinitialize();
-    return true;
+    return 'success';
   } catch (error) {
     if ((error as DOMException).name === 'AbortError') {
-      return true;
+      return 'success';
     }
     console.error('AJAX list navigation failed', error);
-    return false;
+    return 'network-error';
   } finally {
     const latest = getCurrentPage();
     if (latest) {
@@ -157,8 +160,12 @@ function buildFormUrl(form: HTMLFormElement): URL | null {
 }
 
 async function handleNavigation(url: URL, fallback: () => void): Promise<void> {
-  const ok = await fetchAndReplace(url, true);
-  if (!ok) {
+  const result = await fetchAndReplace(url, true);
+  if (result === 'network-error') {
+    showToast('Връзката прекъсна. Данните са запазени на екрана — опитайте отново.', 'error');
+    return;
+  }
+  if (result === 'fallback') {
     fallback();
   }
 }
@@ -230,8 +237,8 @@ export function initAjaxListNavigation(callback?: ReinitializeCallback): void {
     }
 
     const url = new URL(window.location.href);
-    void fetchAndReplace(url, false).then((ok) => {
-      if (!ok) {
+    void fetchAndReplace(url, false).then((result) => {
+      if (result !== 'success') {
         window.location.reload();
       }
     });

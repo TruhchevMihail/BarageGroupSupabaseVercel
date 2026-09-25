@@ -223,6 +223,17 @@ button.danger:hover,
   outline-offset: 2px;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.theme-toggle:focus-visible,
+.user-link:focus-visible,
+.location-link:focus-visible {
+  outline-color: var(--focus-ring);
+}
+
 .theme-toggle {
   width: auto;
   min-width: max-content;
@@ -250,3 +261,27 @@ html[data-theme="dark"] .dashboard-back-button {
 html[data-theme="dark"] .btn-secondary:hover,
 html[data-theme="dark"] .btn-link.secondary:hover,
 html[data-theme="dark"] .dashboard-back-button:hover { background: var(--surface-subtle); color: var(--text-strong); }
+
+html[data-theme="dark"] button:not(.btn-secondary):not(.btn-neutral):not(.btn-text):not(.danger):not(.theme-toggle):not(.sidebar-toggle),
+html[data-theme="dark"] .btn-primary,
+html[data-theme="dark"] .btn-link:not(.secondary) {
+  background: #b91c2b;
+  color: #fff;
+  border-color: #b91c2b;
+}
+
+html[data-theme="dark"] button:not(.btn-secondary):not(.btn-neutral):not(.btn-text):not(.danger):not(.theme-toggle):not(.sidebar-toggle):hover,
+html[data-theme="dark"] .btn-primary:hover,
+html[data-theme="dark"] .btn-link:not(.secondary):hover {
+  background: #991b1b;
+  color: #fff;
+  border-color: #991b1b;
+}
+
+html[data-theme="dark"] .theme-toggle {
+  background: var(--surface-raised);
+  color: var(--text-strong);
+  border-color: var(--line);
+}
+
+html[data-theme="dark"] .theme-toggle:hover { background: var(--surface-subtle); color: var(--text-strong); }

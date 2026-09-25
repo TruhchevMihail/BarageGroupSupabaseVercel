@@ -234,6 +234,16 @@
   border-color: rgba(255, 255, 255, .10);
 }
 
+.userbox .user-link,
+html[data-theme="dark"] .userbox .user-link {
+  color: #f4f4f8;
+}
+
+.userbox .user-link:hover,
+html[data-theme="dark"] .userbox .user-link:hover {
+  color: #fff;
+}
+
 .userbox-footer { grid-template-columns: 1fr; align-items: stretch; }
 .userbox-footer .theme-toggle {
   width: 100%;

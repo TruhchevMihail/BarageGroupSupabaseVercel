@@ -195,6 +195,20 @@
 }
 
 @media (max-width: 760px) {
+  button,
+  input,
+  select,
+  .btn-primary,
+  .btn-secondary,
+  .btn-neutral,
+  .btn-text,
+  .btn-link,
+  .table-row-action,
+  .sidebar-toggle,
+  .userbox-footer .theme-toggle {
+    min-height: 44px;
+  }
+
   .assets-page .assets-table-scroll,
   .assets-page .table-card { overflow-x: clip; }
   .users-page .users-table-wrap,

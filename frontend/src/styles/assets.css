@@ -502,15 +502,15 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
   table-layout: fixed;
 }
 
-.assets-page .assets-table col.asset-col-inventory { width: 5.5%; }
-.assets-page .assets-table col.asset-col-type { width: 18%; }
-.assets-page .assets-table col.asset-col-alias { width: 12%; }
-.assets-page .assets-table col.asset-col-brand { width: 9%; }
-.assets-page .assets-table col.asset-col-model { width: 10%; }
-.assets-page .assets-table col.asset-col-serial { width: 12%; }
+.assets-page .assets-table col.asset-col-inventory { width: 7.5%; }
+.assets-page .assets-table col.asset-col-type { width: 17%; }
+.assets-page .assets-table col.asset-col-alias { width: 10%; }
+.assets-page .assets-table col.asset-col-brand { width: 8.5%; }
+.assets-page .assets-table col.asset-col-model { width: 9.5%; }
+.assets-page .assets-table col.asset-col-serial { width: 11%; }
 .assets-page .assets-table col.asset-col-location { width: 16%; }
 .assets-page .assets-table col.asset-col-status { width: 9%; }
-.assets-page .assets-table col.asset-col-actions { width: 8.5%; }
+.assets-page .assets-table col.asset-col-actions { width: 11.5%; }
 
 .assets-page .assets-table th,
 .assets-page .assets-table td { min-width: 0; padding: 8px 9px; }

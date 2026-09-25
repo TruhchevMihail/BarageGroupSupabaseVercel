@@ -421,16 +421,25 @@ html[data-theme="dark"] .login-hero {
 .mini-asset { background: var(--surface); border-color: var(--line-soft); box-shadow: none; }
 
 .chip-warehouse,
-.chip-pending { background: color-mix(in srgb, var(--warehouse) 12%, var(--surface)); color: var(--warehouse); border-color: color-mix(in srgb, var(--warehouse) 22%, var(--surface)); }
+.chip-pending,
+.list-card .chip-warehouse,
+.list-card .chip-pending { background: color-mix(in srgb, var(--warehouse) 12%, var(--surface)); color: var(--warehouse); border-color: color-mix(in srgb, var(--warehouse) 22%, var(--surface)); }
 .chip-site,
-.chip-approved { background: color-mix(in srgb, var(--site) 12%, var(--surface)); color: var(--site); border-color: color-mix(in srgb, var(--site) 22%, var(--surface)); }
+.chip-approved,
+.list-card .chip-site,
+.list-card .chip-approved { background: color-mix(in srgb, var(--site) 12%, var(--surface)); color: var(--site); border-color: color-mix(in srgb, var(--site) 22%, var(--surface)); }
 .chip-service,
 .chip-repair,
-.chip-service-red { background: color-mix(in srgb, var(--service) 13%, var(--surface)); color: var(--service); border-color: color-mix(in srgb, var(--service) 24%, var(--surface)); }
+.chip-service-red,
+.list-card .chip-service,
+.list-card .chip-repair,
+.list-card .chip-service-red { background: color-mix(in srgb, var(--service) 13%, var(--surface)); color: var(--service); border-color: color-mix(in srgb, var(--service) 24%, var(--surface)); }
 .chip-scrap,
 .chip-rejected,
 .chip-super,
-.chip-role-admin { background: color-mix(in srgb, var(--primary) 10%, var(--surface)); color: var(--primary-dark); border-color: color-mix(in srgb, var(--primary) 20%, var(--surface)); }
+.chip-role-admin,
+.list-card .chip-scrap,
+.list-card .chip-rejected { background: color-mix(in srgb, var(--primary) 10%, var(--surface)); color: var(--primary-dark); border-color: color-mix(in srgb, var(--primary) 20%, var(--surface)); }
 .chip-neutral,
 .mini-chip { background: var(--surface-subtle); color: var(--text-soft); border-color: var(--line-soft); }
 
