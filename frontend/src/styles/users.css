@@ -417,8 +417,8 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
 .users-table col.users-col-phone { width: 11%; }
 .users-table col.users-col-role { width: 14%; }
 .users-table col.users-col-location { width: 19%; }
-.users-table col.users-col-status { width: 8%; }
-.users-table col.users-col-actions { width: 8%; }
+.users-table col.users-col-status { width: 5%; }
+.users-table col.users-col-actions { width: 11%; }
 
 .users-page .users-table th,
 .users-page .users-table td,
@@ -437,6 +437,7 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
   width: auto;
   min-width: 0;
   max-width: none;
+  overflow: visible;
   padding-inline: 5px;
   text-align: left;
 }

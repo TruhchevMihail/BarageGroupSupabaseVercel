@@ -1,4 +1,9 @@
+from pathlib import Path
+
 import app as app_module
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _admin(make_user):
@@ -260,6 +265,14 @@ def test_users_truncate_long_identity_and_use_explicit_profile_action(
     assert f'title="{user.full_name}"' in users_html
     assert f'title="{user.email}"' in users_html
     assert 'Виж профил' in users_html
+
+
+def test_users_table_keeps_profile_action_fully_visible():
+    css = (PROJECT_ROOT / 'frontend/src/styles/users.css').read_text()
+
+    assert '.users-table col.users-col-status { width: 5%; }' in css
+    assert '.users-table col.users-col-actions { width: 11%; }' in css
+    assert 'overflow: visible;' in css[css.index('.users-cell-actions {'):]
 
 
 def test_user_profile_orders_daily_actions_and_separates_delete(
