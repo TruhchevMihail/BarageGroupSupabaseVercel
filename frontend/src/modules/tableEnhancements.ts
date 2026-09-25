@@ -31,7 +31,29 @@ function requestSubmit(form: HTMLFormElement): void {
   }
 }
 
-function initAssetsTable(): void {
+export function buildFilteredExportUrl(baseHref: string, currentSearch: string): string {
+  const url = new URL(baseHref, window.location.href);
+  const filters = new URLSearchParams(currentSearch);
+  filters.delete('page');
+  url.search = filters.toString();
+  return url.toString();
+}
+
+function initAssetsExportLinks(): void {
+  document.querySelectorAll<HTMLAnchorElement>('[data-assets-export]').forEach((link) => {
+    link.href = buildFilteredExportUrl(link.href, window.location.search);
+
+    if (link.dataset.assetsExportBound === 'true') {
+      return;
+    }
+    link.dataset.assetsExportBound = 'true';
+    link.addEventListener('click', () => {
+      link.href = buildFilteredExportUrl(link.href, window.location.search);
+    });
+  });
+}
+
+export function initAssetsTable(): void {
   const table = document.getElementById('assets-table') as HTMLTableElement | null;
   const form = document.querySelector<HTMLFormElement>('[data-assets-filter-form]');
   if (!table || table.dataset.tableEnhancementsBound === 'true') {
@@ -39,21 +61,8 @@ function initAssetsTable(): void {
   }
   table.dataset.tableEnhancementsBound = 'true';
 
-  const searchInput = form?.querySelector<HTMLInputElement>('[data-list-search]');
   const locationSelect = form?.querySelector<HTMLSelectElement>('select[name="location"]');
-  let submitTimer: number | null = null;
 
-  const scheduleSubmit = (): void => {
-    if (!form) {
-      return;
-    }
-    if (submitTimer !== null) {
-      window.clearTimeout(submitTimer);
-    }
-    submitTimer = window.setTimeout(() => requestSubmit(form), 250);
-  };
-
-  searchInput?.addEventListener('input', scheduleSubmit);
   locationSelect?.addEventListener('change', () => {
     if (form) {
       requestSubmit(form);
@@ -90,6 +99,7 @@ function initRowHighlight(): void {
 }
 
 export function initTableEnhancements(): void {
+  initAssetsExportLinks();
   initAssetsTable();
   initBackendSortedTable('users-table', 'name', 'asc');
   initBackendSortedTable('requests-table', 'newest', 'desc');

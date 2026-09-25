@@ -8,8 +8,8 @@
   </div>
   <div class="detail-actions">
     {% include '_dashboard_back_button.html' %}
-    <a href="{{ current_query_url('assets_export_xlsx') }}" class="btn-secondary" title="Excel форматът е препоръчителен за Windows.">Експорт Excel</a>
-    <a href="{{ current_query_url('assets_export_csv') }}" class="btn-secondary" title="Файлът е съвместим с Excel на Windows и Numbers на macOS.">Експорт CSV</a>
+    <a href="{{ current_query_url('assets_export_xlsx') }}" class="btn-secondary" title="Excel форматът е препоръчителен за Windows." data-assets-export>Експорт Excel</a>
+    <a href="{{ current_query_url('assets_export_csv') }}" class="btn-secondary" title="Файлът е съвместим с Excel на Windows и Numbers на macOS." data-assets-export>Експорт CSV</a>
     {% if can_import_assets %}
     <a href="{{ url_for('assets_import') }}" class="btn-secondary">Импорт CSV/Excel</a>
     {% endif %}
@@ -48,6 +48,7 @@
     <option value="{{ location.id }}" {% if filters.location_id == location.id %}selected{% endif %}>{{ location_meta[location.type].icon }} {{ location.name }}</option>
     {% endfor %}
   </select>
+  <button type="submit" class="btn-primary assets-filter-submit">Търси</button>
   {% if filters.status %}
   <input type="hidden" name="status" value="{{ filters.status }}">
   {% endif %}

@@ -216,12 +216,13 @@
 .users-status {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  justify-content: center;
+  width: 100%;
   min-width: 0;
 }
 
-.users-status-label {
-  white-space: nowrap;
+.users-cell-status {
+  text-align: center;
 }
 
 .status-dot {

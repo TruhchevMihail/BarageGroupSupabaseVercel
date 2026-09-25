@@ -80,6 +80,8 @@ def test_assets_use_compact_seven_column_table_without_status_or_serial(
     assert 'class="asset-serial-cell"' not in html
     assert '<col class="asset-col-status">' not in html
     assert '<col class="asset-col-serial">' not in html
+    assert 'type="submit"' in html
+    assert '>Търси</button>' in html
 
     db.session.delete(asset)
     db.session.commit()
@@ -173,6 +175,25 @@ def test_users_truncate_long_identity_and_use_explicit_profile_action(
     assert f'title="{user.full_name}"' in users_html
     assert f'title="{user.email}"' in users_html
     assert 'Виж профил' in users_html
+
+
+def test_users_show_status_as_an_accessible_indicator_only(client, login, make_user):
+    admin = _admin(make_user)
+    make_user(
+        full_name='Изключен потребител',
+        email='inactive-status@example.test',
+        role=app_module.ROLE_USER,
+        is_active=False,
+    )
+    login(admin)
+
+    users_html = client.get('/users').get_data(as_text=True)
+
+    assert 'class="users-status" role="img" aria-label="Активен" title="Активен"' in users_html
+    assert 'class="users-status" role="img" aria-label="Изключен" title="Изключен"' in users_html
+    assert 'class="status-dot ok" aria-hidden="true"' in users_html
+    assert 'class="status-dot off" aria-hidden="true"' in users_html
+    assert 'class="users-status-label"' not in users_html
 
 
 def test_users_table_numbers_rows_across_paginated_pages(client, login, make_user, db):

@@ -105,7 +105,8 @@
             -
             {% endif %}
           </td>
-          <td class="users-cell-status" data-label="Статус"><span class="users-status"><span class="status-dot {{ 'ok' if user.is_active else 'off' }}"></span><span class="users-status-label">{{ 'Активен' if user.is_active else 'Изключен' }}</span></span></td>
+          {% set status_label = 'Активен' if user.is_active else 'Изключен' %}
+          <td class="users-cell-status" data-label="Статус"><span class="users-status" role="img" aria-label="{{ status_label }}" title="{{ status_label }}"><span class="status-dot {{ 'ok' if user.is_active else 'off' }}" aria-hidden="true"></span></span></td>
            <td class="actions-cell users-cell-actions" data-label="Действия">
             {% set permissions = user_permissions.get(user.id, {}) %}
            {% if permissions.get('view') %}

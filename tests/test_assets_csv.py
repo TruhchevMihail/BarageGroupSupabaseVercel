@@ -49,7 +49,7 @@ def test_authenticated_user_can_export_assets_csv_with_filters(client, db, make_
     user = make_user(full_name='CSV User', email='csv-user@example.com', role=app_module.ROLE_USER)
     login(user)
 
-    response = client.get('/assets/export.csv?status=В сервиз')
+    response = client.get(f'/assets/export.csv?location={service.id}')
     payload = response.get_data()
     body = payload.decode('utf-8-sig')
 
@@ -85,7 +85,7 @@ def test_authenticated_user_can_export_assets_xlsx_with_filters(client, db, make
     user = make_user(full_name='Excel User', email='excel-user@example.com', role=app_module.ROLE_USER)
     login(user)
 
-    response = client.get('/assets/export.xlsx?status=В сервиз')
+    response = client.get(f'/assets/export.xlsx?location={service.id}')
     workbook = load_workbook(io.BytesIO(response.get_data()))
     sheet = workbook.active
 

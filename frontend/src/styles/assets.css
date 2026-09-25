@@ -32,6 +32,11 @@
   min-width: 240px;
 }
 
+.assets-page .assets-filter-submit {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .assets-page .filter-actions {
   margin-left: auto;
 }
