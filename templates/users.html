@@ -56,6 +56,7 @@
     <div class="table-wrap panel no-pad table-card users-table-wrap">
       <table class="users-table" id="users-table" data-density="compact">
         <colgroup>
+          <col class="users-col-index">
           <col class="users-col-name">
           <col class="users-col-email">
           <col class="users-col-phone">
@@ -70,6 +71,7 @@
           {% set role_direction = 'desc' if filters.sort == 'role' and filters.direction == 'asc' else 'asc' %}
           {% set location_direction = 'desc' if filters.sort == 'location' and filters.direction == 'asc' else 'asc' %}
           {% set status_direction = 'desc' if filters.sort == 'status' and filters.direction == 'asc' else 'asc' %}
+          <th class="users-cell-index">№</th>
           <th class="users-cell-name"><a class="table-sort" data-sort-key="name" href="{{ current_query_url('users_manage', sort='name', direction=name_direction, page=1) }}" data-ajax-link>Потребител <span class="sort-arrow" aria-hidden="true"></span></a></th>
           <th class="users-cell-email table-col-normal">Имейл</th>
           <th class="users-cell-phone table-col-normal">Телефон</th>
@@ -82,6 +84,7 @@
         <tbody>
         {% for user in users %}
         <tr data-name="{{ user.full_name|lower }}" data-email="{{ user.email|lower }}" data-phone="{{ user.phone_number or '' }}" data-role="{{ role_meta.get(user.role, default_role_meta).label|lower }}" data-location="{% set user_locations_list = user_locations(user) %}{% if user_locations_list %}{{ user_locations_list[0].name|lower }}{% endif %}" data-status="{{ 'active' if user.is_active else 'inactive' }}">
+          <td class="users-cell-index" data-label="№">{{ (pagination.page - 1) * pagination.per_page + loop.index }}</td>
           <td class="users-cell-name" data-label="Потребител">
             <a class="user-name user-name-plain truncate-cell" href="{{ url_for('user_profile', user_id=user.id) }}" title="{{ user.full_name }}">{{ user.full_name }}</a>
           </td>
@@ -117,7 +120,7 @@
           </td>
         </tr>
         {% else %}
-        <tr><td colspan="7" class="empty">Няма създадени потребители.</td></tr>
+        <tr><td colspan="8" class="empty">Няма създадени потребители.</td></tr>
         {% endfor %}
         </tbody>
       </table>

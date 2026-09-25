@@ -66,6 +66,10 @@
   min-width: 1080px;
 }
 
+.users-table col.users-col-index {
+  width: 52px;
+}
+
 .users-table col.users-col-name {
   width: 20%;
 }
@@ -116,6 +120,7 @@
   font-weight: 900;
 }
 
+.users-cell-index,
 .users-cell-name,
 .users-cell-email,
 .users-cell-phone,
@@ -124,6 +129,12 @@
 .users-cell-status,
 .users-cell-actions {
   min-width: 0;
+}
+
+.users-cell-index {
+  text-align: center;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .users-cell-name {
@@ -182,6 +193,8 @@
 
 .users-role-chip {
   display: inline-flex;
+  width: 100%;
+  min-height: 38px;
   max-width: 100%;
   align-items: center;
   justify-content: center;
@@ -397,8 +410,9 @@ html[data-theme="dark"] .requests-table td:nth-child(2) a {
   table-layout: fixed;
 }
 
-.users-table col.users-col-name { width: 18%; }
-.users-table col.users-col-email { width: 22%; }
+.users-table col.users-col-index { width: 4%; }
+.users-table col.users-col-name { width: 16%; }
+.users-table col.users-col-email { width: 20%; }
 .users-table col.users-col-phone { width: 11%; }
 .users-table col.users-col-role { width: 14%; }
 .users-table col.users-col-location { width: 19%; }

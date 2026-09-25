@@ -504,9 +504,9 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
 .assets-page .assets-table col.asset-col-inventory { width: 5%; }
 .assets-page .assets-table col.asset-col-type { width: 31.5%; }
 .assets-page .assets-table col.asset-col-alias { width: 22.5%; }
-.assets-page .assets-table col.asset-col-brand { width: 14%; }
+.assets-page .assets-table col.asset-col-brand { width: 11.5%; }
 .assets-page .assets-table col.asset-col-model { width: 10%; }
-.assets-page .assets-table col.asset-col-location { width: 12%; }
+.assets-page .assets-table col.asset-col-location { width: 14.5%; }
 .assets-page .assets-table col.asset-col-actions { width: 5%; }
 
 .assets-page .assets-table th,

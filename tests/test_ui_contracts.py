@@ -173,3 +173,22 @@ def test_users_truncate_long_identity_and_use_explicit_profile_action(
     assert f'title="{user.full_name}"' in users_html
     assert f'title="{user.email}"' in users_html
     assert 'Виж профил' in users_html
+
+
+def test_users_table_numbers_rows_across_paginated_pages(client, login, make_user, db):
+    admin = _admin(make_user)
+    for index in range(20):
+        db.session.add(app_module.User(
+            full_name=f'Тестов потребител {index + 1:02d}',
+            email=f'numbered-user-{index + 1:02d}@example.test',
+            password_hash='test-only-password-hash',
+            role=app_module.ROLE_USER,
+            is_active=True,
+        ))
+    db.session.commit()
+    login(admin)
+
+    second_page_html = client.get('/users?page=2').get_data(as_text=True)
+
+    assert '<th class="users-cell-index">№</th>' in second_page_html
+    assert 'class="users-cell-index" data-label="№">21</td>' in second_page_html
