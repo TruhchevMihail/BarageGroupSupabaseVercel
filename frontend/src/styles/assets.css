@@ -57,7 +57,6 @@
 .assets-page .assets-table col.asset-col-alias { width: 150px; }
 .assets-page .assets-table col.asset-col-brand { width: 132px; }
 .assets-page .assets-table col.asset-col-model { width: 150px; }
-.assets-page .assets-table col.asset-col-serial { width: 150px; }
 .assets-page .assets-table col.asset-col-location { width: 210px; }
 .assets-page .assets-table col.asset-col-actions { width: 50px; }
 
@@ -502,12 +501,11 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
   table-layout: fixed;
 }
 
-.assets-page .assets-table col.asset-col-inventory { width: 6.5%; }
-.assets-page .assets-table col.asset-col-type { width: 27%; }
+.assets-page .assets-table col.asset-col-inventory { width: 56px; }
+.assets-page .assets-table col.asset-col-type { width: auto; }
 .assets-page .assets-table col.asset-col-alias { width: 10%; }
 .assets-page .assets-table col.asset-col-brand { width: 8.5%; }
 .assets-page .assets-table col.asset-col-model { width: 9.5%; }
-.assets-page .assets-table col.asset-col-serial { width: 11%; }
 .assets-page .assets-table col.asset-col-location { width: 16%; }
 .assets-page .assets-table col.asset-col-actions { width: 11.5%; }
 
@@ -518,20 +516,25 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
   width: auto;
   min-width: 0;
   max-width: none;
-  padding-left: 9px;
-  padding-right: 7px;
+  padding-left: 6px;
+  padding-right: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: right;
+}
+
+.assets-page .asset-inventory-cell .table-sort {
+  width: 100%;
+  justify-content: flex-end;
 }
 
 .assets-page .asset-type-cell,
 .assets-page .asset-alias-cell,
 .assets-page .asset-brand-cell,
 .assets-page .asset-model-cell,
-.assets-page .asset-serial-cell,
 .assets-page .asset-location-cell { overflow: hidden; }
 
-.assets-page .asset-type-cell { padding-left: 9px; }
+.assets-page .asset-type-cell { padding-left: 6px; }
 .assets-page .asset-cell-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .assets-page .asset-type-cell .asset-cell-text { color: var(--text-strong); font-weight: 800; }
 
@@ -561,13 +564,12 @@ html[data-theme="dark"] .asset-header-actions { background: color-mix(in srgb, v
 
 @media (min-width: 761px) and (max-width: 1279px) {
   .assets-page .asset-col-alias,
-  .assets-page .asset-alias-cell,
-  .assets-page .asset-col-serial,
-  .assets-page .asset-serial-cell { display: none; }
+  .assets-page .asset-alias-cell { display: none; }
 }
 
 @media (max-width: 760px) {
   .assets-page-table-card .assets-table-scroll { overflow: visible; }
   .assets-page .assets-table tbody td { min-height: 42px; }
+  .assets-page .asset-inventory-cell::before { text-align: left; }
   .assets-page .asset-actions-button { padding: 7px 9px; }
 }

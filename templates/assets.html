@@ -106,7 +106,6 @@
       <col class="asset-col-alias">
       <col class="asset-col-brand">
       <col class="asset-col-model">
-      <col class="asset-col-serial">
       <col class="asset-col-location">
       <col class="asset-col-actions">
     </colgroup>
@@ -122,12 +121,10 @@
         {% set type_direction = 'desc' if filters.sort == 'type' and filters.direction == 'asc' else 'asc' %}
         {% set brand_direction = 'desc' if filters.sort == 'brand' and filters.direction == 'asc' else 'asc' %}
         {% set model_direction = 'desc' if filters.sort == 'model' and filters.direction == 'asc' else 'asc' %}
-        {% set serial_direction = 'desc' if filters.sort == 'serial' and filters.direction == 'asc' else 'asc' %}
         <th class="asset-type-cell"><a class="table-sort" data-sort-key="type" href="{{ current_query_url('assets', sort='type', direction=type_direction, page=1) }}" data-ajax-link>Тип / име<span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-alias-cell">Още познат като</th>
         <th class="asset-brand-cell"><a class="table-sort" data-sort-key="brand" href="{{ current_query_url('assets', sort='brand', direction=brand_direction, page=1) }}" data-ajax-link>Марка <span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-model-cell"><a class="table-sort" data-sort-key="model" href="{{ current_query_url('assets', sort='model', direction=model_direction, page=1) }}" data-ajax-link>Модел <span class="sort-arrow" aria-hidden="true"></span></a></th>
-        <th class="asset-serial-cell"><a class="table-sort" data-sort-key="serial" href="{{ current_query_url('assets', sort='serial', direction=serial_direction, page=1) }}" data-ajax-link>Сериен № <span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-location-cell">Локация</th>
         <th class="asset-actions-cell">Действия</th>
       </tr>
@@ -158,7 +155,6 @@
       <td class="asset-alias-cell" data-label="Още познат като" title="{{ asset.alias_name or '' }}"><span class="asset-cell-text truncate-cell">{{ asset.alias_name or '-' }}</span></td>
       <td class="asset-brand-cell" data-label="Марка" title="{{ asset.brand }}"><span class="asset-cell-text truncate-cell">{{ asset.brand }}</span></td>
       <td class="asset-model-cell" data-label="Модел" title="{{ asset.model }}"><span class="asset-cell-text truncate-cell">{{ asset.model }}</span></td>
-      <td class="asset-serial-cell" data-label="Сериен №" title="{{ asset.serial_number or '' }}"><span class="asset-cell-text truncate-cell">{{ asset.serial_number or '-' }}</span></td>
       <td class="asset-location-cell" data-label="Обект">
         {% if asset.current_location %}
         <a class="chip chip-link asset-location-chip {{ location_meta[asset.current_location.type].chip }}" title="{{ asset.current_location.name }}" href="{{ url_for('location_detail', location_id=asset.current_location.id) }}">
@@ -178,7 +174,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="8" class="empty">Няма намерени активи.</td></tr>
+    <tr><td colspan="7" class="empty">Няма намерени активи.</td></tr>
     {% endfor %}
     </tbody>
     </table>

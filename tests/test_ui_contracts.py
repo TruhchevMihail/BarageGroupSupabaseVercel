@@ -51,7 +51,7 @@ def test_authenticated_shell_uses_explicit_navigation_labels(client, login, make
     assert 'aria-expanded="false"' in html
 
 
-def test_assets_use_compact_eight_column_table_without_redundant_status(
+def test_assets_use_compact_seven_column_table_without_status_or_serial(
     client, login, make_user, db
 ):
     admin = _admin(make_user)
@@ -64,25 +64,25 @@ def test_assets_use_compact_eight_column_table_without_redundant_status(
     assert 'title="Детайли">⋯</a>' not in html
     assert 'class="asset-cell-text truncate-cell"' in html
     assert 'title="Телескопичен товарач с много дълго оперативно име"' in html
-    assert 'title="SERIAL-VERY-LONG-0123456789"' in html
     for heading in (
         '№',
         'Тип / име',
         'Още познат като',
         'Марка',
         'Модел',
-        'Сериен №',
         'Локация',
         'Действия',
     ):
         assert heading in html
     assert 'class="asset-status-cell"' not in html
+    assert 'class="asset-serial-cell"' not in html
     assert '<col class="asset-col-status">' not in html
+    assert '<col class="asset-col-serial">' not in html
 
     db.session.delete(asset)
     db.session.commit()
     empty_html = client.get('/assets').get_data(as_text=True)
-    assert '<td colspan="8" class="empty">' in empty_html
+    assert '<td colspan="7" class="empty">' in empty_html
 
 
 def test_dashboard_keeps_operational_sections(client, login, make_user):
@@ -120,6 +120,8 @@ def test_asset_form_and_detail_keep_explicit_actions(client, login, make_user, d
     detail_html = client.get(f'/assets/{asset.id}').get_data(as_text=True)
     for action in ('Премести / заявка', 'Добави сервизен запис', 'Редакция'):
         assert action in detail_html
+    assert 'Сериен №' in detail_html
+    assert 'SERIAL-VERY-LONG-0123456789' in detail_html
     assert 'data-copyable' in detail_html
 
 
