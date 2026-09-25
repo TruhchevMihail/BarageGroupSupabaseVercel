@@ -39,7 +39,7 @@ def test_authenticated_shell_uses_explicit_navigation_labels(client, login, make
     login(admin)
     html = client.get('/dashboard').get_data(as_text=True)
     for label in (
-        'Общ преглед',
+        'Табло',
         'Машини и инструменти',
         'Заявки',
         'Обекти и локации',
@@ -170,11 +170,29 @@ def test_asset_form_and_detail_keep_explicit_actions(client, login, make_user, d
     assert '>Отказ<' in form_html
 
     detail_html = client.get(f'/assets/{asset.id}').get_data(as_text=True)
-    for action in ('Премести / заявка', 'Добави сервизен запис', 'Редакция'):
+    for action in ('Премести / заявка', 'Добави сервизен запис', 'Редактирай'):
         assert action in detail_html
     assert 'Сериен №' in detail_html
     assert 'SERIAL-VERY-LONG-0123456789' in detail_html
     assert 'data-copyable' in detail_html
+
+
+def test_asset_detail_orders_daily_actions_and_separates_delete(
+    client, login, make_user, db
+):
+    admin = _admin(make_user)
+    asset = _asset(db, admin)
+    login(admin)
+
+    html = client.get(f'/assets/{asset.id}').get_data(as_text=True)
+    header = html[:html.index('<section')]
+
+    assert header.index('Назад към машините') < header.index('Редактирай')
+    assert header.index('Редактирай') < header.index('Премести / заявка')
+    assert header.index('Премести / заявка') < header.index('Добави сервизен запис')
+    assert 'Изтрий' not in header
+    assert html.index('Опасна зона') > html.index('История')
+    assert 'Изтрий актива' in html[html.index('Опасна зона'):]
 
 
 def test_locations_use_semantic_types_and_explicit_actions(client, login, make_user, db):
@@ -200,6 +218,25 @@ def test_locations_use_semantic_types_and_explicit_actions(client, login, make_u
     assert 'data-ajax-link' in html
 
 
+def test_location_detail_orders_daily_actions_and_separates_delete(
+    client, login, make_user, db
+):
+    admin = _admin(make_user)
+    location = app_module.Location(name='Обект за подредба', type='site')
+    db.session.add(location)
+    db.session.commit()
+    login(admin)
+
+    html = client.get(f'/locations/{location.id}').get_data(as_text=True)
+    header = html[:html.index('<div class="grid-2">')]
+
+    assert header.index('Назад към обектите') < header.index('Редактирай')
+    assert header.index('Редактирай') < header.index('Архивирай')
+    assert 'Изтрий' not in header
+    assert html.index('Опасна зона') > html.index('Машини на обекта')
+    assert 'Изтрий обекта' in html[html.index('Опасна зона'):]
+
+
 def test_users_truncate_long_identity_and_use_explicit_profile_action(
     client, login, make_user, db
 ):
@@ -223,6 +260,28 @@ def test_users_truncate_long_identity_and_use_explicit_profile_action(
     assert f'title="{user.full_name}"' in users_html
     assert f'title="{user.email}"' in users_html
     assert 'Виж профил' in users_html
+
+
+def test_user_profile_orders_daily_actions_and_separates_delete(
+    client, login, make_user
+):
+    admin = _admin(make_user)
+    user = make_user(
+        full_name='Потребител за подредба',
+        email='ordered-user@example.test',
+        role=app_module.ROLE_USER,
+    )
+    login(admin)
+
+    html = client.get(f'/users/{user.id}/profile').get_data(as_text=True)
+    header = html[:html.index('<section')]
+
+    assert header.index('Към потребители') < header.index('Редактирай')
+    assert header.index('Редактирай') < header.index('Изключи')
+    assert header.index('Изключи') < header.index('Нова парола')
+    assert 'Изтрий' not in header
+    assert html.index('Опасна зона') > html.index('Статус')
+    assert 'Изтрий потребителя' in html[html.index('Опасна зона'):]
 
 
 def test_users_show_status_as_an_accessible_indicator_only(client, login, make_user):

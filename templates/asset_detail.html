@@ -4,22 +4,16 @@
   <div>
     <span class="eyebrow">Детайли за актив</span>
   </div>
-  <div class="detail-actions asset-header-actions sticky-page-actions">
-    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
+  <div class="detail-actions detail-header-actions sticky-page-actions">
+    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад към машините</a>
+    {% if can_edit_asset or can_edit_asset_notes_and_images %}
+    <a class="btn-link" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Редактирай</a>
+    {% endif %}
     {% if can_move_asset %}
     <a class="btn-link" href="{{ url_for('asset_move', asset_id=asset.id) }}">Премести / заявка</a>
     {% endif %}
     {% if can_add_service_record %}
     <a class="btn-link" href="{{ url_for('asset_service_new', asset_id=asset.id) }}">Добави сервизен запис</a>
-    {% endif %}
-    {% if can_edit_asset or can_edit_asset_notes_and_images %}
-    <a class="btn-link" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Редакция</a>
-    {% endif %}
-    {% if can_delete_asset %}
-    <form method="post" action="{{ url_for('asset_delete', asset_id=asset.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този актив?">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn-secondary danger">Изтрий</button>
-    </form>
     {% endif %}
   </div>
 </div>
@@ -190,4 +184,17 @@
   </div>
   {% endif %}
 </section>
+{% if can_delete_asset %}
+<section class="panel danger-zone" data-danger-zone>
+  <div>
+    <span class="eyebrow">Опасна зона</span>
+    <h2>Изтриване на актива</h2>
+    <p class="muted">Това действие е необратимо и премахва актива от системата.</p>
+  </div>
+  <form method="post" action="{{ url_for('asset_delete', asset_id=asset.id) }}" data-confirm="Изтриване на актив № {{ asset.inventory_number }} – {{ asset.name }}. Действието е необратимо. Продължавате ли?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn-secondary danger">Изтрий актива</button>
+  </form>
+</section>
+{% endif %}
 {% endblock %}

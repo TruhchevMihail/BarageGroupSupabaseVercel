@@ -39,7 +39,7 @@
       <div class="sidebar-content" id="sidebar-content" data-sidebar-content>
 
       <nav class="sidebar-nav">
-        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span>Общ преглед</span></a>
+        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}"><span>Табло</span></a>
         <a href="{{ url_for('assets') }}" class="{% if request.endpoint in ['assets', 'asset_detail', 'asset_edit', 'asset_new'] %}active{% endif %}"><span>Машини и инструменти</span></a>
         <a href="{{ url_for('requests_list') }}" class="{% if request.endpoint == 'requests_list' %}active{% endif %}"><span>Заявки</span></a>
         <a href="{{ url_for('locations_list') }}" class="{% if request.endpoint in ['locations_list', 'location_detail', 'location_new', 'location_edit'] %}active{% endif %}"><span>Обекти и локации</span></a>

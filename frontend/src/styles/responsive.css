@@ -122,7 +122,8 @@
     padding: 44px 24px;
   }
 
-  .asset-header-actions {
+  .asset-header-actions,
+  .detail-header-actions {
     position: static;
     padding: 0;
     margin: 0;

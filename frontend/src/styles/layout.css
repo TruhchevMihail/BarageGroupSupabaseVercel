@@ -3893,7 +3893,8 @@ html[data-theme="dark"] .assets-page .asset-actions-button {
   background: var(--surface-hover);
 }
 
-.asset-header-actions {
+.asset-header-actions,
+.detail-header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -3903,7 +3904,11 @@ html[data-theme="dark"] .assets-page .asset-actions-button {
 .asset-header-actions .btn-link,
 .asset-header-actions .btn-secondary,
 .asset-header-actions .btn-small,
-.asset-header-actions form button {
+.asset-header-actions form button,
+.detail-header-actions .btn-link,
+.detail-header-actions .btn-secondary,
+.detail-header-actions .btn-small,
+.detail-header-actions form button {
   height: 38px;
   padding: 0 14px;
   border-radius: 10px;
@@ -3912,6 +3917,40 @@ html[data-theme="dark"] .assets-page .asset-actions-button {
   justify-content: center;
   line-height: 1;
   box-sizing: border-box;
+}
+
+.danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+  border-color: color-mix(in srgb, var(--red) 42%, var(--line));
+  background: color-mix(in srgb, var(--red) 4%, var(--panel));
+}
+
+.danger-zone h2 {
+  margin: 4px 0 6px;
+}
+
+.danger-zone p {
+  margin: 0;
+}
+
+.danger-zone form {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .danger-zone {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .danger-zone form,
+  .danger-zone button {
+    width: 100%;
+  }
 }
 
 .asset-detail-panel .asset-main-content-grid {

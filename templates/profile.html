@@ -5,7 +5,7 @@
     <span class="eyebrow">Профил</span>
     <h1>{{ user.full_name }}</h1>
   </div>
-  <div class="detail-actions profile-actions">
+  <div class="detail-actions detail-header-actions sticky-page-actions profile-actions">
     {% if show_users_back_link %}
     <a class="btn-secondary" href="{{ url_for('users_manage') }}">Към потребители</a>
     {% endif %}
@@ -13,20 +13,14 @@
     <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
     <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>
     {% else %}
-    {% if can_delete_user %}
-    <form method="post" action="{{ url_for('user_delete', user_id=user.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn-secondary danger">Изтрий</button>
-    </form>
+    {% if can_edit_user %}
+    <a class="btn-link" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
     {% endif %}
     {% if can_toggle_user %}
     <form method="post" action="{{ url_for('user_toggle', user_id=user.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-secondary">{{ 'Изключи' if user.is_active else 'Активирай' }}</button>
     </form>
-    {% endif %}
-    {% if can_edit_user %}
-    <a class="btn-secondary" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
     {% endif %}
     {% if can_reset_user_password %}
     <a class="btn-secondary" href="{{ url_for('user_password', user_id=user.id) }}">Нова парола</a>
@@ -63,4 +57,17 @@
     </div>
   </div>
 </section>
+{% if not is_self and can_delete_user %}
+<section class="panel danger-zone" data-danger-zone>
+  <div>
+    <span class="eyebrow">Опасна зона</span>
+    <h2>Изтриване на потребителя</h2>
+    <p class="muted">Това действие е необратимо и премахва профила от системата.</p>
+  </div>
+  <form method="post" action="{{ url_for('user_delete', user_id=user.id) }}" data-confirm="Изтриване на потребител „{{ user.full_name }}“. Действието е необратимо. Продължавате ли?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn-secondary danger">Изтрий потребителя</button>
+  </form>
+</section>
+{% endif %}
 {% endblock %}

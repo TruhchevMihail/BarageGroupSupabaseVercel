@@ -7,9 +7,10 @@
     <h1>{{ location.name }}</h1>
     <p><span class="chip {{ meta.chip }}">{{ meta.icon }} {{ meta.label }}</span></p>
   </div>
-  <div class="detail-actions">
+  <div class="detail-actions detail-header-actions sticky-page-actions">
+    <a class="btn-secondary" href="{{ url_for('locations_list') }}">Назад към обектите</a>
     {% if can_edit_location %}
-    <a class="btn-secondary" href="{{ url_for('location_edit', location_id=location.id) }}">Редактирай</a>
+    <a class="btn-link" href="{{ url_for('location_edit', location_id=location.id) }}">Редактирай</a>
     {% endif %}
     {% if can_archive_location %}
     <form method="post" action="{{ url_for('location_archive', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
@@ -23,13 +24,6 @@
       <button type="submit" class="btn-secondary">Върни от архив</button>
     </form>
     {% endif %}
-    {% if can_delete_location %}
-    <form method="post" action="{{ url_for('location_delete', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn-secondary danger">Изтрий</button>
-    </form>
-    {% endif %}
-    <a class="btn-link" href="{{ url_for('locations_list') }}">Назад към обектите</a>
   </div>
 </div>
 
@@ -109,4 +103,17 @@
     {% endif %}
   </section>
 </div>
+{% if can_delete_location %}
+<section class="panel danger-zone" data-danger-zone>
+  <div>
+    <span class="eyebrow">Опасна зона</span>
+    <h2>Изтриване на обекта</h2>
+    <p class="muted">Това действие е необратимо и премахва обекта от системата.</p>
+  </div>
+  <form method="post" action="{{ url_for('location_delete', location_id=location.id) }}" data-confirm="Изтриване на обект „{{ location.name }}“. Действието е необратимо. Продължавате ли?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn-secondary danger">Изтрий обекта</button>
+  </form>
+</section>
+{% endif %}
 {% endblock %}
