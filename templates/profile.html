@@ -1,21 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split page-head--compact">
+<div class="page-head split page-head--compact page-head--subpage">
+  <a class="btn-secondary page-back" href="{{ url_for('users_manage') if show_users_back_link else url_for('dashboard') }}">Назад</a>
   <div>
     <span class="eyebrow">Профил</span>
     <h1>{{ user.full_name }}</h1>
   </div>
   <div class="detail-actions detail-header-actions sticky-page-actions profile-actions">
-    {% if show_users_back_link %}
-    <a class="btn-secondary" href="{{ url_for('users_manage') }}">Към потребители</a>
-    {% endif %}
     {% if is_self %}
-    <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
     <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>
+    <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
     {% else %}
-    {% if can_edit_user %}
-    <a class="btn-link" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
-    {% endif %}
     {% if can_toggle_user %}
     <form method="post" action="{{ url_for('user_toggle', user_id=user.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -24,6 +19,9 @@
     {% endif %}
     {% if can_reset_user_password %}
     <a class="btn-secondary" href="{{ url_for('user_password', user_id=user.id) }}">Нова парола</a>
+    {% endif %}
+    {% if can_edit_user %}
+    <a class="btn-link" href="{{ url_for('user_edit', user_id=user.id) }}">Редактирай</a>
     {% endif %}
     {% endif %}
   </div>

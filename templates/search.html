@@ -2,14 +2,14 @@
 {% block content %}
 <div data-ajax-page="search">
 <div data-ajax-container="search">
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a class="btn-secondary page-back" href="{{ url_for('dashboard') }}">Назад</a>
   <div>
     <span class="eyebrow">Търсене</span>
     <h1>Глобални резултати</h1>
     <p class="muted">Показват се само намерените резултати за: <strong>{{ query or '-' }}</strong></p>
   </div>
   <div class="detail-actions">
-    <a class="btn-secondary" href="{{ url_for('dashboard') }}">Табло</a>
     <a class="btn-secondary" href="{{ url_for('assets') }}">Машини</a>
     <a class="btn-primary" href="{{ url_for('locations_list') }}">Обекти</a>
   </div>

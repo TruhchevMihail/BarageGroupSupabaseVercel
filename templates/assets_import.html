@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a class="btn-secondary page-back" href="{{ url_for('assets') }}">Назад</a>
   <div>
     <span class="eyebrow">Машини</span>
     <h1>Импорт CSV/Excel</h1>
   </div>
   <div class="detail-actions">
-    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
     <a class="btn-secondary" href="{{ url_for('assets_import_template_xlsx') }}">Шаблон Excel</a>
     <a class="btn-secondary" href="{{ url_for('assets_import_template_csv') }}">Шаблон CSV</a>
   </div>

@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a class="btn-secondary page-back" href="{{ url_for('assets') }}">Назад</a>
   <div>
     <span class="eyebrow">Детайли за актив</span>
   </div>
   <div class="detail-actions detail-header-actions sticky-page-actions">
-    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад към машините</a>
-    {% if can_edit_asset or can_edit_asset_notes_and_images %}
-    <a class="btn-link" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Редактирай</a>
-    {% endif %}
     {% if can_move_asset %}
     <a class="btn-link" href="{{ url_for('asset_move', asset_id=asset.id) }}">Премести / заявка</a>
     {% endif %}
     {% if can_add_service_record %}
     <a class="btn-link" href="{{ url_for('asset_service_new', asset_id=asset.id) }}">Добави сервизен запис</a>
+    {% endif %}
+    {% if can_edit_asset or can_edit_asset_notes_and_images %}
+    <a class="btn-link" href="{{ url_for('asset_edit', asset_id=asset.id) }}">Редактирай</a>
     {% endif %}
   </div>
 </div>

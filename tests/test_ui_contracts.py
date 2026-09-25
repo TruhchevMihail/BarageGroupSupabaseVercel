@@ -103,7 +103,8 @@ def test_assets_keep_primary_actions_together_and_put_compact_export_in_filters(
     html = client.get('/assets').get_data(as_text=True)
 
     page_actions = html[html.index('<div class="detail-actions">'):html.index('</div>', html.index('<div class="detail-actions">'))]
-    assert page_actions.index('Към таблото') < page_actions.index('Добави актив')
+    assert 'Към таблото' not in page_actions
+    assert 'Добави актив' in page_actions
     assert 'export.xlsx' not in page_actions
     assert 'export.csv' not in page_actions
     assert 'Импорт CSV/Excel' not in page_actions
@@ -192,9 +193,9 @@ def test_asset_detail_orders_daily_actions_and_separates_delete(
     html = client.get(f'/assets/{asset.id}').get_data(as_text=True)
     header = html[:html.index('<section')]
 
-    assert header.index('Назад към машините') < header.index('Редактирай')
-    assert header.index('Редактирай') < header.index('Премести / заявка')
+    assert header.index('page-back') < header.index('Премести / заявка')
     assert header.index('Премести / заявка') < header.index('Добави сервизен запис')
+    assert header.index('Добави сервизен запис') < header.index('Редактирай')
     assert 'Изтрий' not in header
     assert html.index('Опасна зона') > html.index('История')
     assert 'Изтрий актива' in html[html.index('Опасна зона'):]
@@ -235,8 +236,8 @@ def test_location_detail_orders_daily_actions_and_separates_delete(
     html = client.get(f'/locations/{location.id}').get_data(as_text=True)
     header = html[:html.index('<div class="grid-2">')]
 
-    assert header.index('Назад към обектите') < header.index('Редактирай')
-    assert header.index('Редактирай') < header.index('Архивирай')
+    assert header.index('page-back') < header.index('Архивирай')
+    assert header.index('Архивирай') < header.index('Редактирай')
     assert 'Изтрий' not in header
     assert html.index('Опасна зона') > html.index('Машини на обекта')
     assert 'Изтрий обекта' in html[html.index('Опасна зона'):]
@@ -289,9 +290,9 @@ def test_user_profile_orders_daily_actions_and_separates_delete(
     html = client.get(f'/users/{user.id}/profile').get_data(as_text=True)
     header = html[:html.index('<section')]
 
-    assert header.index('Към потребители') < header.index('Редактирай')
-    assert header.index('Редактирай') < header.index('Изключи')
+    assert header.index('page-back') < header.index('Изключи')
     assert header.index('Изключи') < header.index('Нова парола')
+    assert header.index('Нова парола') < header.index('Редактирай')
     assert 'Изтрий' not in header
     assert html.index('Опасна зона') > html.index('Статус')
     assert 'Изтрий потребителя' in html[html.index('Опасна зона'):]

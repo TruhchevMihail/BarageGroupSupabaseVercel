@@ -7,7 +7,6 @@
     <h1>Работни обекти и локации</h1>
   </div>
   <div class="detail-actions">
-    {% include '_dashboard_back_button.html' %}
     {% if can_create_location %}
     <a href="{{ url_for('location_new') }}" class="btn-primary">Добави обект</a>
     {% endif %}

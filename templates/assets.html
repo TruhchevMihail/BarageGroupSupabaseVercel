@@ -7,7 +7,6 @@
     <h1>Машини и инструменти</h1>
   </div>
   <div class="detail-actions">
-    {% include '_dashboard_back_button.html' %}
     {% if can_create_asset %}
     <a href="{{ url_for('asset_new') }}" class="btn-primary">Добави актив</a>
     {% endif %}

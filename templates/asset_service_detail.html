@@ -1,20 +1,20 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a class="btn-secondary page-back" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Назад</a>
   <div>
     <span class="eyebrow">Сервизен запис</span>
     <h1>{{ asset.inventory_number }} · {{ asset.name }}</h1>
   </div>
   <div class="detail-actions asset-header-actions sticky-page-actions">
-    <a class="btn-secondary" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Назад към актива</a>
-    {% if can_edit_service_record %}
-    <a class="btn-link" href="{{ url_for('asset_service_edit', asset_id=asset.id, record_id=record.id) }}">Редакция</a>
-    {% endif %}
     {% if can_delete_service_record %}
     <form method="post" action="{{ url_for('asset_service_delete', asset_id=asset.id, record_id=record.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-small danger">Изтрий</button>
     </form>
+    {% endif %}
+    {% if can_edit_service_record %}
+    <a class="btn-link" href="{{ url_for('asset_service_edit', asset_id=asset.id, record_id=record.id) }}">Редактирай</a>
     {% endif %}
   </div>
 </div>

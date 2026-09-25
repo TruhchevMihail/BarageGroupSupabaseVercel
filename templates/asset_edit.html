@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split">
+<div class="page-head split page-head--subpage">
+  <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary page-back">Назад</a>
   <div>
     <span class="eyebrow">Машини и инструменти</span>
     <h1>{{ asset.inventory_number }}</h1>
@@ -14,7 +15,6 @@
       {% endif %}
     </p>
   </div>
-  <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
 </div>
 
 <form method="post" enctype="multipart/form-data" class="form-card wide panel form-sheet asset-form operational-form">
