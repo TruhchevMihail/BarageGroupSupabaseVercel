@@ -60,8 +60,10 @@ def test_assets_use_compact_seven_column_table_without_status_or_serial(
     html = client.get('/assets').get_data(as_text=True)
     assert 'data-density="compact"' in html
     assert 'table-row-action' in html
-    assert 'Виж детайли' in html
-    assert 'title="Детайли">⋯</a>' not in html
+    assert '>Виж детайли</a>' not in html
+    assert 'aria-label="Виж детайли за Телескопичен товарач с много дълго оперативно име"' in html
+    assert 'title="Виж детайли"' in html
+    assert '<span aria-hidden="true">i</span>' in html
     assert 'class="asset-cell-text truncate-cell"' in html
     assert 'title="Телескопичен товарач с много дълго оперативно име"' in html
     for heading in (
@@ -71,9 +73,9 @@ def test_assets_use_compact_seven_column_table_without_status_or_serial(
         'Марка',
         'Модел',
         'Локация',
-        'Действия',
     ):
         assert heading in html
+    assert '<th class="asset-actions-cell" aria-label="Детайли"></th>' in html
     assert 'class="asset-status-cell"' not in html
     assert 'class="asset-serial-cell"' not in html
     assert '<col class="asset-col-status">' not in html

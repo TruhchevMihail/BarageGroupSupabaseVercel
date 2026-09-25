@@ -126,7 +126,7 @@
         <th class="asset-brand-cell"><a class="table-sort" data-sort-key="brand" href="{{ current_query_url('assets', sort='brand', direction=brand_direction, page=1) }}" data-ajax-link>Марка <span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-model-cell"><a class="table-sort" data-sort-key="model" href="{{ current_query_url('assets', sort='model', direction=model_direction, page=1) }}" data-ajax-link>Модел <span class="sort-arrow" aria-hidden="true"></span></a></th>
         <th class="asset-location-cell">Локация</th>
-        <th class="asset-actions-cell">Действия</th>
+        <th class="asset-actions-cell" aria-label="Детайли"></th>
       </tr>
     </thead>
     <tbody>
@@ -167,9 +167,9 @@
         -
         {% endif %}
       </td>
-      <td class="asset-actions-cell actions-cell" data-label="Действия">
+      <td class="asset-actions-cell actions-cell" data-label="Детайли">
         <div class="inline-actions">
-          <a class="btn-secondary btn-small table-row-action asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Виж детайли</a>
+          <a class="btn-secondary btn-small table-row-action asset-actions-button" href="{{ url_for('asset_detail', asset_id=asset.id) }}" aria-label="Виж детайли за {{ asset.name }}" title="Виж детайли"><span aria-hidden="true">i</span></a>
         </div>
       </td>
     </tr>
