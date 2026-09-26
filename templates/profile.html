@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split page-head--compact page-head--subpage">
-  <a class="btn-secondary page-back" href="{{ url_for('users_manage') if show_users_back_link else url_for('dashboard') }}">Назад</a>
+<div class="page-head split page-head--compact">
   <div>
     <span class="eyebrow">Профил</span>
     <h1>{{ user.full_name }}</h1>
   </div>
   <div class="detail-actions detail-header-actions sticky-page-actions profile-actions">
+    <a class="btn-secondary" href="{{ url_for('users_manage') if show_users_back_link else url_for('dashboard') }}">Назад</a>
     {% if is_self %}
     <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>
     <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>

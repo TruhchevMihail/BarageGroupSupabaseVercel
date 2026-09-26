@@ -1,14 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split page-head--subpage">
-  <a class="btn-secondary page-back" href="{{ url_for('locations_list') }}">Назад</a>
+<div class="page-head split">
   <div>
     <span class="eyebrow">Детайли за обект</span>
     {% set meta = location_meta.get(location.type, {'label': location.type, 'icon': '📍', 'chip': 'chip-neutral'}) %}
     <h1>{{ location.name }}</h1>
-    <p><span class="chip {{ meta.chip }}">{{ meta.icon }} {{ meta.label }}</span></p>
   </div>
   <div class="detail-actions detail-header-actions sticky-page-actions">
+    <a class="btn-secondary" href="{{ url_for('locations_list') }}">Назад</a>
     {% if can_archive_location %}
     <form method="post" action="{{ url_for('location_archive', location_id=location.id) }}" data-confirm="Сигурни ли сте, че искате да продължите?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -46,10 +45,7 @@
       {% endif %}
       <div><dt>Статус</dt><dd>{{ 'Активен' if location.is_active else 'Неактивен' }}</dd></div>
     </dl>
-  </section>
-
-  <section class="panel">
-    <div class="section-head">
+    <div class="section-head spacer">
       <h2>Екип</h2>
       <span class="chip chip-neutral">{{ team_count }} човека</span>
     </div>
@@ -64,8 +60,10 @@
     {% else %}
     <p class="muted">Няма добавен екип.</p>
     {% endif %}
+  </section>
 
-    <div class="section-head spacer">
+  <section class="panel">
+    <div class="section-head">
       <h2>Машини на обекта</h2>
       <span class="chip chip-neutral">{{ pagination.total }} машини</span>
     </div>

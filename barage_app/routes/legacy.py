@@ -1,6 +1,8 @@
 from functools import wraps
 from datetime import date, datetime, timezone
 import hmac
+import hashlib
+import ipaddress
 import json
 import os
 import re
@@ -10,7 +12,7 @@ from uuid import uuid4
 from urllib.parse import quote, unquote, urlsplit
 from zoneinfo import ZoneInfo
 
-from flask import Response, abort, current_app as app, flash, g, has_app_context, jsonify, redirect, render_template, request, session, url_for
+from flask import Response, abort, current_app as app, flash, g, has_app_context, jsonify, make_response, redirect, render_template, request, session, url_for
 from sqlalchemy import Integer, and_, case, cast, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
@@ -37,8 +39,10 @@ from barage_app.config import (
     LOGIN_RATE_LIMIT,
     MAX_ASSET_IMAGES,
     MAX_IMAGE_UPLOAD_SIZE,
+    MAX_IMAGE_PIXELS,
     MAX_REQUEST_SIZE,
     RATE_LIMIT_BUCKETS,
+    RATE_LIMIT_LOCK,
     SERVICE_INVOICE_MAP,
     STATIC_ROOT,
     SENSITIVE_RATE_LIMIT,
@@ -49,6 +53,8 @@ from barage_app.config import (
     UNSAFE_HTTP_METHODS,
     UPLOAD_FOLDER,
     TRUST_PROXY_HEADERS,
+    TRAFFIC_RATE_LIMIT,
+    WRITE_RATE_LIMIT,
     VERCEL_ENVIRONMENT,
 )
 from barage_app.constants import *  # noqa: F403
@@ -335,7 +341,11 @@ def validate_image_upload(uploaded_file, *, max_size_bytes=MAX_IMAGE_UPLOAD_SIZE
     if Image is not None:
         try:
             image = Image.open(uploaded_file.stream)
+            if image.width * image.height > MAX_IMAGE_PIXELS:
+                raise ValueError('Снимката е с твърде висока резолюция.')
             image.verify()
+        except ValueError:
+            raise
         except Exception as exc:
             raise ValueError('Файлът не е валидно изображение.') from exc
         finally:
@@ -523,39 +533,57 @@ def delete_upload_if_unreferenced(file_url, excluding_asset_image_ids=None, excl
 
 def get_client_ip():
     if TRUST_PROXY_HEADERS:
-        forwarded_for = (
-            request.headers.get('X-Vercel-Forwarded-For', '')
-            or request.headers.get('X-Forwarded-For', '')
-        )
+        forwarded_for = request.headers.get('X-Forwarded-For', '')
         if forwarded_for:
-            return forwarded_for.split(',')[0].strip()
-    return request.remote_addr or 'unknown'
+            candidate = forwarded_for.split(',')[0].strip()
+            try:
+                return str(ipaddress.ip_address(candidate))
+            except ValueError:
+                pass
+    candidate = request.remote_addr or 'unknown'
+    try:
+        return str(ipaddress.ip_address(candidate))
+    except ValueError:
+        return 'unknown'
 
 
 def rate_limit_key(scope):
+    if scope in {'traffic', 'write', 'login'}:
+        return f'{scope}:{get_client_ip()}'
     user_id = getattr(getattr(g, 'user', None), 'id', None)
     return f'{scope}:{request.endpoint}:{get_client_ip()}:{user_id or "anon"}'
 
 
 def is_rate_limited(scope, limit, window_seconds):
-    now = time.time()
-    bucket = RATE_LIMIT_BUCKETS[rate_limit_key(scope)]
+    now = time.monotonic()
+    key = rate_limit_key(scope)
     cutoff = now - window_seconds
-    while bucket and bucket[0] <= cutoff:
-        bucket.pop(0)
-    if len(bucket) >= limit:
-        return True
-    bucket.append(now)
-    return False
+    with RATE_LIMIT_LOCK:
+        bucket = RATE_LIMIT_BUCKETS.get(key)
+        if bucket is None:
+            max_keys = max(1, app.config['MAX_RATE_LIMIT_KEYS'])
+            if len(RATE_LIMIT_BUCKETS) >= max_keys:
+                # Bound memory even when an attacker rotates source addresses.
+                RATE_LIMIT_BUCKETS.popitem(last=False)
+            bucket = []
+            RATE_LIMIT_BUCKETS[key] = bucket
+        else:
+            RATE_LIMIT_BUCKETS.move_to_end(key)
+        while bucket and bucket[0] <= cutoff:
+            bucket.pop(0)
+        if len(bucket) >= limit:
+            return True
+        bucket.append(now)
+        return False
 
 
-def rate_limit_response(message):
+def rate_limit_response(message, window_seconds):
     if request.endpoint == 'upload_asset_image' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({'ok': False, 'error': message}), 429
-    if request.method == 'POST':
-        flash(message, 'error')
-        return safe_local_redirect(request.referrer, 'dashboard')
-    abort(429)
+        response = make_response(jsonify({'ok': False, 'error': message}), 429)
+    else:
+        response = make_response(render_template('error.html', error_code=429, title='Твърде много заявки', message=message), 429)
+    response.headers['Retry-After'] = str(window_seconds)
+    return response
 
 
 def enforce_rate_limit(scope, limit, window_seconds, message):
@@ -567,7 +595,7 @@ def enforce_rate_limit(scope, limit, window_seconds, message):
             get_client_ip(),
             getattr(getattr(g, 'user', None), 'id', None),
         )
-        return rate_limit_response(message)
+        return rate_limit_response(message, window_seconds)
     return None
 
 
@@ -576,8 +604,8 @@ def sensitive_rate_limited(view):
     def wrapped(*args, **kwargs):
         blocked = enforce_rate_limit(
             'sensitive',
-            SENSITIVE_RATE_LIMIT[0],
-            SENSITIVE_RATE_LIMIT[1],
+            app.config['SENSITIVE_RATE_LIMIT'][0],
+            app.config['SENSITIVE_RATE_LIMIT'][1],
             'Твърде много чувствителни операции. Изчакайте малко и опитайте отново.',
         )
         if blocked is not None:
@@ -593,6 +621,15 @@ def generate_csrf_token():
         token = secrets.token_urlsafe(32)
         session[CSRF_SESSION_KEY] = token
     return token
+
+
+def session_auth_tag(user):
+    """Tie a signed cookie session to the current password without exposing its hash."""
+    return hmac.new(
+        app.secret_key.encode('utf-8'),
+        user.password_hash.encode('utf-8'),
+        hashlib.sha256,
+    ).hexdigest()
 
 
 def csrf_error_response():
@@ -615,10 +652,28 @@ def validate_csrf_token():
 
 
 @before_request
+def limit_request_traffic():
+    g.csp_nonce = secrets.token_urlsafe(16)
+    if request.endpoint == 'static':
+        return None
+    limit, window = app.config['TRAFFIC_RATE_LIMIT']
+    blocked = enforce_rate_limit('traffic', limit, window, 'Твърде много заявки. Изчакайте малко и опитайте отново.')
+    if blocked is not None:
+        return blocked
+    if request.method in UNSAFE_HTTP_METHODS:
+        limit, window = app.config['WRITE_RATE_LIMIT']
+        return enforce_rate_limit('write', limit, window, 'Твърде много операции. Изчакайте малко и опитайте отново.')
+    return None
+
+
+@before_request
 def load_logged_in_user():
     user_id = session.get('user_id')
     g.user = db.session.get(User, user_id) if user_id else None
-    if g.user is not None and not g.user.is_active:
+    if g.user is not None and (
+        not g.user.is_active
+        or not hmac.compare_digest(session.get('_auth_tag', ''), session_auth_tag(g.user))
+    ):
         session.clear()
         g.user = None
 
@@ -1587,8 +1642,8 @@ def login():
     if request.method == 'POST':
         blocked = enforce_rate_limit(
             'login',
-            LOGIN_RATE_LIMIT[0],
-            LOGIN_RATE_LIMIT[1],
+            app.config['LOGIN_RATE_LIMIT'][0],
+            app.config['LOGIN_RATE_LIMIT'][1],
             'Твърде много опити за вход. Изчакайте няколко минути и опитайте отново.',
         )
         if blocked is not None:
@@ -1600,9 +1655,10 @@ def login():
             session.clear()
             session.permanent = True
             session['user_id'] = user.id
-            app.logger.info('login_success user_id=%s email=%s ip=%s', user.id, user.email, get_client_ip())
+            session['_auth_tag'] = session_auth_tag(user)
+            app.logger.info('login_success user_id=%s ip=%s', user.id, get_client_ip())
             return safe_local_redirect(request.args.get('next', ''), 'dashboard')
-        app.logger.warning('login_failure email=%s ip=%s', email, get_client_ip())
+        app.logger.warning('login_failure ip=%s', get_client_ip())
         flash('Грешен имейл, парола или неактивен потребител.', 'error')
     return render_template('login.html')
 
@@ -1657,6 +1713,7 @@ def profile():
                 return redirect(url_for('profile'))
             g.user.set_password(new_password)
             db.session.commit()
+            session['_auth_tag'] = session_auth_tag(g.user)
             flash('Паролата е обновена.', 'success')
             return redirect(url_for('profile'))
 
@@ -3250,6 +3307,7 @@ def update_user_password(target_user, password, actor_user, *, is_self_change):
     target_user.set_password(password)
     db.session.commit()
     if is_self_change:
+        session['_auth_tag'] = session_auth_tag(target_user)
         app.logger.info('password_change actor_id=%s target_id=%s self_change=true', actor_user.id, target_user.id)
         flash('Паролата е обновена успешно.', 'success')
     else:

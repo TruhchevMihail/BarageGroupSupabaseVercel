@@ -573,11 +573,11 @@ html[data-theme="dark"] .detail-header-actions { background: color-mix(in srgb, 
 }
 
 .assets-page .assets-table col.asset-col-inventory { width: 5%; }
-.assets-page .assets-table col.asset-col-type { width: 31.5%; }
-.assets-page .assets-table col.asset-col-alias { width: 22.5%; }
-.assets-page .assets-table col.asset-col-brand { width: 11.5%; }
-.assets-page .assets-table col.asset-col-model { width: 10%; }
-.assets-page .assets-table col.asset-col-location { width: 14.5%; }
+.assets-page .assets-table col.asset-col-type { width: 28%; }
+.assets-page .assets-table col.asset-col-alias { width: 21%; }
+.assets-page .assets-table col.asset-col-brand { width: 11%; }
+.assets-page .assets-table col.asset-col-model { width: 9.5%; }
+.assets-page .assets-table col.asset-col-location { width: 20.5%; }
 .assets-page .assets-table col.asset-col-actions { width: 5%; }
 
 .assets-page .assets-table th,
@@ -609,7 +609,23 @@ html[data-theme="dark"] .detail-header-actions { background: color-mix(in srgb, 
 .assets-page .asset-cell-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .assets-page .asset-type-cell .asset-cell-text { color: var(--text-strong); font-weight: 800; }
 
-.assets-page .asset-location-chip { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assets-page-table-card .assets-table td > .asset-location-chip {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  vertical-align: middle;
+}
+
+.assets-page-table-card .asset-location-chip-text {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+}
 
 .assets-page .asset-actions-cell {
   width: auto;

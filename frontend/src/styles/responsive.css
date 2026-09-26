@@ -9,13 +9,6 @@
 }
 
 @media (max-width: 1000px) {
-  .page-head.split.page-head--subpage {
-    grid-template-columns: auto minmax(0, 1fr);
-  }
-  .page-head--subpage > .detail-actions {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-  }
   .layout {
     display: block;
   }
@@ -221,19 +214,4 @@
   .assets-page .table-card { overflow-x: clip; }
   .users-page .users-table-wrap,
   .requests-table-wrap { overflow-x: clip; }
-}
-
-@media (max-width: 1000px) {
-  .page-head--subpage > .detail-actions {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-  .page-head--subpage > .detail-actions > *,
-  .page-head--subpage > .detail-actions form,
-  .page-head--subpage > .detail-actions a,
-  .page-head--subpage > .detail-actions button {
-    width: auto;
-    flex: 0 1 auto;
-  }
 }

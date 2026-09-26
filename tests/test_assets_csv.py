@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+from zipfile import ZipFile, ZIP_DEFLATED
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -17,6 +18,17 @@ from barage_app.services.assets_csv import (
     parse_asset_csv_upload,
     parse_asset_import_upload,
 )
+
+
+def test_xlsx_import_rejects_excessive_uncompressed_size():
+    payload = io.BytesIO()
+    with ZipFile(payload, 'w', compression=ZIP_DEFLATED) as archive:
+        archive.writestr('xl/worksheets/sheet1.xml', b'x' * (26 * 1024 * 1024))
+    upload = FileStorage(stream=io.BytesIO(payload.getvalue()), filename='large.xlsx')
+
+    preview = parse_asset_import_upload(upload)
+
+    assert any('твърде много данни' in error for error in preview.errors)
 
 
 def _asset(inventory_number, *, name='Машина', brand='Brand', model='Model', location=None, status=None):

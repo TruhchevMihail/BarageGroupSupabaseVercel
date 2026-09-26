@@ -109,6 +109,7 @@ def login(client):
     def _login(user):
         with client.session_transaction() as session:
             session['user_id'] = user.id
+            session['_auth_tag'] = app_module.session_auth_tag(user)
             session['_csrf_token'] = 'test-csrf-token'
     return _login
 
