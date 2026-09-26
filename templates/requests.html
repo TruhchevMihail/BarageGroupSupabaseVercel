@@ -55,7 +55,7 @@
       {% endif %}
     </td>
     <td data-label="Статус"><span class="chip {{ request_status.chip }}">{{ request_status.label }}</span></td>
-    <td data-label="Заявил"><a class="user-link" href="{{ url_for('user_profile', user_id=item.requested_by.id) }}">{{ item.requested_by.full_name }}</a></td>
+    <td data-label="Заявил">{% if can_view_user_profile(item.requested_by) %}<a class="user-link" href="{{ url_for('user_profile', user_id=item.requested_by.id) }}">{{ item.requested_by.full_name }}</a>{% else %}{{ item.requested_by.full_name }}{% endif %}</td>
     <td data-label="Дата">{{ item.created_at|dt }}</td>
     {% if can_process_requests %}
     <td class="actions-cell" data-label="Действие">

@@ -1,4 +1,4 @@
-from functools import wraps
+from functools import lru_cache, wraps
 from datetime import date, datetime, timezone
 import hmac
 import hashlib
@@ -17,6 +17,7 @@ from sqlalchemy import Integer, and_, case, cast, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload, selectinload
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import RequestEntityTooLarge
 
 try:
@@ -632,6 +633,11 @@ def session_auth_tag(user):
     ).hexdigest()
 
 
+@lru_cache(maxsize=1)
+def dummy_password_hash():
+    return generate_password_hash(secrets.token_urlsafe(32))
+
+
 def csrf_error_response():
     if request.endpoint == 'upload_asset_image' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return jsonify({'ok': False, 'error': 'Невалиден CSRF token.'}), 400
@@ -706,6 +712,7 @@ def inject_helpers():
         'user_locations': user_locations,
         'role_label': lambda role: ROLE_LABELS.get(role, role),
         'can_view_users': can_view_users(g.user) if g.user else False,
+        'can_view_user_profile': lambda target: can_view_user(g.user, target),
         'can_create_asset': can_create_asset(g.user) if g.user else False,
         'can_create_location': can_manage_location(g.user) if g.user else False,
         'can_create_user': can_create_user(g.user) if g.user else False,
@@ -765,7 +772,7 @@ def roles_required(*roles):
 
 
 def can_view_users(user):
-    return bool(user)
+    return bool(user and user.role in {ROLE_SUPERUSER, ROLE_USER_PLUS})
 
 
 def can_create_user(user):
@@ -817,7 +824,11 @@ def asset_in_user_scope(user, asset):
 
 
 def can_view_user(current_user, target_user):
-    return bool(current_user and target_user)
+    if not current_user or not target_user:
+        return False
+    if current_user.role == ROLE_SUPERUSER or current_user.id == target_user.id:
+        return True
+    return current_user.role == ROLE_USER_PLUS and target_user.manager_id == current_user.id
 
 
 def can_manage_user(current_user, target_user):
@@ -978,7 +989,11 @@ def can_delete_service_record(current_user, record):
 def visible_users_query(current_user, query):
     if not current_user:
         return query.filter(User.id == -1)
-    return query
+    if current_user.role == ROLE_SUPERUSER:
+        return query
+    if current_user.role == ROLE_USER_PLUS:
+        return query.filter(or_(User.id == current_user.id, User.manager_id == current_user.id))
+    return query.filter(User.id == current_user.id)
 
 
 def apply_asset_scope(query, current_user):
@@ -1651,7 +1666,8 @@ def login():
         email = request.form['email'].strip().lower()
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
-        if user and user.check_password(password) and user.is_active:
+        password_valid = user.check_password(password) if user else check_password_hash(dummy_password_hash(), password)
+        if user and password_valid and user.is_active:
             session.clear()
             session.permanent = True
             session['user_id'] = user.id
@@ -1689,6 +1705,7 @@ def profile():
                 db.session.rollback()
                 flash('Вече има потребител с този имейл.', 'error')
                 return redirect(url_for('profile'))
+            app.logger.info('user_profile_update actor_id=%s target_id=%s', g.user.id, g.user.id)
             flash('Профилът е обновен.', 'success')
             return redirect(url_for('profile'))
 
@@ -1714,6 +1731,7 @@ def profile():
             g.user.set_password(new_password)
             db.session.commit()
             session['_auth_tag'] = session_auth_tag(g.user)
+            app.logger.info('password_change actor_id=%s target_id=%s self_change=true', g.user.id, g.user.id)
             flash('Паролата е обновена.', 'success')
             return redirect(url_for('profile'))
 
@@ -1724,6 +1742,7 @@ def profile():
                 return redirect(url_for('profile'))
             g.user.phone_number = phone_number
             db.session.commit()
+            app.logger.info('user_profile_update actor_id=%s target_id=%s', g.user.id, g.user.id)
             flash('Телефонният номер е обновен.', 'success')
             return redirect(url_for('profile'))
 
@@ -1783,6 +1802,7 @@ def profile_edit():
             return redirect(url_for('profile_edit'))
 
         flash('Профилът е обновен.', 'success')
+        app.logger.info('user_profile_update actor_id=%s target_id=%s', g.user.id, g.user.id)
         return redirect(url_for('profile'))
 
     locations = Location.query.filter(Location.type.in_([LOC_SITE, LOC_WAREHOUSE]), Location.is_active.is_(True)).order_by(Location.name).all()
@@ -1796,6 +1816,37 @@ def profile_edit():
     )
 
 
+@route('/privacy')
+@login_required
+def privacy_notice():
+    return render_template('privacy.html')
+
+
+@route('/profile/data.json')
+@login_required
+@sensitive_rate_limited
+def profile_data_export():
+    """Export the employee's account data; other records require a reviewed access request."""
+    user = g.user
+    payload = {
+        'id': user.id,
+        'full_name': user.full_name,
+        'email': user.email,
+        'phone_number': user.phone_number,
+        'role': user.role,
+        'is_active': user.is_active,
+        'assigned_location': user.assigned_location.name if user.assigned_location else None,
+        'managed_locations': [location.name for location in user.managed_locations],
+        'manager_id': user.manager_id,
+    }
+    app.logger.info('user_data_export actor_id=%s target_id=%s', user.id, user.id)
+    return Response(
+        json.dumps(payload, ensure_ascii=False, indent=2),
+        mimetype='application/json',
+        headers={'Content-Disposition': 'attachment; filename="my-profile-data.json"'},
+    )
+
+
 @route('/users/<int:user_id>/profile')
 @login_required
 def user_profile(user_id):
@@ -1806,6 +1857,7 @@ def user_profile(user_id):
     )
     if not can_view_user(g.user, target):
         abort(403)
+    app.logger.info('user_profile_read actor_id=%s target_id=%s', g.user.id, target.id)
     return render_template(
         'profile.html',
         user=target,
@@ -1815,7 +1867,7 @@ def user_profile(user_id):
         can_toggle_user=can_toggle_user(g.user, target),
         can_delete_user=can_delete_user(g.user, target),
         can_reset_user_password=g.user.role == ROLE_SUPERUSER,
-        show_users_back_link=True,
+        show_users_back_link=can_view_users(g.user),
     )
 
 
@@ -2512,6 +2564,9 @@ def admin_panel():
 @route('/users', methods=['GET'])
 @login_required
 def users_manage():
+    if not can_view_users(g.user):
+        abort(403)
+    app.logger.info('user_directory_read actor_id=%s', g.user.id)
     q = request.args.get('q', '').strip()
     role_filter = request.args.get('role', '').strip()
     status_filter = request.args.get('status', '').strip()
@@ -2643,6 +2698,7 @@ def users_new():
             flash('Вече има потребител с този имейл.', 'error')
             return redirect(url_for('users_new'))
         flash('Потребителят е създаден.', 'success')
+        app.logger.info('user_created actor_id=%s target_id=%s role=%s', g.user.id, user.id, user.role)
         return redirect(url_for('users_manage'))
 
     locations = assignable_locations_for_user(g.user)
@@ -2685,6 +2741,7 @@ def user_edit(user_id):
         return redirect(url_for('users_manage'))
 
     if request.method == 'POST':
+        previous_role = target.role
         payload = validate_user_payload(request.form, creating=False, target=target)
         if payload is None:
             return redirect(url_for('user_edit', user_id=target.id))
@@ -2735,6 +2792,9 @@ def user_edit(user_id):
             return redirect(url_for('user_edit', user_id=target.id))
 
         flash('Профилът е обновен.', 'success')
+        app.logger.info('user_profile_update actor_id=%s target_id=%s', g.user.id, target.id)
+        if target.role != previous_role:
+            app.logger.warning('user_role_change actor_id=%s target_id=%s old_role=%s new_role=%s', g.user.id, target.id, previous_role, target.role)
         return redirect(url_for('users_manage'))
 
     locations = assignable_locations_for_user(g.user)
@@ -2762,11 +2822,35 @@ def user_delete(user_id):
     target.assigned_location = None
     target.manager = None
     clear_user_links(target.id)
-    app.logger.info('user_delete actor_id=%s target_id=%s email=%s', g.user.id, target.id, target.email)
+    app.logger.info('user_delete actor_id=%s target_id=%s', g.user.id, target.id)
     db.session.delete(target)
     db.session.commit()
     flash('Потребителят е изтрит.', 'success')
     return redirect(url_for('users_manage'))
+
+
+@route('/users/<int:user_id>/anonymize', methods=['POST'])
+@login_required
+@roles_required(ROLE_SUPERUSER)
+@sensitive_rate_limited
+def user_anonymize(user_id):
+    target = User.query.get_or_404(user_id)
+    if target.id == g.user.id or target.is_active or target.email == f'former-{target.id}@invalid.local':
+        abort(400)
+    target.managed_locations = []
+    target.assigned_location = None
+    target.manager = None
+    User.query.filter_by(manager_id=target.id).update({'manager_id': None}, synchronize_session=False)
+    Location.query.filter_by(technical_lead_id=target.id).update({'technical_lead_id': None}, synchronize_session=False)
+    Asset.query.filter_by(responsible_user_id=target.id).update({'responsible_user_id': None}, synchronize_session=False)
+    target.full_name = f'Бивш служител #{target.id}'
+    target.email = f'former-{target.id}@invalid.local'
+    target.phone_number = None
+    target.set_password(secrets.token_urlsafe(48))
+    db.session.commit()
+    app.logger.info('user_profile_deidentified actor_id=%s target_id=%s', g.user.id, target.id)
+    flash('Контактните данни са премахнати от профила. Проверете и свободния текст в историята.', 'success')
+    return redirect(url_for('user_profile', user_id=target.id))
 
 
 @route('/locations', methods=['GET'])
@@ -3059,6 +3143,8 @@ def global_search():
     assets = asset_query.limit(25).all()
     locations = location_query.limit(25).all()
     users = user_query.limit(25).all()
+    if users:
+        app.logger.info('user_search_read actor_id=%s result_count=%s', g.user.id, len(users))
     results = {'assets': assets, 'locations': locations, 'users': users}
     result_counts = {
         'assets': len(assets),

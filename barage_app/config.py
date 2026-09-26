@@ -122,6 +122,8 @@ def configure_app(flask_app):
     flask_app.config['SESSION_COOKIE_HTTPONLY'] = True
     flask_app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     flask_app.config['SESSION_COOKIE_SECURE'] = VERCEL_ENVIRONMENT or os.environ.get('APP_ENV') == 'production'
+    if flask_app.config['SESSION_COOKIE_SECURE']:
+        flask_app.config['DEBUG'] = False
     flask_app.config['PREFERRED_URL_SCHEME'] = os.environ.get('PREFERRED_URL_SCHEME', 'http')
     server_name = os.environ.get('SERVER_NAME')
     if server_name:

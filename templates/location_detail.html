@@ -40,7 +40,7 @@
       <div><dt>GPS</dt><dd>{% if location.gps_location %}<span class="detail-inline-actions"><a class="location-gps-link" href="{{ location.gps_location if location.gps_location.startswith('http') else 'https://www.google.com/maps?q=' ~ location.gps_location }}" target="_blank" rel="noopener">{{ location.gps_location }}</a><span class="copyable-value copyable-inline-value" data-copyable data-copy-value="{{ location.gps_location }}" title="Клик за копиране">копирай</span></span>{% else %}-{% endif %}</dd></div>
       <div><dt>Куриер</dt><dd class="copyable-value" data-copyable data-copy-value="{{ location.courier_locations or '' }}" data-copy-skip-empty="true" title="Клик за копиране">{{ location.courier_locations or '-' }}</dd></div>
       {% if location.type not in location_no_lead_types %}
-      <div><dt>Ръководител</dt><dd>{% if location.technical_lead %}<span class="detail-inline-actions"><a class="user-link" href="{{ url_for('user_profile', user_id=location.technical_lead.id) }}">{{ location.technical_lead.full_name }}</a><span class="copyable-value copyable-inline-value" data-copyable data-copy-value="{{ location.technical_lead.full_name }}" title="Клик за копиране">копирай</span></span>{% else %}Без ръководител{% endif %}</dd></div>
+      <div><dt>Ръководител</dt><dd>{% if location.technical_lead %}<span class="detail-inline-actions">{% if can_view_user_profile(location.technical_lead) %}<a class="user-link" href="{{ url_for('user_profile', user_id=location.technical_lead.id) }}">{{ location.technical_lead.full_name }}</a>{% else %}{{ location.technical_lead.full_name }}{% endif %}<span class="copyable-value copyable-inline-value" data-copyable data-copy-value="{{ location.technical_lead.full_name }}" title="Клик за копиране">копирай</span></span>{% else %}Без ръководител{% endif %}</dd></div>
       {% endif %}
       {% endif %}
       <div><dt>Статус</dt><dd>{{ 'Активен' if location.is_active else 'Неактивен' }}</dd></div>
@@ -54,7 +54,7 @@
     {% elif team_users %}
     <div class="chip-stack">
       {% for tech in team_users %}
-      <a class="mini-chip chip-link" href="{{ url_for('user_profile', user_id=tech.id) }}">{{ tech.full_name }} · {{ tech.role|role_label }}</a>
+      {% if can_view_user_profile(tech) %}<a class="mini-chip chip-link" href="{{ url_for('user_profile', user_id=tech.id) }}">{{ tech.full_name }} · {{ tech.role|role_label }}</a>{% else %}<span class="mini-chip">{{ tech.full_name }} · {{ tech.role|role_label }}</span>{% endif %}
       {% endfor %}
     </div>
     {% else %}

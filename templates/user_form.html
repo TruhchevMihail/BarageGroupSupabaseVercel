@@ -12,7 +12,7 @@
 
 <form method="post" class="panel form-sheet user-edit-form operational-form form-section" action="{{ form_action }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <p class="form-hint" style="margin-top:-8px; margin-bottom:18px;">Полетата с * са задължителни.</p>
+  <p class="form-hint user-form-hint">Полетата с * са задължителни.</p>
 
   <div class="uef-grid">
     <!-- Лява колона: лични данни + роля -->
@@ -53,7 +53,7 @@
         {% endif %}
 
         {% if not is_new and editable_roles %}
-        <label class="checkbox-row" style="margin-top:4px;">
+        <label class="checkbox-row user-active-checkbox">
           <input type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %}>
           <span>Активен</span>
         </label>

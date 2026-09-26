@@ -64,7 +64,7 @@ def create_app(test_config=None):
             'Content-Security-Policy',
             "default-src 'self'; "
             "img-src 'self' data: https:; "
-            "style-src 'self' 'unsafe-inline'; "
+            "style-src 'self'; "
             f"script-src 'self' 'nonce-{g.csp_nonce}'; "
             "font-src 'self' data:; "
             "connect-src 'self'; "

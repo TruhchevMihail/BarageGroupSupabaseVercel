@@ -270,3 +270,6 @@ html[data-theme="dark"] .note-box {
   color: var(--text);
   border-color: var(--line);
 }
+.profile-edit-rule { margin-top: 0; margin-bottom: 22px; }
+.user-form-hint { margin-top: -8px; margin-bottom: 18px; }
+.user-active-checkbox { margin-top: 4px; }

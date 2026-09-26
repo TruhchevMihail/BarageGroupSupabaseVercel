@@ -184,14 +184,24 @@ def test_all_roles_can_view_users_profiles_and_exports(client, login, role_world
     assert role_world['request'].asset.inventory_number in requests_html
 
     users_response = client.get('/users')
-    users_html = users_response.get_data(as_text=True)
-    assert users_response.status_code == 200
-    assert 'href="/users"' in users_html
-    assert 'href="/admin"' not in users_html
+    if role == app_module.ROLE_SUPERUSER:
+        expected = (*role_world['users'].values(), role_world['inactive'])
+    elif role == app_module.ROLE_USER_PLUS:
+        expected = (actor, role_world['users'][app_module.ROLE_USER])
+    else:
+        expected = ()
+    assert users_response.status_code == (200 if expected else 403)
+    if expected:
+        users_html = users_response.get_data(as_text=True)
+        assert 'href="/users"' in users_html
+        for target in expected:
+            assert target.full_name in users_html
+        for target in (*role_world['users'].values(), role_world['inactive']):
+            if target not in expected:
+                assert target.email not in users_html
     for target in (*role_world['users'].values(), role_world['inactive']):
-        assert target.full_name in users_html
         profile_response = client.get(f'/users/{target.id}/profile')
-        assert profile_response.status_code == 200
+        assert profile_response.status_code == (200 if target in expected or target.id == actor.id else 403)
 
     csv_response = client.get('/assets/export.csv')
     xlsx_response = client.get('/assets/export.xlsx')
@@ -204,10 +214,10 @@ def test_all_roles_can_view_users_profiles_and_exports(client, login, role_world
 @pytest.mark.parametrize('role', ALL_ROLES)
 def test_visible_internal_link_crawl_has_no_403_404_or_500(client, login, role_world, role):
     login(role_world['users'][role])
-    visited, failures = crawl_visible_internal_links(
-        client,
-        ('/dashboard', '/assets', '/locations', '/requests', '/users', '/search?q=Тест'),
-    )
+    roots = ('/dashboard', '/assets', '/locations', '/requests', '/search?q=Тест')
+    if role in {app_module.ROLE_SUPERUSER, app_module.ROLE_USER_PLUS}:
+        roots += ('/users',)
+    visited, failures = crawl_visible_internal_links(client, roots)
 
     assert len(visited) < 300, 'Visible-link crawl exceeded its safety limit.'
     assert failures == []
@@ -279,19 +289,19 @@ def test_project_lead_can_edit_only_subordinate_without_password_reset_link(
 
 
 def test_user_search_and_user_only_global_search_are_server_rendered(client, login, role_world):
-    viewer = role_world['users'][app_module.ROLE_WAREHOUSE_WORKER]
-    target = role_world['users'][app_module.ROLE_USER_PLUS]
+    viewer = role_world['users'][app_module.ROLE_USER_PLUS]
+    target = role_world['users'][app_module.ROLE_USER]
     login(viewer)
 
-    users_response = client.get('/users?q=Проектов&role=user_plus&status=active&sort=name&direction=asc')
+    users_response = client.get('/users?q=Технически&role=user&status=active&sort=name&direction=asc')
     users_html = users_response.get_data(as_text=True)
     assert users_response.status_code == 200
     assert target.full_name in users_html
     assert role_world['users'][app_module.ROLE_SUPERUSER].full_name not in users_html
     assert 'name="q"' in users_html
-    assert 'value="Проектов"' in users_html
+    assert 'value="Технически"' in users_html
 
-    search_response = client.get('/search?q=lead.preview@example.test')
+    search_response = client.get('/search?q=tech.preview@example.test')
     search_html = search_response.get_data(as_text=True)
     assert search_response.status_code == 200
     assert '<h2>Потребители</h2>' in search_html

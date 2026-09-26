@@ -5,7 +5,7 @@ from flask import g
 from werkzeug.datastructures import FileStorage
 
 
-def test_all_authenticated_roles_can_view_user_list_and_active_profiles(client, db, make_user, login):
+def test_employee_profiles_are_limited_to_self_and_managed_team(client, db, make_user, login):
     admin = make_user(
         full_name='Visible Admin',
         email='visible-admin@example.com',
@@ -28,22 +28,65 @@ def test_all_authenticated_roles_can_view_user_list_and_active_profiles(client, 
         is_active=False,
     )
 
-    for viewer in (project_manager, technician):
-        login(viewer)
-        response = client.get('/users')
-        html = response.get_data(as_text=True)
-        assert response.status_code == 200
-        assert admin.full_name in html
-        assert project_manager.full_name in html
-        assert technician.full_name in html
-        assert inactive_user.full_name in html
+    technician.manager_id = project_manager.id
+    db.session.commit()
+    login(technician)
+    assert client.get('/users').status_code == 403
+    assert client.get(f'/users/{admin.id}/profile').status_code == 403
+    assert client.get(f'/users/{technician.id}/profile').status_code == 200
+    assert '<h2>Потребители</h2>' not in client.get('/search?q=visible-admin@example.com').get_data(as_text=True)
 
-        profile_response = client.get(f'/users/{admin.id}/profile')
-        assert profile_response.status_code == 200
-        assert admin.full_name in profile_response.get_data(as_text=True)
+    login(project_manager)
+    html = client.get('/users').get_data(as_text=True)
+    assert technician.email in html
+    assert admin.email not in html
+    assert inactive_user.email not in html
+    assert client.get(f'/users/{technician.id}/profile').status_code == 200
+    assert client.get(f'/users/{inactive_user.id}/profile').status_code == 403
 
-        inactive_profile_response = client.get(f'/users/{inactive_user.id}/profile')
-        assert inactive_profile_response.status_code == 200
+
+def test_self_data_export_and_privacy_notice_do_not_expose_password(client, make_user, login):
+    user = make_user(full_name='Служител Пример', email='own@example.test', role=app_module.ROLE_USER)
+    login(user)
+    assert client.get('/privacy').status_code == 200
+    response = client.get('/profile/data.json')
+    assert response.status_code == 200
+    assert response.json['email'] == 'own@example.test'
+    assert response.json['id'] == user.id
+    assert 'password' not in response.get_data(as_text=True)
+    assert response.headers['Cache-Control'] == 'no-store, private'
+    assert 'attachment' in response.headers['Content-Disposition']
+
+
+def test_only_admin_can_anonymize_inactive_user_without_erasing_history(
+    client, db, make_user, login, default_csrf,
+):
+    admin = make_user(full_name='Администратор', email='admin@example.test', role=app_module.ROLE_SUPERUSER)
+    worker = make_user(full_name='Служител', email='worker@example.test', role=app_module.ROLE_USER)
+    other = make_user(full_name='Друг служител', email='other@example.test', role=app_module.ROLE_USER)
+    asset = app_module.Asset(inventory_number='GDPR-1', name='Машина', brand='Марка', model='Модел')
+    db.session.add(asset)
+    db.session.flush()
+    history = app_module.AssetHistory(asset_id=asset.id, action='move', details='Служебно движение', performed_by_id=worker.id)
+    db.session.add(history)
+    db.session.commit()
+    login(other)
+    assert client.post(f'/users/{worker.id}/anonymize', data={'csrf_token': default_csrf}).status_code == 302
+    login(admin)
+    assert client.post(f'/users/{worker.id}/anonymize', data={'csrf_token': default_csrf}).status_code == 400
+    worker.is_active = False
+    db.session.commit()
+    response = client.post(f'/users/{worker.id}/anonymize', data={'csrf_token': default_csrf})
+    assert response.status_code == 302
+    db.session.refresh(worker)
+    assert worker.email == f'former-{worker.id}@invalid.local'
+    assert worker.full_name == f'Бивш служител #{worker.id}'
+    assert worker.phone_number is None
+    assert worker.check_password('password123') is False
+    assert worker.is_active is False
+    db.session.refresh(history)
+    assert history.performed_by_id == worker.id
+    assert client.post(f'/users/{worker.id}/anonymize', data={'csrf_token': default_csrf}).status_code == 400
 
 
 def test_user_visibility_does_not_grant_admin_actions(client, db, make_user, login, default_csrf):
@@ -101,6 +144,8 @@ def test_security_headers_are_present(client):
     assert "frame-ancestors 'none'" in response.headers['Content-Security-Policy']
     assert "script-src 'self' 'nonce-" in response.headers['Content-Security-Policy']
     assert "'unsafe-inline'" not in response.headers['Content-Security-Policy'].split('script-src')[1].split(';')[0]
+    assert "style-src 'self';" in response.headers['Content-Security-Policy']
+    assert 'style=' not in response.get_data(as_text=True)
     assert response.headers['Cache-Control'] == 'no-store, private'
 
 

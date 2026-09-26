@@ -9,6 +9,7 @@
     <a class="btn-secondary" href="{{ url_for('users_manage') if show_users_back_link else url_for('dashboard') }}">Назад</a>
     {% if is_self %}
     <a class="btn-secondary" href="{{ url_for('profile_password') }}">Нова парола</a>
+    <a class="btn-secondary" href="{{ url_for('profile_data_export') }}">Моите данни</a>
     <a class="btn-secondary" href="{{ url_for('profile_edit') }}">Редактирай</a>
     {% else %}
     {% if can_toggle_user %}
@@ -66,6 +67,12 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn-secondary danger">Изтрий потребителя</button>
   </form>
+  {% if not user.is_active and not user.email.startswith('former-') %}
+  <form method="post" action="{{ url_for('user_anonymize', user_id=user.id) }}" data-confirm="Премахване на контактните данни от профил „{{ user.full_name }}“. Проверете и свързаните записи. Продължавате ли?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn-secondary danger">Обезличи профила</button>
+  </form>
+  {% endif %}
 </section>
 {% endif %}
 {% endblock %}

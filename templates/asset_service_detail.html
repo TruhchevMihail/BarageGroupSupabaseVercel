@@ -45,7 +45,7 @@
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Кой</div>
-      <div class="asset-detail-value">{% if record.created_by %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}-{% endif %}</div>
+      <div class="asset-detail-value">{% if record.created_by %}{% if can_view_user_profile(record.created_by) %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}{{ record.created_by.full_name }}{% endif %}{% else %}-{% endif %}</div>
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Фактура</div>
