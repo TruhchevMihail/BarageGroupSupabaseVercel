@@ -673,3 +673,57 @@ html[data-theme="dark"] .detail-header-actions { background: color-mix(in srgb, 
     padding: 0;
   }
 }
+
+/* Let the fifteen rendered rows size the desktop columns. Keep the
+   narrower card view above and the server-side sorting/pagination intact. */
+@media (min-width: 761px) {
+  .assets-page .assets-page-table-card,
+  .assets-page .assets-page-table-card .assets-table-scroll {
+    overflow: visible;
+  }
+
+  .assets-page-table-card .assets-table {
+    width: auto;
+    max-width: 100%;
+    table-layout: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .assets-page-table-card .assets-table th,
+  .assets-page-table-card .assets-table td {
+    width: auto;
+    max-width: none;
+  }
+
+  .assets-page-table-card .assets-table :is(th, td).asset-inventory-cell,
+  .assets-page-table-card .assets-table :is(th, td).asset-actions-cell {
+    width: 1%;
+    white-space: nowrap;
+  }
+
+  .assets-page-table-card .assets-table :is(th, td).asset-type-cell { max-width: min(30vw, 300px); }
+  .assets-page-table-card .assets-table :is(th, td).asset-alias-cell { max-width: min(22vw, 220px); }
+  .assets-page-table-card .assets-table :is(th, td).asset-brand-cell { max-width: 150px; }
+  .assets-page-table-card .assets-table :is(th, td).asset-model-cell { max-width: 160px; }
+  .assets-page-table-card .assets-table :is(th, td).asset-location-cell { max-width: min(24vw, 240px); }
+
+  .assets-page-table-card .asset-type-cell .asset-cell-text { max-width: min(30vw, 300px); }
+  .assets-page-table-card .asset-alias-cell .asset-cell-text { max-width: min(22vw, 220px); }
+  .assets-page-table-card .asset-brand-cell .asset-cell-text { max-width: 150px; }
+  .assets-page-table-card .asset-model-cell .asset-cell-text { max-width: 160px; }
+  .assets-page-table-card .asset-location-chip { max-width: min(24vw, 240px); }
+
+  .assets-page-table-card .assets-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--panel);
+    box-shadow: 0 1px 0 var(--line-soft);
+  }
+
+  .assets-page-table-card .assets-table td > .asset-cell-text {
+    max-width: 100%;
+    text-overflow: ellipsis;
+  }
+}
