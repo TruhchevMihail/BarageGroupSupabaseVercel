@@ -3,6 +3,8 @@ import io
 import json
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from itertools import islice
+from zipfile import ZipFile
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Alignment, Font
@@ -23,6 +25,7 @@ from barage_app.services.service_stay import apply_long_service_stay_filter, enr
 
 ASSET_CSV_MAX_BYTES = 1024 * 1024
 ASSET_XLSX_MAX_BYTES = 5 * 1024 * 1024
+ASSET_XLSX_MAX_UNCOMPRESSED_BYTES = 25 * 1024 * 1024
 ASSET_CSV_MAX_ROWS = 1000
 ASSET_CSV_ENCODING = 'utf-8-sig'
 ASSET_CSV_DELIMITER = ';'
@@ -213,15 +216,24 @@ def _normalize_excel_cell(value):
 
 def _prepare_xlsx_rows(raw_bytes):
     try:
-        workbook = load_workbook(io.BytesIO(raw_bytes), read_only=True, data_only=True)
+        with ZipFile(io.BytesIO(raw_bytes)) as archive:
+            if sum(info.file_size for info in archive.infolist()) > ASSET_XLSX_MAX_UNCOMPRESSED_BYTES:
+                return None, 'Excel файлът съдържа твърде много данни.'
+        workbook = load_workbook(io.BytesIO(raw_bytes), read_only=True, data_only=True, keep_links=False)
     except Exception:
         return None, 'Файлът не може да бъде прочетен. Запазете го като Excel (.xlsx) и опитайте отново.'
-
-    worksheet = workbook.worksheets[0] if workbook.worksheets else None
-    if worksheet is None:
-        return None, 'Excel файлът няма работен лист.'
-
-    rows = list(worksheet.iter_rows(values_only=True))
+    try:
+        worksheet = workbook.worksheets[0] if workbook.worksheets else None
+        if worksheet is None:
+            return None, 'Excel файлът няма работен лист.'
+        rows = list(islice(
+            worksheet.iter_rows(max_col=100, values_only=True),
+            ASSET_CSV_MAX_ROWS + 2,
+        ))
+    except Exception:
+        return None, 'Файлът не може да бъде прочетен. Запазете го като Excel (.xlsx) и опитайте отново.'
+    finally:
+        workbook.close()
     if not rows:
         return None, 'Excel файлът няма заглавен ред.'
 

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block title %}{{ title or 'Barage Machinery' }}{% endblock %}</title>
-  <script>
+  <script nonce="{{ g.csp_nonce }}">
     (function () {
       const stored = localStorage.getItem('theme');
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -69,6 +69,7 @@
           </button>
           <div class="user-actions">
             <a href="{{ url_for('profile') }}">Профил</a>
+            <a href="{{ url_for('privacy_notice') }}">Лични данни</a>
             <form method="post" action="{{ url_for('logout') }}" class="logout-form">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="user-action-button">Изход</button>

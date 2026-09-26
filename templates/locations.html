@@ -45,7 +45,6 @@
       <div class="location-card-main">
         <div class="location-row-title">
           <a class="location-name-link" href="{{ url_for('location_detail', location_id=loc.id) }}" title="{{ loc.name }}" data-ajax-link>{{ loc.name }}</a>
-          <span class="chip {{ meta.chip }}">{{ meta.icon }} {{ meta.label }}</span>
           {% if not loc.is_active %}
           <span class="chip chip-neutral">Архивиран</span>
           {% endif %}

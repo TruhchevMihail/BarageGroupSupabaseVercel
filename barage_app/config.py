@@ -1,8 +1,9 @@
-from collections import defaultdict
+from collections import OrderedDict
 from datetime import timedelta
 import logging
 import os
 from logging.handlers import RotatingFileHandler
+from threading import Lock
 
 
 try:
@@ -45,6 +46,7 @@ UPLOAD_FOLDER = os.environ.get(
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 MAX_ASSET_IMAGES = 3
 MAX_IMAGE_UPLOAD_SIZE = int(os.environ.get('MAX_IMAGE_UPLOAD_SIZE', 8 * 1024 * 1024))
+MAX_IMAGE_PIXELS = 24_000_000
 MAX_REQUEST_SIZE = int(os.environ.get('MAX_REQUEST_SIZE', 32 * 1024 * 1024))
 SERVICE_INVOICE_MAP = os.environ.get(
     'SERVICE_INVOICE_MAP_PATH',
@@ -63,7 +65,11 @@ CSRF_HEADER_NAMES = ('X-CSRFToken', 'X-CSRF-Token')
 UNSAFE_HTTP_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
 LOGIN_RATE_LIMIT = (7, 300)
 SENSITIVE_RATE_LIMIT = (20, 300)
-RATE_LIMIT_BUCKETS = defaultdict(list)
+TRAFFIC_RATE_LIMIT = (240, 60)
+WRITE_RATE_LIMIT = (60, 60)
+MAX_RATE_LIMIT_KEYS = 4096
+RATE_LIMIT_BUCKETS = OrderedDict()
+RATE_LIMIT_LOCK = Lock()
 VERCEL_ENVIRONMENT = bool(os.environ.get('VERCEL'))
 TRUST_PROXY_HEADERS = VERCEL_ENVIRONMENT or os.environ.get('TRUST_PROXY_HEADERS', '').strip().lower() in {
     '1', 'true', 'yes', 'on',
@@ -106,9 +112,18 @@ def configure_app(flask_app):
     flask_app.config['SERVICE_INVOICE_MAP'] = SERVICE_INVOICE_MAP
     flask_app.config['MAX_IMAGE_UPLOAD_SIZE'] = MAX_IMAGE_UPLOAD_SIZE
     flask_app.config['MAX_CONTENT_LENGTH'] = MAX_REQUEST_SIZE
+    flask_app.config['MAX_FORM_MEMORY_SIZE'] = 512 * 1024
+    flask_app.config['MAX_FORM_PARTS'] = 200
+    flask_app.config['LOGIN_RATE_LIMIT'] = LOGIN_RATE_LIMIT
+    flask_app.config['SENSITIVE_RATE_LIMIT'] = SENSITIVE_RATE_LIMIT
+    flask_app.config['TRAFFIC_RATE_LIMIT'] = TRAFFIC_RATE_LIMIT
+    flask_app.config['WRITE_RATE_LIMIT'] = WRITE_RATE_LIMIT
+    flask_app.config['MAX_RATE_LIMIT_KEYS'] = MAX_RATE_LIMIT_KEYS
     flask_app.config['SESSION_COOKIE_HTTPONLY'] = True
     flask_app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     flask_app.config['SESSION_COOKIE_SECURE'] = VERCEL_ENVIRONMENT or os.environ.get('APP_ENV') == 'production'
+    if flask_app.config['SESSION_COOKIE_SECURE']:
+        flask_app.config['DEBUG'] = False
     flask_app.config['PREFERRED_URL_SCHEME'] = os.environ.get('PREFERRED_URL_SCHEME', 'http')
     server_name = os.environ.get('SERVER_NAME')
     if server_name:

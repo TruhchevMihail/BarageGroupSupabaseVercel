@@ -9,6 +9,7 @@ ROUTES = [
     ('/users/<int:user_id>/toggle', 'user_toggle', legacy.user_toggle, ['POST']),
     ('/users/<int:user_id>/edit', 'user_edit', legacy.user_edit, ['GET', 'POST']),
     ('/users/<int:user_id>/delete', 'user_delete', legacy.user_delete, ['POST']),
+    ('/users/<int:user_id>/anonymize', 'user_anonymize', legacy.user_anonymize, ['POST']),
 ]
 
 for rule, endpoint, view_func, methods in ROUTES:

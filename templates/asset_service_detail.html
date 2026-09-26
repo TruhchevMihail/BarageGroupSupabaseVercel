@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split page-head--subpage">
-  <a class="btn-secondary page-back" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Назад</a>
+<div class="page-head split">
   <div>
     <span class="eyebrow">Сервизен запис</span>
     <h1>{{ asset.inventory_number }} · {{ asset.name }}</h1>
   </div>
   <div class="detail-actions asset-header-actions sticky-page-actions">
+    <a class="btn-secondary" href="{{ url_for('asset_detail', asset_id=asset.id) }}">Назад</a>
     {% if can_delete_service_record %}
     <form method="post" action="{{ url_for('asset_service_delete', asset_id=asset.id, record_id=record.id) }}" data-confirm="Сигурни ли сте, че искате да изтриете този запис?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -45,7 +45,7 @@
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Кой</div>
-      <div class="asset-detail-value">{% if record.created_by %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}-{% endif %}</div>
+      <div class="asset-detail-value">{% if record.created_by %}{% if can_view_user_profile(record.created_by) %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}{{ record.created_by.full_name }}{% endif %}{% else %}-{% endif %}</div>
     </div>
     <div class="asset-detail-field">
       <div class="asset-detail-label">Фактура</div>

@@ -193,7 +193,7 @@ def test_asset_detail_orders_daily_actions_and_separates_delete(
     html = client.get(f'/assets/{asset.id}').get_data(as_text=True)
     header = html[:html.index('<section')]
 
-    assert header.index('page-back') < header.index('Премести / заявка')
+    assert header.index('>Назад</a>') < header.index('Премести / заявка')
     assert header.index('Премести / заявка') < header.index('Добави сервизен запис')
     assert header.index('Добави сервизен запис') < header.index('Редактирай')
     assert 'Изтрий' not in header
@@ -236,9 +236,13 @@ def test_location_detail_orders_daily_actions_and_separates_delete(
     html = client.get(f'/locations/{location.id}').get_data(as_text=True)
     header = html[:html.index('<div class="grid-2">')]
 
-    assert header.index('page-back') < header.index('Архивирай')
+    assert header.index('>Назад</a>') < header.index('Архивирай')
     assert header.index('Архивирай') < header.index('Редактирай')
     assert 'Изтрий' not in header
+    left_panel = html[html.index('<div class="grid-2">'):html.index('</section>', html.index('<div class="grid-2">'))]
+    assert left_panel.index('Основна информация') < left_panel.index('Екип')
+    assert 'Машини на обекта' not in left_panel
+    assert html.index('Машини на обекта') > html.index('</section>', html.index('<div class="grid-2">'))
     assert html.index('Опасна зона') > html.index('Машини на обекта')
     assert 'Изтрий обекта' in html[html.index('Опасна зона'):]
 
@@ -290,7 +294,7 @@ def test_user_profile_orders_daily_actions_and_separates_delete(
     html = client.get(f'/users/{user.id}/profile').get_data(as_text=True)
     header = html[:html.index('<section')]
 
-    assert header.index('page-back') < header.index('Изключи')
+    assert header.index('>Назад</a>') < header.index('Изключи')
     assert header.index('Изключи') < header.index('Нова парола')
     assert header.index('Нова парола') < header.index('Редактирай')
     assert 'Изтрий' not in header

@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, g, request
 
 from barage_app.config import (
     BASE_DIR,
@@ -49,8 +49,13 @@ def create_app(test_config=None):
     @app.after_request
     def add_security_headers(response):
         response.headers.setdefault('X-Content-Type-Options', 'nosniff')
-        response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
+        response.headers.setdefault('X-Frame-Options', 'DENY')
         response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
+        response.headers.setdefault('X-XSS-Protection', '0')
+        if request.endpoint != 'static':
+            response.headers['Cache-Control'] = 'no-store, private'
+        if app.config['SESSION_COOKIE_SECURE']:
+            response.headers.setdefault('Strict-Transport-Security', 'max-age=15552000')
         response.headers.setdefault(
             'Permissions-Policy',
             'camera=(), microphone=(), geolocation=(self)',
@@ -59,11 +64,12 @@ def create_app(test_config=None):
             'Content-Security-Policy',
             "default-src 'self'; "
             "img-src 'self' data: https:; "
-            "style-src 'self' 'unsafe-inline'; "
-            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self'; "
+            f"script-src 'self' 'nonce-{g.csp_nonce}'; "
             "font-src 'self' data:; "
             "connect-src 'self'; "
-            "frame-ancestors 'self'; "
+            "object-src 'none'; "
+            "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'",
         )

@@ -297,19 +297,6 @@ html[data-theme="dark"] .theme-toggle {
 
 .page-head { margin-bottom: 22px; }
 .page-head.split, .section-head, .location-card-head, .form-actions, .card-actions, .pagination-row, .filter-actions { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
-.page-head.split.page-head--subpage {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-}
-.page-head--subpage > .detail-actions {
-  grid-column: 3;
-  justify-content: flex-end;
-}
-.page-head--subpage > .page-back {
-  grid-column: 1;
-  justify-self: start;
-}
 .page-head h1 { margin: 4px 0 0; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; letter-spacing: 0; font-weight: 900; }
 .page-head h1 small { display: inline-block; color: var(--muted); font-size: .48em; font-weight: 800; vertical-align: middle; }
 .page-head p { margin: 8px 0 0; }

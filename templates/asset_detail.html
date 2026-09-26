@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split page-head--subpage">
-  <a class="btn-secondary page-back" href="{{ url_for('assets') }}">Назад</a>
+<div class="page-head split">
   <div>
     <span class="eyebrow">Детайли за актив</span>
   </div>
   <div class="detail-actions detail-header-actions sticky-page-actions">
+    <a class="btn-secondary" href="{{ url_for('assets') }}">Назад</a>
     {% if can_move_asset %}
     <a class="btn-link" href="{{ url_for('asset_move', asset_id=asset.id) }}">Премести / заявка</a>
     {% endif %}
@@ -130,7 +130,7 @@
         <td>{{ record.service_provider or '-' }}</td>
         <td>{{ record.price | eur }}</td>
         <td>{{ strip_service_invoice_marker(record.notes) or '-' }}</td>
-        <td>{% if record.created_by %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}-{% endif %}</td>
+        <td>{% if record.created_by %}{% if can_view_user_profile(record.created_by) %}<a class="user-link" href="{{ url_for('user_profile', user_id=record.created_by.id) }}">{{ record.created_by.full_name }}</a>{% else %}{{ record.created_by.full_name }}{% endif %}{% else %}-{% endif %}</td>
         <td class="row-actions">
           <a class="btn-link" href="{{ url_for('asset_service_detail', asset_id=asset.id, record_id=record.id) }}">Детайли</a>
         </td>
@@ -152,7 +152,7 @@
         <td>{{ row.created_at|dt }}</td>
         <td><span class="chip chip-neutral">{{ action_labels.get(row.action, row.action) }}</span></td>
         <td>{{ row.details }}</td>
-        <td>{% if row.performed_by %}<a class="user-link" href="{{ url_for('user_profile', user_id=row.performed_by.id) }}">{{ row.performed_by.full_name }}</a>{% else %}-{% endif %}</td>
+        <td>{% if row.performed_by %}{% if can_view_user_profile(row.performed_by) %}<a class="user-link" href="{{ url_for('user_profile', user_id=row.performed_by.id) }}">{{ row.performed_by.full_name }}</a>{% else %}{{ row.performed_by.full_name }}{% endif %}{% else %}-{% endif %}</td>
       </tr>
       {% else %}
       <tr><td colspan="4" class="empty">Няма история за този актив.</td></tr>

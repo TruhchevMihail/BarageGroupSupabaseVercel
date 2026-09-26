@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="page-head split page-head--subpage">
-  <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary page-back">Назад</a>
+<div class="page-head split">
   <div>
     <span class="eyebrow">Машини и инструменти</span>
     <h1>Преместване / заявка</h1>
   </div>
+  <a href="{{ url_for('asset_detail', asset_id=asset.id) }}" class="btn-secondary">Назад</a>
 </div>
 
 <section class="panel asset-detail-panel form-section">
