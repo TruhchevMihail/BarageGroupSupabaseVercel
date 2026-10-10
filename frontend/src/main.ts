@@ -1,5 +1,6 @@
 import './styles/main.css';
 
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { initAssetImageUpload } from './modules/assetImageUpload';
 import { initAjaxListNavigation } from './modules/ajaxListNavigation';
 import { initAutoSubmit } from './modules/autoSubmit';
@@ -30,6 +31,9 @@ function initDynamicUi(csrfToken: string): void {
   initSearchForms();
   initCollapsibles();
 }
+
+// Initialize Vercel Speed Insights
+injectSpeedInsights();
 
 document.addEventListener('DOMContentLoaded', () => {
   const csrfToken = getCsrfToken();
